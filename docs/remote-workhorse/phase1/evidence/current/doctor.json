@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T12:48:13.524701Z",
+  "generated_at_utc": "2026-05-03T17:13:17.515289Z",
   "host": "deMacBook-Pro.local",
   "invocation_cwd": "/Users/0xvox/Windburn",
   "target": "/Users/0xvox/Windburn/.",
@@ -8,8 +8,8 @@
     "is_repo": true,
     "top_level": "/Users/0xvox/Windburn",
     "branch": "main",
-    "head": "99d1126",
-    "status_short": "## main\n M docs/remote-workhorse/preflight/evidence/current/doctor.json",
+    "head": "e0153b0",
+    "status_short": "## main\n M AGENTS.md\n M README.md\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n M justfile\n?? docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md\n?? docs/superconductor-codex-intake.md\n?? scripts/droplet-engagement-review.sh\n?? scripts/superconductor-codex-intake.sh",
     "error": null
   },
   "probes": [
@@ -99,7 +99,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "Hermes Agent v0.12.0 (2026.4.30)\nProject: /Users/0xvox/.hermes/hermes-agent\nPython: 3.11.14\nOpenAI SDK: 2.30.0\nUpdate available: 83 commits behind — run 'hermes update'",
+      "stdout": "Hermes Agent v0.12.0 (2026.4.30)\nProject: /Users/0xvox/.hermes/hermes-agent\nPython: 3.11.14\nOpenAI SDK: 2.30.0\nUpdate available: 109 commits behind — run 'hermes update'",
       "stderr": ""
     },
     {
@@ -169,7 +169,7 @@
       "status": "fail",
       "exit_code": 1,
       "stdout": "",
-      "stderr": "time=\"2026-05-03T08:48:13-04:00\" level=fatal msg=\"colima is not running\""
+      "stderr": "time=\"2026-05-03T13:13:17-04:00\" level=fatal msg=\"colima is not running\""
     },
     {
       "id": "just_version",

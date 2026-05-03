@@ -3,6 +3,9 @@ set shell := ["sh", "-eu", "-c"]
 check:
     scripts/check.sh
 
+superconductor-intake:
+    scripts/superconductor-codex-intake.sh
+
 doctor:
     cargo run -p runtimectl -- doctor --target . --evidence-dir docs/remote-workhorse/phase1/evidence/current
 
@@ -53,6 +56,9 @@ remote-codex-auth-apply:
 
 remote-hermes-codex-smoke:
     scripts/remote-hermes-codex-smoke.sh --apply --confirm-remote-hermes-codex-smoke
+
+droplet-engagement-review:
+    scripts/droplet-engagement-review.sh --out docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md
 
 multica-cache-dry-run:
     scripts/multica-codex-cache-janitor.sh

@@ -2,6 +2,7 @@
 
 Read order for a new agent:
 
+0. `../superconductor-codex-intake.md` when launched from Superconductor
 1. `0xvox-unknown-design-20260502-222759.md`
 2. `CONTEXT-2026-05-02-evening.md`
 3. `phase1/SELF_AWARENESS_BOOTSTRAP.template.md`
@@ -20,6 +21,7 @@ Read order for a new agent:
 16. `preflight/NIXOS_FOUNDATION_PROOF.md`
 17. `preflight/PROVIDER_SECRET_SMOKE.md`
 18. `preflight/HERMES_CODEX_RUNTIME_PROOF.md`
+19. `preflight/DROPLET_ENGAGEMENT_REVIEW.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
 and base snapshot proven. The staged NixOS install has completed its guarded
@@ -33,3 +35,6 @@ Provider credential sync and the current remote provider smoke `FLAG` are
 recorded in `preflight/PROVIDER_SECRET_SMOKE.md`.
 The remote Hermes `openai-codex` runtime route is proven in
 `preflight/HERMES_CODEX_RUNTIME_PROOF.md`.
+The current multi-droplet engagement review is recorded in
+`preflight/DROPLET_ENGAGEMENT_REVIEW.md` and can be refreshed with
+`scripts/droplet-engagement-review.sh --out docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md`.

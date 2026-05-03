@@ -14,6 +14,20 @@ mutations go through `scripts/nixos-remote-rebuild.sh`, with `test` before
 `switch`. The first foundation layer is proven in
 `docs/remote-workhorse/preflight/NIXOS_FOUNDATION_PROOF.md`.
 
+## Superconductor Session
+
+When launched from Superconductor, start by proving the repo anchor instead of
+trusting the shell cwd:
+
+```sh
+scripts/superconductor-codex-intake.sh
+```
+
+Current canonical local repo is `/Users/0xvox/Windburn`. If Superconductor
+starts in another project, use explicit `workdir` or `git -C /Users/0xvox/Windburn`
+for every repo claim. Do not move, duplicate, or relink this repo without an
+explicit operator request.
+
 ## Worktree Convention
 
 Use project-local git worktrees under `.worktrees/` for implementation slices.
@@ -35,6 +49,7 @@ slice passes its local checks.
 Run these before closeout when the relevant tooling exists:
 
 ```sh
+scripts/superconductor-codex-intake.sh
 scripts/check.sh
 git diff --check
 scripts/digitalocean-snapshot.sh

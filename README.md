@@ -7,6 +7,7 @@ evidence, tool truth, and a read-only canary before remote provisioning.
 ## Fast Path
 
 ```sh
+scripts/superconductor-codex-intake.sh
 scripts/check.sh
 scripts/preflight.sh
 scripts/remote-host-proof.sh
@@ -17,6 +18,7 @@ scripts/remote-secret-sync.sh
 scripts/remote-provider-smoke.sh
 scripts/remote-codex-auth-sync.sh
 scripts/remote-hermes-codex-smoke.sh
+scripts/droplet-engagement-review.sh
 scripts/multica-codex-cache-janitor.sh
 ```
 
@@ -28,6 +30,7 @@ records only the variable name, not the token value.
 If `just` is installed:
 
 ```sh
+just superconductor-intake
 just check
 just remote-proof
 just snapshot-dry-run
@@ -37,11 +40,14 @@ just remote-secret-dry-run
 just remote-provider-smoke
 just remote-codex-auth-dry-run
 just remote-hermes-codex-smoke
+just droplet-engagement-review
 ```
 
 ## Repo Map
 
 - `docs/remote-workhorse/` - approved design, Phase 1 artifacts, canary report.
+- `docs/superconductor-codex-intake.md` - Superconductor-side Codex handoff and
+  read-only intake contract.
 - `crates/runtimectl/` - Rust CLI for local doctor and canary evidence.
 - `config/tool-registry.toml` - required, optional, and disabled tool policy.
 - `docs/external-indexes/` - generated GitHub indexes for frontier stack repos.
@@ -55,6 +61,8 @@ just remote-hermes-codex-smoke
   `openai-codex` auth sync.
 - `scripts/remote-hermes-codex-smoke.sh` - pinned Hermes `openai-codex`
   remote model-call smoke.
+- `scripts/droplet-engagement-review.sh` - read-only DO/CCR/Hermes/Windburn
+  engagement gate for remote pre-flight.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary
@@ -69,3 +77,8 @@ The Codex EDU path is separately proven through Hermes `openai-codex` with
 artifact `/srv/windburn/runs/hermes-codex-smoke/20260503T124810Z-hermes-codex-smoke/result.json`.
 Phase 1 still succeeds only when a new agent can rerun the proof path, see which
 tools are usable, and return `PASS`, `FLAG`, or `BLOCK` without guesswork.
+For Superconductor sessions, begin with `scripts/superconductor-codex-intake.sh`
+so the agent proves whether `/Users/0xvox/Windburn` is attached, linked, or still
+external to `/Users/0xvox/superconductor/projects/`.
+Current Superconductor binding is
+`/Users/0xvox/superconductor/projects/Windburn -> /Users/0xvox/Windburn`.
