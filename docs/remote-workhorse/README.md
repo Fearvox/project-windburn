@@ -16,5 +16,5 @@ Read order for a new agent:
 12. `preflight/REMOTE_HOST_PROOF.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
-selected and proven, while the remaining remote mutations still sit behind
-explicit gates: base snapshot first, NixOS conversion second.
+and base snapshot proven, while the remaining NixOS conversion mutation still
+sits behind its own explicit gate.

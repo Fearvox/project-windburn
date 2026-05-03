@@ -1,8 +1,8 @@
 # Remote Host Proof
 
-Generated: `2026-05-03T08:11:25Z`
+Generated: `2026-05-03T08:31:29Z`
 
-Status: `BASE_HOST_PROVED`
+Status: `BASE_HOST_SNAPSHOT_PROVED`
 
 This document records the read-only proof for the first Windburn remote
 workhorse candidate. It contains no DigitalOcean token value.
@@ -71,12 +71,38 @@ Generated evidence:
 - `docs/remote-workhorse/preflight/evidence/current/doctor.json`
 - `docs/remote-workhorse/preflight/evidence/current/preflight.json`
 
+## Snapshot Proof
+
+The base-host snapshot was created after action-time operator confirmation.
+
+| Field | Value |
+| --- | --- |
+| Action ID | `3168282573` |
+| Action status | `completed` |
+| Snapshot ID | `227115138` |
+| Snapshot name | `windburn-workhorse-nyc1-base-20260503-0830Z` |
+| Snapshot created at | `2026-05-03T08:30:44Z` |
+| Action completed at | `2026-05-03T08:31:11Z` |
+| Resource ID | `568689911` |
+| Resource type | `droplet` |
+| Region | `nyc1` |
+| Min disk size | `160 GiB` |
+| Snapshot size | `2.07 GiB` |
+
+Guarded command:
+
+```sh
+scripts/digitalocean-snapshot.sh --apply --confirm-billable-snapshot
+```
+
+Post-snapshot preflight:
+
+```text
+preflight: PASS
+- all Phase 1 canary checks passed
+```
+
 ## Next Gate
 
-The next safe mutation is a DigitalOcean snapshot of Droplet `568689911`.
-Snapshot creation is intentionally pending action-time confirmation because it
-creates billable storage.
-
-After snapshot proof exists, the NixOS conversion gate can begin. NixOS
-conversion is a destructive remote OS mutation and requires its own explicit
-confirmation before execution.
+The NixOS conversion gate can begin. NixOS conversion is a destructive remote
+OS mutation and requires its own explicit confirmation before execution.

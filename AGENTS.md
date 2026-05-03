@@ -8,10 +8,9 @@ The first active design is:
 ## Current Scope
 
 Phase 1 is contract-first infrastructure plus the first proven DigitalOcean
-base host. Build artifacts, evidence templates, local canaries, and operator
-docs must let a new agent rerun the same workflow. Remote mutation is gated:
-base-host snapshot requires explicit confirmation, and NixOS conversion requires
-its own later confirmation.
+base host and snapshot. Build artifacts, evidence templates, local canaries,
+and operator docs must let a new agent rerun the same workflow. The next remote
+mutation is NixOS conversion, and it requires its own explicit confirmation.
 
 ## Worktree Convention
 

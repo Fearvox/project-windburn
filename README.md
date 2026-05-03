@@ -40,8 +40,7 @@ just snapshot-dry-run
 ## Current Boundary
 
 This repo now has a fresh DigitalOcean base host selected and proven:
-`windburn-workhorse-nyc1` (`568689911`, `24.144.113.25`). The next mutation gate
-is a billable base snapshot, followed by a separately confirmed NixOS
-conversion. Phase 1 still succeeds only when a new agent can rerun the proof
-path, see which tools are usable, and return `PASS`, `FLAG`, or `BLOCK` without
-guesswork.
+`windburn-workhorse-nyc1` (`568689911`, `24.144.113.25`) plus base snapshot
+`227115138`. The next mutation gate is a separately confirmed NixOS conversion.
+Phase 1 still succeeds only when a new agent can rerun the proof path, see
+which tools are usable, and return `PASS`, `FLAG`, or `BLOCK` without guesswork.

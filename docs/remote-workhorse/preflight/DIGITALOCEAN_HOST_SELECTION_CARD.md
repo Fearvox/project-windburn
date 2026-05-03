@@ -2,7 +2,7 @@
 
 Updated: 2026-05-03
 
-Status: `CREATED_BASE_HOST_PROVED`
+Status: `CREATED_BASE_HOST_SNAPSHOT_PROVED`
 
 This card is generated from read-only DigitalOcean inventory after
 `DIGITALOCEAN_ACCESS_TOKEN` became available through local `.env.local`. It
@@ -34,7 +34,8 @@ Other resources:
   `bd:bf:8a:04:ac:cc:1a:c7:d2:b1:6e:d0:36:ee:9b:af`.
 - Project: `first-project`.
 - VPCs: `default-nyc1` and `default-sfo3`.
-- Snapshots: none.
+- Snapshot: `227115138`
+  (`windburn-workhorse-nyc1-base-20260503-0830Z`, Droplet `568689911`, `nyc1`).
 - Firewalls: none.
 - Volumes: none.
 - Apps, managed DBs, container registries, and serverless namespaces: none.
@@ -163,6 +164,15 @@ The guarded local wrapper is:
 scripts/digitalocean-snapshot.sh
 scripts/digitalocean-snapshot.sh --apply --confirm-billable-snapshot
 ```
+
+Snapshot result:
+
+- Action ID: `3168282573`
+- Action status: `completed`
+- Snapshot ID: `227115138`
+- Snapshot name: `windburn-workhorse-nyc1-base-20260503-0830Z`
+- Created at: `2026-05-03T08:30:44Z`
+- Size: `2.07 GiB`
 
 ## NixOS Path
 

@@ -36,8 +36,9 @@ Required local truth before remote work:
 - `ssh-keyscan -T 5 <host>` captures the host key after a remote host is selected.
 - `scripts/remote-host-proof.sh` passes against the selected host with strict
   host-key checking and read-only OS/Nix probes.
-- `scripts/digitalocean-snapshot.sh` has been run in dry-run mode before any
-  snapshot creation.
+- Snapshot `227115138`
+  (`windburn-workhorse-nyc1-base-20260503-0830Z`) exists before NixOS
+  conversion.
 
 ## DigitalOcean Read-Only Cloud Checks
 
@@ -146,6 +147,13 @@ scripts/digitalocean-snapshot.sh --apply --confirm-billable-snapshot
 This uses Droplet `568689911` by default and names the snapshot
 `windburn-workhorse-nyc1-base-<UTC timestamp>` unless `--name` or
 `WINDBURN_SNAPSHOT_NAME` is provided.
+
+Current base snapshot:
+
+- Snapshot ID: `227115138`
+- Name: `windburn-workhorse-nyc1-base-20260503-0830Z`
+- Resource: Droplet `568689911`
+- Created: `2026-05-03T08:30:44Z`
 
 ## Mutation Gate
 
