@@ -13,6 +13,8 @@ Read order for a new agent:
 9. `preflight/COMPUTER_USE_PREFLIGHT_RUNBOOK.md`
 10. `preflight/DIGITALOCEAN_CAPABILITY_MAP.md`
 11. `preflight/DIGITALOCEAN_HOST_SELECTION_CARD.md`
+12. `preflight/REMOTE_HOST_PROOF.md`
 
-Phase 1 is deliberately local and read-only. It proves the workflow contract,
-tool truth, and evidence skeleton before any remote host provisioning.
+Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
+selected and proven, while the remaining remote mutations still sit behind
+explicit gates: base snapshot first, NixOS conversion second.

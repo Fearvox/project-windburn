@@ -157,6 +157,13 @@ doctl compute droplet-action snapshot <droplet-id> \
   --no-header
 ```
 
+The guarded local wrapper is:
+
+```sh
+scripts/digitalocean-snapshot.sh
+scripts/digitalocean-snapshot.sh --apply --confirm-billable-snapshot
+```
+
 ## NixOS Path
 
 There is no public NixOS image in the captured DigitalOcean image inventory.

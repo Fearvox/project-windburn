@@ -13,7 +13,9 @@ Run from `/Users/0xvox/Windburn`:
 
 ```sh
 scripts/check.sh
-scripts/preflight.sh
+WINDBURN_REMOTE_HOST=24.144.113.25 scripts/preflight.sh
+scripts/remote-host-proof.sh
+scripts/digitalocean-snapshot.sh
 uvx code-review-graph status --repo /Users/0xvox/Windburn
 ```
 
@@ -32,6 +34,10 @@ Required local truth before remote work:
   read before selecting sidecars beyond the Droplet itself.
 - `WINDBURN_REMOTE_HOST` or `--remote-host` is set before launching a Computer Use mutation session.
 - `ssh-keyscan -T 5 <host>` captures the host key after a remote host is selected.
+- `scripts/remote-host-proof.sh` passes against the selected host with strict
+  host-key checking and read-only OS/Nix probes.
+- `scripts/digitalocean-snapshot.sh` has been run in dry-run mode before any
+  snapshot creation.
 
 ## DigitalOcean Read-Only Cloud Checks
 
@@ -121,6 +127,25 @@ nix flake metadata --json 2>&1 | sed -n '1,80p'
 ```
 
 Capture command, exit status, stdout/stderr, and timestamp into the run digest.
+
+## Snapshot Gate
+
+Default snapshot command is dry-run:
+
+```sh
+scripts/digitalocean-snapshot.sh
+```
+
+Creating a snapshot requires action-time operator confirmation, then both
+mutation flags:
+
+```sh
+scripts/digitalocean-snapshot.sh --apply --confirm-billable-snapshot
+```
+
+This uses Droplet `568689911` by default and names the snapshot
+`windburn-workhorse-nyc1-base-<UTC timestamp>` unless `--name` or
+`WINDBURN_SNAPSHOT_NAME` is provided.
 
 ## Mutation Gate
 

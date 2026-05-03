@@ -12,6 +12,15 @@ canary:
 preflight:
     scripts/preflight.sh
 
+remote-proof:
+    WINDBURN_REMOTE_HOST="${WINDBURN_REMOTE_HOST:-24.144.113.25}" WINDBURN_DROPLET_ID="${WINDBURN_DROPLET_ID:-568689911}" scripts/remote-host-proof.sh
+
+snapshot-dry-run:
+    scripts/digitalocean-snapshot.sh
+
+snapshot-apply:
+    scripts/digitalocean-snapshot.sh --apply --confirm-billable-snapshot
+
 multica-cache-dry-run:
     scripts/multica-codex-cache-janitor.sh
 

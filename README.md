@@ -9,6 +9,8 @@ evidence, tool truth, and a read-only canary before remote provisioning.
 ```sh
 scripts/check.sh
 scripts/preflight.sh
+scripts/remote-host-proof.sh
+scripts/digitalocean-snapshot.sh
 scripts/multica-codex-cache-janitor.sh
 ```
 
@@ -21,6 +23,8 @@ If `just` is installed:
 
 ```sh
 just check
+just remote-proof
+just snapshot-dry-run
 ```
 
 ## Repo Map
@@ -35,6 +39,9 @@ just check
 
 ## Current Boundary
 
-This repo does not yet provision a remote host. Phase 1 succeeds when a new
-agent can rerun the same local proof path, see which tools are usable, and
-return `PASS`, `FLAG`, or `BLOCK` without guesswork.
+This repo now has a fresh DigitalOcean base host selected and proven:
+`windburn-workhorse-nyc1` (`568689911`, `24.144.113.25`). The next mutation gate
+is a billable base snapshot, followed by a separately confirmed NixOS
+conversion. Phase 1 still succeeds only when a new agent can rerun the proof
+path, see which tools are usable, and return `PASS`, `FLAG`, or `BLOCK` without
+guesswork.

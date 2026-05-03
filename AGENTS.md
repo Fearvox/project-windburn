@@ -7,9 +7,11 @@ The first active design is:
 
 ## Current Scope
 
-Phase 1 is contract-first infrastructure only. Build artifacts, evidence
-templates, local canaries, and operator docs that let a new agent rerun the
-same workflow. Do not provision or mutate a remote NixOS host in this slice.
+Phase 1 is contract-first infrastructure plus the first proven DigitalOcean
+base host. Build artifacts, evidence templates, local canaries, and operator
+docs must let a new agent rerun the same workflow. Remote mutation is gated:
+base-host snapshot requires explicit confirmation, and NixOS conversion requires
+its own later confirmation.
 
 ## Worktree Convention
 
@@ -34,6 +36,6 @@ Run these before closeout when the relevant tooling exists:
 ```sh
 scripts/check.sh
 git diff --check
+scripts/digitalocean-snapshot.sh
 git status --short --branch
 ```
-
