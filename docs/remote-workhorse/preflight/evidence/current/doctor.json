@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-05-03T04:27:53.144315Z",
+  "host": "deMacBook-Pro.local",
+  "invocation_cwd": "/Users/0xvox/Windburn",
+  "target": "/Users/0xvox/Windburn/.",
+  "git": {
+    "is_repo": true,
+    "top_level": "/Users/0xvox/Windburn",
+    "branch": "main",
+    "head": "441fe9e",
+    "status_short": "## main",
+    "error": null
+  },
+  "probes": [
+    {
+      "id": "codex_version",
+      "command": [
+        "codex",
+        "--version"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "codex-cli 0.128.0",
+      "stderr": ""
+    },
+    {
+      "id": "codex_mcp_list",
+      "command": [
+        "codex",
+        "mcp",
+        "list"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "Name               Command                                           Args                                                                                                                                                 Env  Cwd                                                                    Status   Auth       \ncode-review-graph  uvx                                               code-review-graph serve                                                                                                                              -    -                                                                      enabled  Unsupported\ncomputer-use       /Users/0xvox/.codex/bin/computer-use-mcp-wrapper  -                                                                                                                                                    -    /Users/0xvox/.codex/plugins/cache/openai-bundled/computer-use/1.0.770  enabled  Unsupported\ncontext7           npx                                               -y @upstash/context7-mcp                                                                                                                             -    -                                                                      enabled  Unsupported\nfilesystem_local   npx                                               -y @modelcontextprotocol/server-filesystem /Users/0xvox/Documents/Evensong/research-vault /Users/0xvox/Documents/古井贡酒/slock-酒业投资群                    -    -                                                                      enabled  Unsupported\nimessage           bun                                               run --cwd ${CLAUDE_PLUGIN_ROOT} --shell=bun --silent start                                                                                           -    -                                                                      enabled  Unsupported\nplaywright         npx                                               @playwright/mcp@latest                                                                                                                               -    -                                                                      enabled  Unsupported\n\nName                 Url                                 Bearer Token Env Var  Status    Auth         \nSanity               https://mcp.sanity.io               -                     enabled   Bearer token \ncloudflare-api       https://mcp.cloudflare.com/mcp      -                     disabled  Unsupported  \nfigma                https://mcp.figma.com/mcp           -                     disabled  Unsupported  \ngithub               https://api.githubcopilot.com/mcp/  -                     enabled   Unsupported  \ngitlab               https://gitlab.com/api/v4/mcp       -                     enabled   Not logged in\nnotion               https://mcp.notion.com/mcp          -                     disabled  Unsupported  \nopenaiDeveloperDocs  https://developers.openai.com/mcp   -                     enabled   Unsupported  \nresearch-vault       http://localhost:8787/mcp           -                     enabled   Unsupported  \nstripe               https://mcp.stripe.com              -                     enabled   Not logged in\nsupabase             https://mcp.supabase.com/mcp        -                     enabled   Unsupported  \nvercel               https://mcp.vercel.com              -                     enabled   OAuth",
+      "stderr": ""
+    },
+    {
+      "id": "cargo_version",
+      "command": [
+        "cargo",
+        "--version"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+      "stderr": ""
+    },
+    {
+      "id": "rustc_version",
+      "command": [
+        "rustc",
+        "--version"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "stderr": ""
+    },
+    {
+      "id": "bun_version",
+      "command": [
+        "bun",
+        "--version"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "1.3.11",
+      "stderr": ""
+    },
+    {
+      "id": "node_version",
+      "command": [
+        "node",
+        "--version"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "v24.14.1",
+      "stderr": ""
+    },
+    {
+      "id": "gh_version",
+      "command": [
+        "gh",
+        "--version"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "gh version 2.89.0 (2026-03-26)\nhttps://github.com/cli/cli/releases/tag/v2.89.0",
+      "stderr": ""
+    },
+    {
+      "id": "hermes_version",
+      "command": [
+        "hermes",
+        "--version"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "Hermes Agent v0.12.0 (2026.4.30)\nProject: /Users/0xvox/.hermes/hermes-agent\nPython: 3.11.14\nOpenAI SDK: 2.30.0\nUpdate available: 81 commits behind — run 'hermes update'",
+      "stderr": ""
+    },
+    {
+      "id": "nix_version",
+      "command": [
+        "nix",
+        "--version"
+      ],
+      "status": "missing",
+      "exit_code": null,
+      "stdout": "",
+      "stderr": "No such file or directory (os error 2)"
+    },
+    {
+      "id": "nix_root_mount",
+      "command": [
+        "test",
+        "-d",
+        "/nix/store"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "nix_store_volume",
+      "command": [
+        "test",
+        "-d",
+        "/Volumes/Nix Store/store"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "nix_profile_volume",
+      "command": [
+        "test",
+        "-d",
+        "/Volumes/Nix Store/var/nix"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "colima_list",
+      "command": [
+        "colima",
+        "list"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "PROFILE    STATUS     ARCH       CPUS    MEMORY    DISK      RUNTIME    ADDRESS\ndefault    Running    aarch64    2       2GiB      100GiB    docker",
+      "stderr": ""
+    },
+    {
+      "id": "colima_status",
+      "command": [
+        "colima",
+        "status"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "time=\"2026-05-03T00:27:52-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T00:27:52-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T00:27:52-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T00:27:52-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T00:27:52-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T00:27:52-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
+    },
+    {
+      "id": "just_version",
+      "command": [
+        "just",
+        "--version"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "just 1.50.0",
+      "stderr": ""
+    },
+    {
+      "id": "doctl_version",
+      "command": [
+        "doctl",
+        "version"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "doctl version 1.155.0-release",
+      "stderr": ""
+    }
+  ],
+  "verdict": {
+    "status": "PASS",
+    "reasons": [
+      "all Phase 1 canary checks passed"
+    ]
+  }
+}
