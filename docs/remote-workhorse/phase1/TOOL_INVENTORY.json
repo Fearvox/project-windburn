@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T04:11:58Z",
+  "generated_at_utc": "2026-05-03T04:17:35Z",
   "source": "live codex mcp list and local command probes",
   "local_commands": [
     {
@@ -51,8 +51,24 @@
     },
     {
       "id": "nix",
-      "status": "missing",
-      "repair": "Install locally or defer to Phase 2 remote NixOS cell."
+      "status": "store_mounted_activation_missing",
+      "version": "Nix Store contains nix 2.34.6",
+      "evidence": {
+        "volume": "/Volumes/Nix Store",
+        "volume_status": "mounted",
+        "store_path": "/Volumes/Nix Store/store",
+        "profile_path": "/Volumes/Nix Store/var/nix",
+        "root_nix_path": "/nix",
+        "root_nix_status": "absent",
+        "direct_binary_result": "fails because dylibs still reference /nix/store"
+      },
+      "repair": "Restore /nix activation/synthetic mount or source the valid Nix daemon profile before claiming host nix readiness."
+    },
+    {
+      "id": "colima",
+      "status": "running",
+      "version": "Colima default profile, aarch64, docker runtime, macOS Virtualization.Framework",
+      "note": "The running Colima VM reports Ubuntu 24.04, not NixOS; treat it as Docker runtime evidence, not a NixOS workhorse proof."
     },
     {
       "id": "just",
@@ -100,7 +116,8 @@
     "status": "FLAG",
     "reasons": [
       "Local Phase 1 runtime is usable.",
-      "Nix, just, and doctl are not installed locally.",
+      "Nix Store is mounted, but /nix activation/PATH is not usable from the host.",
+      "just and doctl are not installed locally.",
       "Research Vault durable note and code-review-graph registration are now proven."
     ]
   }

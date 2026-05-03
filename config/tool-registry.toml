@@ -47,7 +47,7 @@ id = "nix"
 class = "frontier_remote_runtime"
 required = false
 local_probe = ["nix", "--version"]
-repair = "Install local Nix or defer to the remote NixOS cell provisioning slice."
+repair = "If /Volumes/Nix Store is mounted but nix is absent, restore /nix activation/synthetic mount or defer Nix execution to the remote NixOS cell."
 
 [[tools]]
 id = "just"
@@ -74,4 +74,3 @@ reason = "Avoid adding private workspace dependency to runtime proof path."
 [[disabled_by_design]]
 id = "cloudflare-api"
 reason = "Cloud-provider writes require explicit operator approval."
-

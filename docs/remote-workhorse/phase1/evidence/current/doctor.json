@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T04:13:33.671412Z",
+  "generated_at_utc": "2026-05-03T04:17:26.639178Z",
   "host": "deMacBook-Pro.local",
   "invocation_cwd": "/Users/0xvox/Windburn",
   "target": "/Users/0xvox/Windburn/.",
@@ -8,8 +8,8 @@
     "is_repo": true,
     "top_level": "/Users/0xvox/Windburn",
     "branch": "main",
-    "head": "227a3a6",
-    "status_short": "## main\n M crates/runtimectl/src/main.rs\n M docs/remote-workhorse/CONTEXT-2026-05-02-evening.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json\n M docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json\n M docs/remote-workhorse/phase1/TOOL_INVENTORY.json\n M docs/remote-workhorse/phase1/evidence/current/doctor.json",
+    "head": "dac6006",
+    "status_short": "## main\n M crates/runtimectl/src/main.rs\n M docs/remote-workhorse/phase1/evidence/current/doctor.json",
     "error": null
   },
   "probes": [
@@ -114,6 +114,64 @@
       "stderr": "No such file or directory (os error 2)"
     },
     {
+      "id": "nix_root_mount",
+      "command": [
+        "test",
+        "-d",
+        "/nix/store"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "nix_store_volume",
+      "command": [
+        "test",
+        "-d",
+        "/Volumes/Nix Store/store"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "nix_profile_volume",
+      "command": [
+        "test",
+        "-d",
+        "/Volumes/Nix Store/var/nix"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "colima_list",
+      "command": [
+        "colima",
+        "list"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "PROFILE    STATUS     ARCH       CPUS    MEMORY    DISK      RUNTIME    ADDRESS\ndefault    Running    aarch64    2       2GiB      100GiB    docker",
+      "stderr": ""
+    },
+    {
+      "id": "colima_status",
+      "command": [
+        "colima",
+        "status"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "time=\"2026-05-03T00:17:26-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T00:17:26-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T00:17:26-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T00:17:26-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T00:17:26-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T00:17:26-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
+    },
+    {
       "id": "just_version",
       "command": [
         "just",
@@ -139,7 +197,7 @@
   "verdict": {
     "status": "FLAG",
     "reasons": [
-      "frontier/runtime tool not installed locally yet: nix_version",
+      "Nix Store volume is mounted at /Volumes/Nix Store, but /nix activation path is absent",
       "frontier/runtime tool not installed locally yet: just_version",
       "frontier/runtime tool not installed locally yet: doctl_version"
     ]

@@ -125,6 +125,21 @@ fn run_doctor(target_arg: &Path, evidence_dir_arg: &Path) -> Result<DoctorEviden
         run_probe("gh_version", "gh", ["--version"], &target),
         run_probe("hermes_version", "hermes", ["--version"], &target),
         run_probe("nix_version", "nix", ["--version"], &target),
+        run_probe("nix_root_mount", "test", ["-d", "/nix/store"], &target),
+        run_probe(
+            "nix_store_volume",
+            "test",
+            ["-d", "/Volumes/Nix Store/store"],
+            &target,
+        ),
+        run_probe(
+            "nix_profile_volume",
+            "test",
+            ["-d", "/Volumes/Nix Store/var/nix"],
+            &target,
+        ),
+        run_probe("colima_list", "colima", ["list"], &target),
+        run_probe("colima_status", "colima", ["status"], &target),
         run_probe("just_version", "just", ["--version"], &target),
         run_probe("doctl_version", "doctl", ["version"], &target),
     ];
@@ -256,7 +271,28 @@ fn classify_doctor(git: &GitEvidence, probes: &[CommandProbe]) -> Verdict {
         }
     }
 
-    for optional in ["nix_version", "just_version", "doctl_version"] {
+    if probe_status(probes, "nix_version") != Some("pass") {
+        match (
+            probe_status(probes, "nix_store_volume"),
+            probe_status(probes, "nix_profile_volume"),
+            probe_status(probes, "nix_root_mount"),
+        ) {
+            (Some("pass"), Some("pass"), Some("pass")) => {
+                flags.push(
+                    "Nix store/profile paths exist, but nix is not on the current PATH".to_string(),
+                );
+            }
+            (Some("pass"), Some("pass"), _) => {
+                flags.push(
+                    "Nix Store volume is mounted at /Volumes/Nix Store, but /nix activation path is absent".to_string(),
+                );
+            }
+            _ => flags
+                .push("frontier/runtime tool not installed locally yet: nix_version".to_string()),
+        }
+    }
+
+    for optional in ["just_version", "doctl_version"] {
         if probe_status(probes, optional) != Some("pass") {
             flags.push(format!(
                 "frontier/runtime tool not installed locally yet: {optional}"
@@ -479,10 +515,12 @@ fn render_canary_report(doctor: &DoctorEvidence, verdict: &Verdict, notes: &[Str
         }
         if verdict.reasons.iter().any(|reason| {
             reason.contains("nix_version")
+                || reason.contains("Nix Store")
+                || reason.contains("/nix")
                 || reason.contains("just_version")
                 || reason.contains("doctl_version")
         }) {
-            body.push_str("- Install or remote-provision Nix/just/doctl before claiming full remote workhorse readiness.\n");
+            body.push_str("- Activate or repair local Nix, and install just/doctl before claiming full remote workhorse readiness.\n");
             wrote_repair = true;
         }
         if !wrote_repair {
@@ -541,10 +579,51 @@ mod tests {
             fake_probe("rustc_version", "pass"),
         ];
         probes.push(fake_probe("nix_version", "missing"));
+        probes.push(fake_probe("nix_store_volume", "missing"));
+        probes.push(fake_probe("nix_profile_volume", "missing"));
+        probes.push(fake_probe("nix_root_mount", "missing"));
         probes.push(fake_probe("just_version", "missing"));
         probes.push(fake_probe("doctl_version", "missing"));
         let verdict = classify_doctor(&git, &probes);
         assert_eq!(verdict.status, "FLAG");
+    }
+
+    #[test]
+    fn doctor_distinguishes_inactive_nix_store_from_missing_nix() {
+        let git = GitEvidence {
+            is_repo: true,
+            top_level: Some("/tmp/repo".into()),
+            branch: Some("main".into()),
+            head: Some("abc123".into()),
+            status_short: Some("## main".into()),
+            error: None,
+        };
+        let probes = vec![
+            fake_probe("codex_version", "pass"),
+            fake_probe("codex_mcp_list", "pass"),
+            fake_probe("cargo_version", "pass"),
+            fake_probe("rustc_version", "pass"),
+            fake_probe("nix_version", "missing"),
+            fake_probe("nix_store_volume", "pass"),
+            fake_probe("nix_profile_volume", "pass"),
+            fake_probe("nix_root_mount", "missing"),
+            fake_probe("just_version", "pass"),
+            fake_probe("doctl_version", "pass"),
+        ];
+        let verdict = classify_doctor(&git, &probes);
+        assert_eq!(verdict.status, "FLAG");
+        assert!(
+            verdict
+                .reasons
+                .iter()
+                .any(|reason| reason.contains("Nix Store volume"))
+        );
+        assert!(
+            !verdict
+                .reasons
+                .iter()
+                .any(|reason| reason.contains("not installed locally yet: nix_version"))
+        );
     }
 
     fn required_probe_set(status: &str) -> Vec<CommandProbe> {
@@ -554,6 +633,9 @@ mod tests {
             fake_probe("cargo_version", status),
             fake_probe("rustc_version", status),
             fake_probe("nix_version", status),
+            fake_probe("nix_store_volume", status),
+            fake_probe("nix_profile_volume", status),
+            fake_probe("nix_root_mount", status),
             fake_probe("just_version", status),
             fake_probe("doctl_version", status),
         ]

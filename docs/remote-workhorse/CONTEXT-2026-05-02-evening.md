@@ -85,7 +85,9 @@ readiness without evidence.
 
 ## Current Known Flags
 
-- `nix` is not installed locally.
+- `nix` is not on the host PATH. `/Volumes/Nix Store` is mounted and contains
+  Nix store/profile data, but `/nix` is absent, so direct Nix execution fails
+  until activation/synthetic mount repair.
 - `just` is not installed locally.
 - `doctl` is not installed locally.
 
@@ -99,3 +101,5 @@ or graph-backed review without repairing them.
   `Windburn Remote Workhorse Phase 1 contract-first canary`.
 - code-review-graph now has `/Users/0xvox/Windburn` registered as `windburn`,
   built on `main`, and searchable through the MCP graph path.
+- Colima default profile is running with Docker runtime. Live probe reports the
+  VM OS as Ubuntu 24.04, so do not treat Colima itself as NixOS proof.
