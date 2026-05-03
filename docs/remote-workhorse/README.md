@@ -12,6 +12,7 @@ Read order for a new agent:
 8. `preflight/REMOTE_NIXOS_PREFLIGHT.md`
 9. `preflight/COMPUTER_USE_PREFLIGHT_RUNBOOK.md`
 10. `preflight/DIGITALOCEAN_CAPABILITY_MAP.md`
+11. `preflight/DIGITALOCEAN_HOST_SELECTION_CARD.md`
 
 Phase 1 is deliberately local and read-only. It proves the workflow contract,
 tool truth, and evidence skeleton before any remote host provisioning.
