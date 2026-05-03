@@ -1,0 +1,22 @@
+# Example project-scoped Codex config for the future remote workhorse.
+# Do not copy blindly into ~/.codex/config.toml. Keep secrets outside the repo.
+
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
+
+[mcp_servers.research-vault]
+required = true
+tool_timeout_sec = 90
+
+[mcp_servers.code-review-graph]
+required = false
+tool_timeout_sec = 90
+
+[mcp_servers.openaiDeveloperDocs]
+required = true
+tool_timeout_sec = 90
+
+[mcp_servers.playwright]
+required = false
+tool_timeout_sec = 90
+

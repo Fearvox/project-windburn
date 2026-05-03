@@ -1,0 +1,547 @@
+use anyhow::{Context, Result};
+use clap::{Parser, Subcommand};
+use serde::Serialize;
+use serde_json::Value;
+use std::ffi::OsStr;
+use std::fs;
+use std::io;
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use time::OffsetDateTime;
+use time::format_description::well_known::Rfc3339;
+
+#[derive(Parser, Debug)]
+#[command(name = "runtimectl")]
+#[command(about = "Remote Workhorse local evidence and canary runner")]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Capture local host, git, runtime, and MCP evidence.
+    Doctor {
+        #[arg(long, default_value = ".")]
+        target: PathBuf,
+        #[arg(long, default_value = "docs/remote-workhorse/phase1/evidence/current")]
+        evidence_dir: PathBuf,
+    },
+    /// Run the Phase 1 read-only repo/review health canary.
+    Canary {
+        #[arg(long, default_value = ".")]
+        target: PathBuf,
+        #[arg(long, default_value = "docs/remote-workhorse/phase1/evidence/current")]
+        evidence_dir: PathBuf,
+        #[arg(
+            long,
+            default_value = "docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md"
+        )]
+        report: PathBuf,
+    },
+}
+
+#[derive(Serialize, Debug, Clone)]
+struct DoctorEvidence {
+    schema_version: u8,
+    generated_at_utc: String,
+    host: String,
+    invocation_cwd: String,
+    target: String,
+    git: GitEvidence,
+    probes: Vec<CommandProbe>,
+    verdict: Verdict,
+}
+
+#[derive(Serialize, Debug, Clone)]
+struct GitEvidence {
+    is_repo: bool,
+    top_level: Option<String>,
+    branch: Option<String>,
+    head: Option<String>,
+    status_short: Option<String>,
+    error: Option<String>,
+}
+
+#[derive(Serialize, Debug, Clone)]
+struct CommandProbe {
+    id: String,
+    command: Vec<String>,
+    status: String,
+    exit_code: Option<i32>,
+    stdout: String,
+    stderr: String,
+}
+
+#[derive(Serialize, Debug, Clone, PartialEq, Eq)]
+struct Verdict {
+    status: String,
+    reasons: Vec<String>,
+}
+
+fn main() -> Result<()> {
+    let cli = Cli::parse();
+    match cli.command {
+        Commands::Doctor {
+            target,
+            evidence_dir,
+        } => {
+            let evidence = run_doctor(&target, &evidence_dir)?;
+            print_verdict("doctor", &evidence.verdict);
+        }
+        Commands::Canary {
+            target,
+            evidence_dir,
+            report,
+        } => {
+            let verdict = run_canary(&target, &evidence_dir, &report)?;
+            print_verdict("canary", &verdict);
+        }
+    }
+    Ok(())
+}
+
+fn print_verdict(label: &str, verdict: &Verdict) {
+    println!("{label}: {}", verdict.status);
+    for reason in &verdict.reasons {
+        println!("- {reason}");
+    }
+}
+
+fn run_doctor(target_arg: &Path, evidence_dir_arg: &Path) -> Result<DoctorEvidence> {
+    let target = absolutize(target_arg)?;
+    let evidence_dir = absolutize(evidence_dir_arg)?;
+    fs::create_dir_all(&evidence_dir)
+        .with_context(|| format!("create evidence dir {}", evidence_dir.display()))?;
+
+    let git = collect_git(&target);
+    let probes = vec![
+        run_probe("codex_version", "codex", ["--version"], &target),
+        run_probe("codex_mcp_list", "codex", ["mcp", "list"], &target),
+        run_probe("cargo_version", "cargo", ["--version"], &target),
+        run_probe("rustc_version", "rustc", ["--version"], &target),
+        run_probe("bun_version", "bun", ["--version"], &target),
+        run_probe("node_version", "node", ["--version"], &target),
+        run_probe("gh_version", "gh", ["--version"], &target),
+        run_probe("hermes_version", "hermes", ["--version"], &target),
+        run_probe("nix_version", "nix", ["--version"], &target),
+        run_probe("just_version", "just", ["--version"], &target),
+        run_probe("doctl_version", "doctl", ["version"], &target),
+    ];
+
+    let evidence = DoctorEvidence {
+        schema_version: 1,
+        generated_at_utc: now_utc(),
+        host: command_text("hostname", std::iter::empty::<&str>(), &target)
+            .unwrap_or_else(|| "unknown".to_string()),
+        invocation_cwd: std::env::current_dir()
+            .unwrap_or_else(|_| PathBuf::from("."))
+            .display()
+            .to_string(),
+        target: target.display().to_string(),
+        verdict: classify_doctor(&git, &probes),
+        git,
+        probes,
+    };
+
+    write_json(&evidence_dir.join("doctor.json"), &evidence)?;
+    Ok(evidence)
+}
+
+fn run_canary(target_arg: &Path, evidence_dir_arg: &Path, report_arg: &Path) -> Result<Verdict> {
+    let target = absolutize(target_arg)?;
+    let evidence_dir = absolutize(evidence_dir_arg)?;
+    let report = absolutize(report_arg)?;
+    let doctor = run_doctor(&target, &evidence_dir)?;
+
+    let phase_dir = target.join("docs/remote-workhorse/phase1");
+    let inventory_path = phase_dir.join("TOOL_INVENTORY.json");
+    let rv_path = phase_dir.join("RESEARCH_VAULT_PROOF.json");
+    let graph_path = phase_dir.join("CODE_REVIEW_GRAPH_PROOF.json");
+
+    let mut blockers = Vec::new();
+    let mut flags = Vec::new();
+    let mut notes = Vec::new();
+
+    if doctor.verdict.status == "BLOCK" {
+        blockers.extend(doctor.verdict.reasons.clone());
+    } else if doctor.verdict.status == "FLAG" {
+        flags.extend(doctor.verdict.reasons.clone());
+    }
+
+    require_file(&inventory_path, "tool inventory", &mut blockers, &mut notes);
+
+    match read_json_value(&rv_path)? {
+        Some(value) if json_str(&value, "/status") == Some("reachable_by_mcp") => {
+            if json_bool(&value, "/durable_note_required") == Some(true) {
+                flags.push("Research Vault is reachable, but exact remote-workhorse query has no durable note yet".to_string());
+            }
+            notes.push(format!("Research Vault proof: {}", rv_path.display()));
+        }
+        Some(_) => {
+            blockers.push("Research Vault proof exists but is not reachable_by_mcp".to_string())
+        }
+        None => blockers.push(format!(
+            "missing Research Vault proof: {}",
+            rv_path.display()
+        )),
+    }
+
+    match read_json_value(&graph_path)? {
+        Some(value) if json_str(&value, "/status") == Some("ok") => {
+            if json_u64(&value, "/registered_repository_count").unwrap_or(0) == 0 {
+                flags.push(
+                    "code-review-graph is enabled but has zero registered repositories".to_string(),
+                );
+            }
+            notes.push(format!("code-review-graph proof: {}", graph_path.display()));
+        }
+        Some(_) => blockers.push("code-review-graph proof exists but status is not ok".to_string()),
+        None => blockers.push(format!(
+            "missing code-review-graph proof: {}",
+            graph_path.display()
+        )),
+    }
+
+    let verdict = canary_verdict(blockers, flags);
+    let body = render_canary_report(&doctor, &verdict, &notes);
+    if let Some(parent) = report.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("create report dir {}", parent.display()))?;
+    }
+    fs::write(&report, body)
+        .with_context(|| format!("write canary report {}", report.display()))?;
+    Ok(verdict)
+}
+
+fn collect_git(target: &Path) -> GitEvidence {
+    let top_level = command_text("git", ["rev-parse", "--show-toplevel"], target);
+    if top_level.is_none() {
+        return GitEvidence {
+            is_repo: false,
+            top_level: None,
+            branch: None,
+            head: None,
+            status_short: None,
+            error: Some("git rev-parse --show-toplevel failed".to_string()),
+        };
+    }
+
+    GitEvidence {
+        is_repo: true,
+        top_level,
+        branch: command_text("git", ["branch", "--show-current"], target),
+        head: command_text("git", ["rev-parse", "--short", "HEAD"], target),
+        status_short: command_text("git", ["status", "--short", "--branch"], target),
+        error: None,
+    }
+}
+
+fn classify_doctor(git: &GitEvidence, probes: &[CommandProbe]) -> Verdict {
+    let mut blockers = Vec::new();
+    let mut flags = Vec::new();
+
+    if !git.is_repo {
+        blockers.push("target is not a git repository".to_string());
+    }
+
+    for required in [
+        "codex_version",
+        "codex_mcp_list",
+        "cargo_version",
+        "rustc_version",
+    ] {
+        if probe_status(probes, required) != Some("pass") {
+            blockers.push(format!("required probe failed: {required}"));
+        }
+    }
+
+    for optional in ["nix_version", "just_version", "doctl_version"] {
+        if probe_status(probes, optional) != Some("pass") {
+            flags.push(format!(
+                "frontier/runtime tool not installed locally yet: {optional}"
+            ));
+        }
+    }
+
+    canary_verdict(blockers, flags)
+}
+
+fn canary_verdict(blockers: Vec<String>, flags: Vec<String>) -> Verdict {
+    if !blockers.is_empty() {
+        Verdict {
+            status: "BLOCK".to_string(),
+            reasons: blockers,
+        }
+    } else if !flags.is_empty() {
+        Verdict {
+            status: "FLAG".to_string(),
+            reasons: flags,
+        }
+    } else {
+        Verdict {
+            status: "PASS".to_string(),
+            reasons: vec!["all Phase 1 canary checks passed".to_string()],
+        }
+    }
+}
+
+fn probe_status<'a>(probes: &'a [CommandProbe], id: &str) -> Option<&'a str> {
+    probes
+        .iter()
+        .find(|probe| probe.id == id)
+        .map(|probe| probe.status.as_str())
+}
+
+fn run_probe<I, S>(id: &str, program: &str, args: I, cwd: &Path) -> CommandProbe
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
+    let args_vec: Vec<String> = args
+        .into_iter()
+        .map(|arg| arg.as_ref().to_string_lossy().into_owned())
+        .collect();
+    let mut command = Command::new(program);
+    command.args(&args_vec).current_dir(cwd);
+
+    match command.output() {
+        Ok(output) => CommandProbe {
+            id: id.to_string(),
+            command: std::iter::once(program.to_string())
+                .chain(args_vec)
+                .collect(),
+            status: if output.status.success() {
+                "pass".to_string()
+            } else {
+                "fail".to_string()
+            },
+            exit_code: output.status.code(),
+            stdout: clean_text(&output.stdout),
+            stderr: clean_text(&output.stderr),
+        },
+        Err(error) if error.kind() == io::ErrorKind::NotFound => CommandProbe {
+            id: id.to_string(),
+            command: std::iter::once(program.to_string())
+                .chain(args_vec)
+                .collect(),
+            status: "missing".to_string(),
+            exit_code: None,
+            stdout: String::new(),
+            stderr: error.to_string(),
+        },
+        Err(error) => CommandProbe {
+            id: id.to_string(),
+            command: std::iter::once(program.to_string())
+                .chain(args_vec)
+                .collect(),
+            status: "error".to_string(),
+            exit_code: None,
+            stdout: String::new(),
+            stderr: error.to_string(),
+        },
+    }
+}
+
+fn command_text<I, S>(program: &str, args: I, cwd: &Path) -> Option<String>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
+    let output = Command::new(program)
+        .args(args)
+        .current_dir(cwd)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let text = clean_text(&output.stdout);
+    (!text.is_empty()).then_some(text)
+}
+
+fn clean_text(bytes: &[u8]) -> String {
+    let text = String::from_utf8_lossy(bytes).trim().to_string();
+    if text.len() > 12_000 {
+        format!("{}...[truncated]", &text[..12_000])
+    } else {
+        text
+    }
+}
+
+fn require_file(path: &Path, label: &str, blockers: &mut Vec<String>, notes: &mut Vec<String>) {
+    if path.is_file() {
+        notes.push(format!("{label}: {}", path.display()));
+    } else {
+        blockers.push(format!("missing {label}: {}", path.display()));
+    }
+}
+
+fn read_json_value(path: &Path) -> Result<Option<Value>> {
+    if !path.is_file() {
+        return Ok(None);
+    }
+    let data = fs::read_to_string(path).with_context(|| format!("read {}", path.display()))?;
+    let value = serde_json::from_str(&data).with_context(|| format!("parse {}", path.display()))?;
+    Ok(Some(value))
+}
+
+fn json_str<'a>(value: &'a Value, pointer: &str) -> Option<&'a str> {
+    value.pointer(pointer).and_then(Value::as_str)
+}
+
+fn json_bool(value: &Value, pointer: &str) -> Option<bool> {
+    value.pointer(pointer).and_then(Value::as_bool)
+}
+
+fn json_u64(value: &Value, pointer: &str) -> Option<u64> {
+    value.pointer(pointer).and_then(Value::as_u64)
+}
+
+fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
+    }
+    let mut data = serde_json::to_vec_pretty(value)?;
+    data.push(b'\n');
+    fs::write(path, data).with_context(|| format!("write {}", path.display()))
+}
+
+fn absolutize(path: &Path) -> Result<PathBuf> {
+    if path.is_absolute() {
+        Ok(path.to_path_buf())
+    } else {
+        Ok(std::env::current_dir()
+            .context("read current dir")?
+            .join(path))
+    }
+}
+
+fn now_utc() -> String {
+    OffsetDateTime::now_utc()
+        .format(&Rfc3339)
+        .unwrap_or_else(|_| "unknown".to_string())
+}
+
+fn render_canary_report(doctor: &DoctorEvidence, verdict: &Verdict, notes: &[String]) -> String {
+    let mut body = String::new();
+    body.push_str("# CANARY-read-only-repo-review-health\n\n");
+    body.push_str(&format!("Generated: `{}`\n\n", doctor.generated_at_utc));
+    body.push_str(&format!("Target: `{}`\n\n", doctor.target));
+    body.push_str(&format!("Host: `{}`\n\n", doctor.host));
+    body.push_str(&format!("VERDICT: `{}`\n\n", verdict.status));
+    body.push_str("## Verdict Reasons\n\n");
+    for reason in &verdict.reasons {
+        body.push_str(&format!("- {reason}\n"));
+    }
+    body.push_str("\n## Evidence\n\n");
+    body.push_str(&format!(
+        "- Git repo: `{}` branch `{}` head `{}`\n",
+        doctor.git.top_level.as_deref().unwrap_or("missing"),
+        doctor.git.branch.as_deref().unwrap_or("unknown"),
+        doctor.git.head.as_deref().unwrap_or("unknown")
+    ));
+    for note in notes {
+        body.push_str(&format!("- {note}\n"));
+    }
+    body.push_str(
+        "- Generated doctor JSON: `docs/remote-workhorse/phase1/evidence/current/doctor.json`\n",
+    );
+    body.push_str("\n## Probe Summary\n\n");
+    for probe in &doctor.probes {
+        body.push_str(&format!(
+            "- `{}`: `{}` exit `{:?}`\n",
+            probe.id, probe.status, probe.exit_code
+        ));
+    }
+    body.push_str("\n## Next Repair Cards\n\n");
+    if verdict.status == "PASS" {
+        body.push_str("- None.\n");
+    } else {
+        body.push_str("- Register this repository in code-review-graph before making graph-dependent review claims.\n");
+        body.push_str("- Install or remote-provision Nix/just/doctl before claiming full remote workhorse readiness.\n");
+        body.push_str(
+            "- Add a durable Research Vault note for the accepted Remote Workhorse design.\n",
+        );
+    }
+    body
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn canary_blocks_before_flags() {
+        let verdict = canary_verdict(vec!["missing proof".into()], vec!["optional".into()]);
+        assert_eq!(verdict.status, "BLOCK");
+        assert_eq!(verdict.reasons, vec!["missing proof"]);
+    }
+
+    #[test]
+    fn canary_flags_when_no_blockers() {
+        let verdict = canary_verdict(Vec::new(), vec!["graph empty".into()]);
+        assert_eq!(verdict.status, "FLAG");
+    }
+
+    #[test]
+    fn doctor_blocks_without_git_repo() {
+        let git = GitEvidence {
+            is_repo: false,
+            top_level: None,
+            branch: None,
+            head: None,
+            status_short: None,
+            error: Some("no repo".into()),
+        };
+        let probes = required_probe_set("pass");
+        let verdict = classify_doctor(&git, &probes);
+        assert_eq!(verdict.status, "BLOCK");
+    }
+
+    #[test]
+    fn doctor_flags_missing_optional_tools() {
+        let git = GitEvidence {
+            is_repo: true,
+            top_level: Some("/tmp/repo".into()),
+            branch: Some("main".into()),
+            head: Some("abc123".into()),
+            status_short: Some("## main".into()),
+            error: None,
+        };
+        let mut probes = vec![
+            fake_probe("codex_version", "pass"),
+            fake_probe("codex_mcp_list", "pass"),
+            fake_probe("cargo_version", "pass"),
+            fake_probe("rustc_version", "pass"),
+        ];
+        probes.push(fake_probe("nix_version", "missing"));
+        probes.push(fake_probe("just_version", "missing"));
+        probes.push(fake_probe("doctl_version", "missing"));
+        let verdict = classify_doctor(&git, &probes);
+        assert_eq!(verdict.status, "FLAG");
+    }
+
+    fn required_probe_set(status: &str) -> Vec<CommandProbe> {
+        vec![
+            fake_probe("codex_version", status),
+            fake_probe("codex_mcp_list", status),
+            fake_probe("cargo_version", status),
+            fake_probe("rustc_version", status),
+            fake_probe("nix_version", status),
+            fake_probe("just_version", status),
+            fake_probe("doctl_version", status),
+        ]
+    }
+
+    fn fake_probe(id: &str, status: &str) -> CommandProbe {
+        CommandProbe {
+            id: id.to_string(),
+            command: vec![id.to_string()],
+            status: status.to_string(),
+            exit_code: Some(0),
+            stdout: String::new(),
+            stderr: String::new(),
+        }
+    }
+}

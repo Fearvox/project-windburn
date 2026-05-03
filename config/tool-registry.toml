@@ -1,0 +1,77 @@
+# Tool registry for Remote Workhorse Phase 1.
+# This is policy and routing metadata, not a secrets file.
+
+[policy]
+phase = "remote-workhorse.phase1"
+default_on_missing = "repair_card"
+default_verdict_on_missing_required = "BLOCK"
+default_verdict_on_missing_optional = "FLAG"
+
+[[tools]]
+id = "codex"
+class = "agent_runtime"
+required = true
+local_probe = ["codex", "--version"]
+repair = "Fix Codex CLI/runtime path before claiming local workhorse readiness."
+
+[[tools]]
+id = "codex_mcp_list"
+class = "tool_truth"
+required = true
+local_probe = ["codex", "mcp", "list"]
+repair = "Refresh Codex session or project config, then rerun mcp list."
+
+[[tools]]
+id = "research_vault"
+class = "memory_research"
+required = true
+proof_file = "docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json"
+repair = "Create RV_REPAIR_CARD with health, taxonomy, search query, error, and owner action."
+
+[[tools]]
+id = "code_review_graph"
+class = "code_graph"
+required = false
+proof_file = "docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json"
+repair = "Register the target repo and prove graph freshness before graph-dependent review claims."
+
+[[tools]]
+id = "cargo_rustc"
+class = "build_runtime"
+required = true
+local_probe = ["cargo", "--version"]
+repair = "Install or activate Rust toolchain 1.94.1."
+
+[[tools]]
+id = "nix"
+class = "frontier_remote_runtime"
+required = false
+local_probe = ["nix", "--version"]
+repair = "Install local Nix or defer to the remote NixOS cell provisioning slice."
+
+[[tools]]
+id = "just"
+class = "operator_ergonomics"
+required = false
+local_probe = ["just", "--version"]
+repair = "Install just or use scripts/check.sh fallback."
+
+[[tools]]
+id = "doctl"
+class = "cloud_operator"
+required = false
+local_probe = ["doctl", "version"]
+repair = "Install doctl and authenticate only when remote provisioning is in scope."
+
+[[disabled_by_design]]
+id = "figma"
+reason = "Not required for Phase 1 runtime evidence."
+
+[[disabled_by_design]]
+id = "notion"
+reason = "Avoid adding private workspace dependency to runtime proof path."
+
+[[disabled_by_design]]
+id = "cloudflare-api"
+reason = "Cloud-provider writes require explicit operator approval."
+

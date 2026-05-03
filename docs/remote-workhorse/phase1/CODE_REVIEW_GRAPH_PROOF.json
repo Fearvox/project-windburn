@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-05-03T03:41:23Z",
+  "status": "ok",
+  "tool": "mcp__code_review_graph__.list_repos_tool",
+  "registered_repository_count": 0,
+  "repos": [],
+  "bootstrap_required": true,
+  "verdict": {
+    "status": "FLAG",
+    "reason": "code-review-graph is configured but cannot support target-specific review until this repo is registered and freshness is proven."
+  }
+}
+

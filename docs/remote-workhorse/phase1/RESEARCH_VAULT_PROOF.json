@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-05-03T03:41:23Z",
+  "status": "reachable_by_mcp",
+  "health": {
+    "total": 110,
+    "analyzed": 55,
+    "deep": 44,
+    "shallow": 6,
+    "dormant": 5,
+    "pending_raw": 38
+  },
+  "taxonomy_categories": {
+    "ai-agents/memory-systems": 15,
+    "ai-agents/multi-agent": 0,
+    "software-engineering/architecture": 4,
+    "software-engineering/devtools": 2,
+    "software-engineering/retrieval": 7,
+    "software-engineering/security": 6
+  },
+  "search_probe": {
+    "query": "remote workhorse tool registry runtime evidence Research Vault MCP",
+    "limit": 5,
+    "total": 0,
+    "results": []
+  },
+  "durable_note_required": true,
+  "verdict": {
+    "status": "FLAG",
+    "reason": "Research Vault is alive, but the exact accepted Remote Workhorse design is not yet a durable vault note."
+  }
+}
+

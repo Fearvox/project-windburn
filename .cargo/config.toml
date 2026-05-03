@@ -1,0 +1,7 @@
+[alias]
+runtime-doctor = "run -p runtimectl -- doctor"
+runtime-canary = "run -p runtimectl -- canary"
+
+[term]
+verbose = false
+

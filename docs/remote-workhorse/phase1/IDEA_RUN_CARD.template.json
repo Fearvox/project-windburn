@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "idea_id": "IDEA-YYYYMMDD-slug",
+  "created_at_utc": "YYYY-MM-DDTHH:MM:SSZ",
+  "operator_intent": {
+    "one_sentence": "",
+    "pressure_level": "normal|high|emergency",
+    "success_means": []
+  },
+  "source_of_truth": {
+    "repo": "",
+    "cwd": "",
+    "branch": "",
+    "issue_or_thread": "",
+    "latest_live_checks": []
+  },
+  "tool_selection": {
+    "required": [],
+    "optional": [],
+    "disabled_by_design": [],
+    "repair_cards": []
+  },
+  "context_checks": {
+    "research_vault": {
+      "status": "unchecked|used|repair_carded",
+      "proof_file": ""
+    },
+    "code_review_graph": {
+      "status": "unchecked|used|bootstrap_required|repair_carded",
+      "proof_file": ""
+    },
+    "external_docs": []
+  },
+  "execution_plan": {
+    "bounded_scope": "",
+    "commands": [],
+    "expected_artifacts": []
+  },
+  "evidence": {
+    "host": "",
+    "run_id": "",
+    "commands": [],
+    "artifacts": [],
+    "exit_statuses": []
+  },
+  "verdict": {
+    "status": "PASS|FLAG|BLOCK",
+    "summary": "",
+    "next_repair_action": ""
+  }
+}
+
