@@ -15,7 +15,8 @@ Read order for a new agent:
 11. `preflight/DIGITALOCEAN_HOST_SELECTION_CARD.md`
 12. `preflight/REMOTE_HOST_PROOF.md`
 13. `preflight/NIXOS_CONVERSION_RUNBOOK.md`
+14. `preflight/NIXOS_STAGE_PROOF.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
-and base snapshot proven, while the remaining NixOS conversion mutation still
-sits behind its own explicit gate.
+and base snapshot proven. The NixOS install is staged on the remote host with
+`NO_REBOOT=1`; the remaining mutation is the guarded lustrate reboot gate.

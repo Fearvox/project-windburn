@@ -2,7 +2,7 @@
 
 Generated: `2026-05-03T08:31:29Z`
 
-Status: `BASE_HOST_SNAPSHOT_PROVED`
+Status: `BASE_HOST_SNAPSHOT_PROVED_AND_NIXOS_STAGED`
 
 This document records the read-only proof for the first Windburn remote
 workhorse candidate. It contains no DigitalOcean token value.
@@ -104,5 +104,13 @@ preflight: PASS
 
 ## Next Gate
 
-The NixOS conversion gate can begin. NixOS conversion is a destructive remote
-OS mutation and requires its own explicit confirmation before execution.
+The NixOS conversion stage has completed without reboot. The next gate is the
+reboot-only lustration step:
+
+```sh
+scripts/nixos-lustrate-reboot.sh
+```
+
+Full stage proof:
+
+- `docs/remote-workhorse/preflight/NIXOS_STAGE_PROOF.md`

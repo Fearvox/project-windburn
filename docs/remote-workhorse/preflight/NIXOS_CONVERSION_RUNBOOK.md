@@ -2,7 +2,7 @@
 
 Updated: 2026-05-03
 
-Status: `DRY_RUN_PASS_READY_FOR_OPERATOR_CONFIRMATION`
+Status: `STAGED_READY_FOR_LUSTRATE_REBOOT`
 
 This runbook prepares the destructive conversion from the proven Ubuntu base
 host to NixOS. The conversion must not run without explicit action-time
@@ -82,7 +82,7 @@ result=remote host was not modified
 
 ## Apply Gate
 
-The staging command is:
+The staging command has completed successfully:
 
 ```sh
 scripts/nixos-conversion.sh \
@@ -94,16 +94,42 @@ scripts/nixos-conversion.sh \
 This runs `nixos-infect` with `NO_REBOOT=1`, so the install is staged and logs
 are captured before the reboot that triggers lustration.
 
-The one-shot stage plus reboot command is:
+Stage proof:
+
+- `stage_complete=1`
+- `/etc/NIXOS=present`
+- `/etc/NIXOS_LUSTRATE=present`
+- `/nix/var/nix/profiles/system=present`
+- System profile:
+  `/nix/store/ld2nxfda2l2yjnrgdq5q5nx33bb6c0yx-nixos-system-windburn-workhorse-nyc1-25.11.10031.755f5aa91337`
+- The host is still running Ubuntu 24.04.3 on Linux 6.8.0, so the lustrate
+  reboot has not happened.
+
+Full proof: `docs/remote-workhorse/preflight/NIXOS_STAGE_PROOF.md`
+
+## Lustrate Reboot Gate
+
+The next command is reboot-only. It must be used instead of rerunning
+`scripts/nixos-conversion.sh` because the install is already staged.
+
+Dry-run:
 
 ```sh
-scripts/nixos-conversion.sh \
-  --apply \
-  --confirm-destructive-nixos-conversion \
-  --confirm-snapshot-id 227115138 \
-  --reboot-after-stage \
-  --confirm-lustrate-reboot
+scripts/nixos-lustrate-reboot.sh
 ```
+
+Apply:
+
+```sh
+scripts/nixos-lustrate-reboot.sh \
+  --apply \
+  --confirm-lustrate-reboot \
+  --confirm-snapshot-id 227115138
+```
+
+The script proves the staged state first, triggers a DigitalOcean reboot only
+after explicit confirmation, waits for SSH to return, verifies `ID=nixos`, and
+records whether SSH host keys changed.
 
 ## Recovery
 

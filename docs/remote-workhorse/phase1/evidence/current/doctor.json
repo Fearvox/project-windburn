@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T05:01:32.638102Z",
+  "generated_at_utc": "2026-05-03T09:11:54.449678Z",
   "host": "deMacBook-Pro.local",
   "invocation_cwd": "/Users/0xvox/Windburn",
   "target": "/Users/0xvox/Windburn/.",
@@ -8,8 +8,8 @@
     "is_repo": true,
     "top_level": "/Users/0xvox/Windburn",
     "branch": "main",
-    "head": "0449241",
-    "status_short": "## main",
+    "head": "419ec32",
+    "status_short": "## main\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/preflight/NIXOS_CONVERSION_RUNBOOK.md\n M docs/remote-workhorse/preflight/REMOTE_HOST_PROOF.md\n M docs/remote-workhorse/preflight/evidence/current/doctor.json\n?? docs/remote-workhorse/preflight/NIXOS_STAGE_PROOF.md\n?? scripts/nixos-lustrate-reboot.sh",
     "error": null
   },
   "probes": [
@@ -99,7 +99,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "Hermes Agent v0.12.0 (2026.4.30)\nProject: /Users/0xvox/.hermes/hermes-agent\nPython: 3.11.14\nOpenAI SDK: 2.30.0\nUpdate available: 81 commits behind — run 'hermes update'",
+      "stdout": "Hermes Agent v0.12.0 (2026.4.30)\nProject: /Users/0xvox/.hermes/hermes-agent\nPython: 3.11.14\nOpenAI SDK: 2.30.0\nUpdate available: 83 commits behind — run 'hermes update'",
       "stderr": ""
     },
     {
@@ -169,7 +169,7 @@
       "status": "pass",
       "exit_code": 0,
       "stdout": "",
-      "stderr": "time=\"2026-05-03T01:01:32-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T01:01:32-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T01:01:32-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T01:01:32-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T01:01:32-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T01:01:32-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
+      "stderr": "time=\"2026-05-03T05:11:54-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T05:11:54-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T05:11:54-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T05:11:54-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T05:11:54-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T05:11:54-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
     },
     {
       "id": "just_version",
