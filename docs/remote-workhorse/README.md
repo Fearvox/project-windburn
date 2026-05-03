@@ -17,7 +17,13 @@ Read order for a new agent:
 13. `preflight/NIXOS_CONVERSION_RUNBOOK.md`
 14. `preflight/NIXOS_STAGE_PROOF.md`
 15. `preflight/NIXOS_BOOT_PROOF.md`
+16. `preflight/NIXOS_FOUNDATION_PROOF.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
 and base snapshot proven. The staged NixOS install has completed its guarded
 lustrate reboot and is now booted as NixOS 25.11.
+
+Remote NixOS updates use `scripts/nixos-remote-rebuild.sh`; run dry-run first,
+then `--mode test`, and only use `--mode switch` after the test proof is clean.
+The first foundation switch, reboot persistence proof, and post-foundation
+snapshot are recorded in `preflight/NIXOS_FOUNDATION_PROOF.md`.

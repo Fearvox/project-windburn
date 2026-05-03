@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T09:30:20.260555Z",
+  "generated_at_utc": "2026-05-03T10:57:49.211495Z",
   "host": "deMacBook-Pro.local",
   "invocation_cwd": "/Users/0xvox/Windburn",
   "target": "/Users/0xvox/Windburn/.",
@@ -8,8 +8,8 @@
     "is_repo": true,
     "top_level": "/Users/0xvox/Windburn",
     "branch": "main",
-    "head": "63fadcd",
-    "status_short": "## main\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n M docs/remote-workhorse/preflight/NIXOS_CONVERSION_RUNBOOK.md\n M docs/remote-workhorse/preflight/NIXOS_STAGE_PROOF.md\n M docs/remote-workhorse/preflight/REMOTE_HOST_PROOF.md\n M docs/remote-workhorse/preflight/REMOTE_NIXOS_PREFLIGHT.md\n M docs/remote-workhorse/preflight/evidence/current/doctor.json\n M docs/remote-workhorse/preflight/evidence/current/preflight.json\n M scripts/nixos-lustrate-reboot.sh\n?? docs/remote-workhorse/preflight/NIXOS_BOOT_PROOF.md",
+    "head": "eb07310",
+    "status_short": "## main\n M AGENTS.md\n M README.md\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/preflight/NIXOS_BOOT_PROOF.md\n M docs/remote-workhorse/preflight/REMOTE_NIXOS_PREFLIGHT.md\n M docs/remote-workhorse/preflight/evidence/current/doctor.json\n M docs/remote-workhorse/preflight/evidence/current/preflight.json\n M justfile\n M nixos/hosts/windburn-workhorse-nyc1/windburn-workhorse.nix\n?? docs/remote-workhorse/preflight/NIXOS_FOUNDATION_PROOF.md\n?? nixos/hosts/windburn-workhorse-nyc1/modules/\n?? scripts/nixos-remote-rebuild.sh",
     "error": null
   },
   "probes": [
@@ -169,7 +169,7 @@
       "status": "pass",
       "exit_code": 0,
       "stdout": "",
-      "stderr": "time=\"2026-05-03T05:30:20-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T05:30:20-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T05:30:20-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T05:30:20-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T05:30:20-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T05:30:20-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
+      "stderr": "time=\"2026-05-03T06:57:49-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T06:57:49-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T06:57:49-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T06:57:49-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T06:57:49-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T06:57:49-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
     },
     {
       "id": "just_version",

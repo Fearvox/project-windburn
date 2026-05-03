@@ -1,6 +1,6 @@
 # CANARY-read-only-repo-review-health
 
-Generated: `2026-05-03T09:30:20.260555Z`
+Generated: `2026-05-03T10:57:49.211495Z`
 
 Target: `/Users/0xvox/Windburn/.`
 
@@ -14,7 +14,7 @@ VERDICT: `PASS`
 
 ## Evidence
 
-- Git repo: `/Users/0xvox/Windburn` branch `main` run-time head `63fadcd`
+- Git repo: `/Users/0xvox/Windburn` branch `main` run-time head `eb07310`
 - tool inventory: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/TOOL_INVENTORY.json
 - Research Vault proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json
 - code-review-graph proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json

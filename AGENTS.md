@@ -8,9 +8,11 @@ The first active design is:
 ## Current Scope
 
 Phase 1 is contract-first infrastructure plus the first proven DigitalOcean
-base host and snapshot. Build artifacts, evidence templates, local canaries,
-and operator docs must let a new agent rerun the same workflow. The next remote
-mutation is NixOS conversion, and it requires its own explicit confirmation.
+NixOS workhorse. Build artifacts, evidence templates, local canaries, and
+operator docs must let a new agent rerun the same workflow. Remote NixOS
+mutations go through `scripts/nixos-remote-rebuild.sh`, with `test` before
+`switch`. The first foundation layer is proven in
+`docs/remote-workhorse/preflight/NIXOS_FOUNDATION_PROOF.md`.
 
 ## Worktree Convention
 
@@ -36,5 +38,6 @@ Run these before closeout when the relevant tooling exists:
 scripts/check.sh
 git diff --check
 scripts/digitalocean-snapshot.sh
+scripts/nixos-remote-rebuild.sh
 git status --short --branch
 ```

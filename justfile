@@ -27,6 +27,15 @@ nixos-conversion-dry-run:
 nixos-conversion-apply:
     scripts/nixos-conversion.sh --apply --confirm-destructive-nixos-conversion --confirm-snapshot-id 227115138
 
+nixos-rebuild-dry-run:
+    scripts/nixos-remote-rebuild.sh
+
+nixos-rebuild-test:
+    scripts/nixos-remote-rebuild.sh --apply --confirm-remote-nixos-rebuild --mode test
+
+nixos-rebuild-switch:
+    scripts/nixos-remote-rebuild.sh --apply --confirm-remote-nixos-rebuild --mode switch
+
 multica-cache-dry-run:
     scripts/multica-codex-cache-janitor.sh
 

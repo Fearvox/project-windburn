@@ -4,6 +4,10 @@ let
   operatorKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEttY1KlSQZK3jMZSWHSGYWe/Or87mYX3RgnCFG9CDmX 0xvox@deMacBook-Pro.local";
 in
 {
+  imports = [
+    ./modules/remote-workhorse-foundation.nix
+  ];
+
   # nixos-infect owns boot, hardware, network, hostname, and stateVersion
   # during first boot. This import only adds operator/runtime policy.
   time.timeZone = "UTC";
@@ -33,9 +37,15 @@ in
 
   users.users.windburn = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    group = "windburn";
+    extraGroups = [
+      "wheel"
+      "systemd-journal"
+    ];
     openssh.authorizedKeys.keys = [ operatorKey ];
   };
+
+  users.groups.windburn = { };
 
   security.sudo.wheelNeedsPassword = false;
 
@@ -53,19 +63,29 @@ in
   };
 
   environment.systemPackages = with pkgs; [
+    age
+    btop
     curl
     fd
     gcc
+    gh
     git
     gnumake
     htop
+    iotop
     jq
+    just
+    lsof
     nodejs
+    nix-output-monitor
+    nvd
     openssl
     pkg-config
     python3
     ripgrep
     rsync
+    sops
+    strace
     tmux
     vim
     wget

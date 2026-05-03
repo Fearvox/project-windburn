@@ -105,12 +105,14 @@ set changed during the OS transition.
 
 ## Next Gate
 
-The remote base OS is now ready for higher-level workhorse provisioning:
+The remote base OS has moved through the first foundation provisioning layer.
+See `docs/remote-workhorse/preflight/NIXOS_FOUNDATION_PROOF.md`.
 
-- harden NixOS service modules for the actual agent stack,
+Remaining next work:
+
 - wire Hermes/Codex provider secrets through a guarded secret path,
-- add monitoring, snapshot, and rollback routines,
-- run the first remote Hermes/Codex smoke.
+- run the first remote Hermes/Codex smoke,
+- add DigitalOcean monitoring once the service shape is known.
 
 The reboot guard is idempotent after success: if run again, it detects
 `remote_state=already_nixos` and exits without triggering another reboot.

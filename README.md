@@ -12,6 +12,7 @@ scripts/preflight.sh
 scripts/remote-host-proof.sh
 scripts/digitalocean-snapshot.sh
 scripts/nixos-conversion.sh
+scripts/nixos-remote-rebuild.sh
 scripts/multica-codex-cache-janitor.sh
 ```
 
@@ -27,6 +28,7 @@ just check
 just remote-proof
 just snapshot-dry-run
 just nixos-conversion-dry-run
+just nixos-rebuild-dry-run
 ```
 
 ## Repo Map
@@ -38,12 +40,14 @@ just nixos-conversion-dry-run
 - `flake.nix` - Nix dev shell/build scaffold for the later remote workhorse cell.
 - `docs/remote-workhorse/preflight/` - gates before Computer Use touches remote NixOS.
 - `nixos/hosts/windburn-workhorse-nyc1/` - first-boot NixOS host import.
+- `scripts/nixos-remote-rebuild.sh` - guarded remote NixOS test/switch deploy.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary
 
-This repo now has a fresh DigitalOcean base host selected and proven:
+This repo now has a DigitalOcean workhorse booted as NixOS 25.11:
 `windburn-workhorse-nyc1` (`568689911`, `24.144.113.25`) plus base snapshot
-`227115138`. The next mutation gate is a separately confirmed NixOS conversion.
-Phase 1 still succeeds only when a new agent can rerun the proof path, see
-which tools are usable, and return `PASS`, `FLAG`, or `BLOCK` without guesswork.
+`227115138` and foundation snapshot `227116767`. Remote NixOS changes go
+through `nixos-rebuild test` before `switch`. Phase 1 still succeeds only when a
+new agent can rerun the proof path, see which tools are usable, and return
+`PASS`, `FLAG`, or `BLOCK` without guesswork.
