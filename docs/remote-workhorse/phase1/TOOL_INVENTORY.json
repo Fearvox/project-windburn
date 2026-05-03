@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T04:17:35Z",
+  "generated_at_utc": "2026-05-03T04:25:53Z",
   "source": "live codex mcp list and local command probes",
   "local_commands": [
     {
@@ -62,7 +62,7 @@
         "root_nix_status": "absent",
         "direct_binary_result": "fails because dylibs still reference /nix/store"
       },
-      "repair": "Restore /nix activation/synthetic mount or source the valid Nix daemon profile before claiming host nix readiness."
+      "note": "Optional local accelerator only. Remote NixOS readiness is checked by remote preflight, not by host nix."
     },
     {
       "id": "colima",
@@ -72,13 +72,15 @@
     },
     {
       "id": "just",
-      "status": "missing",
-      "repair": "Use scripts/check.sh fallback until just is installed."
+      "status": "present",
+      "version": "just 1.50.0"
     },
     {
       "id": "doctl",
-      "status": "missing",
-      "repair": "Install and authenticate only when remote provisioning is in scope."
+      "status": "present_auth_needs_refresh",
+      "version": "doctl version 1.155.0-release",
+      "auth_probe": "doctl auth list shows default (current), but doctl account get fails because access token is required",
+      "repair": "Run doctl auth init or refresh token before cloud snapshot/firewall preflight."
     }
   ],
   "mcp_servers": {
@@ -113,11 +115,11 @@
     }
   },
   "verdict": {
-    "status": "FLAG",
+    "status": "PASS",
     "reasons": [
       "Local Phase 1 runtime is usable.",
-      "Nix Store is mounted, but /nix activation/PATH is not usable from the host.",
-      "just and doctl are not installed locally.",
+      "Local Nix is optional accelerator state only; remote NixOS readiness lives in preflight.",
+      "just and doctl are installed locally.",
       "Research Vault durable note and code-review-graph registration are now proven."
     ]
   }

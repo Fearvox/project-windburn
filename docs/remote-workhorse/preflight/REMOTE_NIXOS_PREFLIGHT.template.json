@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "run_id": "remote-nixos-preflight-YYYYMMDD-HHMMSS",
+  "operator_goal": "Configure the remote NixOS workhorse only after read-only proof gates pass.",
+  "local_control_plane": {
+    "repo": "/Users/0xvox/Windburn",
+    "expected_branch": "main",
+    "commands": [
+      "scripts/check.sh",
+      "scripts/preflight.sh",
+      "uvx code-review-graph status --repo /Users/0xvox/Windburn"
+    ]
+  },
+  "required_preflight_gates": [
+    {
+      "id": "local_repo_clean",
+      "kind": "local",
+      "command": "git status --short --branch",
+      "pass_condition": "branch is main and no dirty tracked files"
+    },
+    {
+      "id": "tool_truth",
+      "kind": "local",
+      "command": "codex mcp list",
+      "pass_condition": "required MCPs are enabled or explicitly repair-carded"
+    },
+    {
+      "id": "research_vault",
+      "kind": "mcp",
+      "command": "vault_search Windburn Remote Workhorse Phase 1 contract-first canary",
+      "pass_condition": "durable note is searchable"
+    },
+    {
+      "id": "code_review_graph",
+      "kind": "mcp",
+      "command": "cross_repo_search runtimectl",
+      "pass_condition": "repo windburn is searchable"
+    },
+    {
+      "id": "cloud_read_auth",
+      "kind": "cloud",
+      "command": "doctl account get --format Status --no-header",
+      "pass_condition": "read-only account probe succeeds"
+    },
+    {
+      "id": "remote_host_identity",
+      "kind": "remote_read_only",
+      "command": "hostnamectl; cat /etc/os-release; uname -a",
+      "pass_condition": "host identity and OS are captured"
+    },
+    {
+      "id": "remote_nix_truth",
+      "kind": "remote_read_only",
+      "command": "nix --version; nix flake metadata --json",
+      "pass_condition": "remote Nix is callable and flake metadata resolves"
+    },
+    {
+      "id": "backout_proof",
+      "kind": "safety",
+      "command": "cloud snapshot or rollback plan proof",
+      "pass_condition": "operator can roll back before mutation"
+    }
+  ],
+  "computer_use_entry_rule": "Start with read-only host/OS/Nix proof. Do not mutate remote state until preflight gates are PASS or explicitly accepted with a repair card.",
+  "verdict": "PASS|FLAG|BLOCK"
+}
+

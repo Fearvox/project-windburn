@@ -87,9 +87,11 @@ readiness without evidence.
 
 - `nix` is not on the host PATH. `/Volumes/Nix Store` is mounted and contains
   Nix store/profile data, but `/nix` is absent, so direct Nix execution fails
-  until activation/synthetic mount repair.
-- `just` is not installed locally.
-- `doctl` is not installed locally.
+  until activation/synthetic mount repair. This is an optional local accelerator
+  state, not a remote-readiness blocker.
+- `just` is installed locally.
+- `doctl` is installed locally, but account read auth needs refresh before
+  snapshot/firewall/droplet proof.
 
 These are `FLAG` conditions for Phase 1, not blockers for the local scaffold.
 They become blockers only if a later run claims full remote workhorse readiness

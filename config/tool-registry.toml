@@ -6,6 +6,8 @@ phase = "remote-workhorse.phase1"
 default_on_missing = "repair_card"
 default_verdict_on_missing_required = "BLOCK"
 default_verdict_on_missing_optional = "FLAG"
+local_nix_role = "optional_accelerator"
+remote_nix_role = "remote_preflight_required"
 
 [[tools]]
 id = "codex"
@@ -62,6 +64,24 @@ class = "cloud_operator"
 required = false
 local_probe = ["doctl", "version"]
 repair = "Install doctl and authenticate only when remote provisioning is in scope."
+
+[[preflight_gates]]
+id = "doctl_account_read"
+required_before = "cloud_snapshot_or_firewall_change"
+probe = ["doctl", "account", "get", "--format", "Status", "--no-header"]
+repair = "Refresh doctl auth before relying on DigitalOcean account, snapshot, firewall, or droplet evidence."
+
+[[preflight_gates]]
+id = "remote_host_identity"
+required_before = "computer_use_mutation"
+probe = ["hostnamectl", "cat /etc/os-release", "uname -a"]
+repair = "Set WINDBURN_REMOTE_HOST and capture read-only host identity before mutation."
+
+[[preflight_gates]]
+id = "remote_nix_truth"
+required_before = "nixos_rebuild"
+probe = ["nix --version", "nix flake metadata --json"]
+repair = "Do not run nixos-rebuild until remote Nix and flake metadata are proven."
 
 [[disabled_by_design]]
 id = "figma"

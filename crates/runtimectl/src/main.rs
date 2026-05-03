@@ -39,6 +39,23 @@ enum Commands {
         )]
         report: PathBuf,
     },
+    /// Run local gates required before touching a remote NixOS workhorse.
+    Preflight {
+        #[arg(long, default_value = ".")]
+        target: PathBuf,
+        #[arg(
+            long,
+            default_value = "docs/remote-workhorse/preflight/evidence/current"
+        )]
+        evidence_dir: PathBuf,
+        #[arg(
+            long,
+            default_value = "docs/remote-workhorse/preflight/REMOTE_NIXOS_PREFLIGHT.md"
+        )]
+        report: PathBuf,
+        #[arg(long)]
+        remote_host: Option<String>,
+    },
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -79,6 +96,25 @@ struct Verdict {
     reasons: Vec<String>,
 }
 
+#[derive(Serialize, Debug, Clone)]
+struct FileCheck {
+    label: String,
+    path: String,
+    exists: bool,
+}
+
+#[derive(Serialize, Debug, Clone)]
+struct RemotePreflightEvidence {
+    schema_version: u8,
+    generated_at_utc: String,
+    target: String,
+    remote_host: Option<String>,
+    doctor: DoctorEvidence,
+    files: Vec<FileCheck>,
+    probes: Vec<CommandProbe>,
+    verdict: Verdict,
+}
+
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
@@ -96,6 +132,20 @@ fn main() -> Result<()> {
         } => {
             let verdict = run_canary(&target, &evidence_dir, &report)?;
             print_verdict("canary", &verdict);
+        }
+        Commands::Preflight {
+            target,
+            evidence_dir,
+            report,
+            remote_host,
+        } => {
+            let evidence = run_preflight(
+                &target,
+                &evidence_dir,
+                &report,
+                remote_host.or_else(|| std::env::var("WINDBURN_REMOTE_HOST").ok()),
+            )?;
+            print_verdict("preflight", &evidence.verdict);
         }
     }
     Ok(())
@@ -229,6 +279,119 @@ fn run_canary(target_arg: &Path, evidence_dir_arg: &Path, report_arg: &Path) -> 
     Ok(verdict)
 }
 
+fn run_preflight(
+    target_arg: &Path,
+    evidence_dir_arg: &Path,
+    report_arg: &Path,
+    remote_host: Option<String>,
+) -> Result<RemotePreflightEvidence> {
+    let target = absolutize(target_arg)?;
+    let evidence_dir = absolutize(evidence_dir_arg)?;
+    let report = absolutize(report_arg)?;
+    fs::create_dir_all(&evidence_dir)
+        .with_context(|| format!("create preflight evidence dir {}", evidence_dir.display()))?;
+
+    let doctor = run_doctor(&target, &evidence_dir)?;
+    let files = vec![
+        file_check(
+            &target,
+            "approved design",
+            "docs/remote-workhorse/0xvox-unknown-design-20260502-222759.md",
+        ),
+        file_check(
+            &target,
+            "context summary",
+            "docs/remote-workhorse/CONTEXT-2026-05-02-evening.md",
+        ),
+        file_check(&target, "tool registry", "config/tool-registry.toml"),
+        file_check(&target, "flake scaffold", "flake.nix"),
+        file_check(
+            &target,
+            "Research Vault proof",
+            "docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json",
+        ),
+        file_check(
+            &target,
+            "code-review-graph proof",
+            "docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json",
+        ),
+        file_check(
+            &target,
+            "external index",
+            "docs/external-indexes/frontier-runtime-repos.md",
+        ),
+    ];
+    let probes = vec![
+        run_probe("just_list", "just", ["--list"], &target),
+        run_probe("doctl_auth_list", "doctl", ["auth", "list"], &target),
+        run_probe(
+            "doctl_account_status",
+            "doctl",
+            ["account", "get", "--format", "Status", "--no-header"],
+            &target,
+        ),
+    ];
+
+    let mut blockers = Vec::new();
+    let mut flags = Vec::new();
+
+    if doctor.verdict.status == "BLOCK" {
+        blockers.extend(doctor.verdict.reasons.clone());
+    } else if doctor.verdict.status == "FLAG" {
+        flags.extend(doctor.verdict.reasons.clone());
+    }
+
+    for file in &files {
+        if !file.exists {
+            blockers.push(format!("missing required preflight file: {}", file.path));
+        }
+    }
+
+    if remote_host.as_deref().unwrap_or_default().trim().is_empty() {
+        flags.push(
+            "remote host not selected; set WINDBURN_REMOTE_HOST or pass --remote-host before Computer Use"
+                .to_string(),
+        );
+    }
+
+    if probe_status(&probes, "doctl_account_status") != Some("pass") {
+        flags.push(
+            "DigitalOcean account read probe failed; refresh doctl auth before cloud snapshot/firewall checks"
+                .to_string(),
+        );
+    }
+
+    let verdict = canary_verdict(blockers, flags);
+    let evidence = RemotePreflightEvidence {
+        schema_version: 1,
+        generated_at_utc: now_utc(),
+        target: target.display().to_string(),
+        remote_host,
+        doctor,
+        files,
+        probes,
+        verdict,
+    };
+
+    write_json(&evidence_dir.join("preflight.json"), &evidence)?;
+    if let Some(parent) = report.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("create preflight report dir {}", parent.display()))?;
+    }
+    fs::write(&report, render_preflight_report(&evidence))
+        .with_context(|| format!("write preflight report {}", report.display()))?;
+    Ok(evidence)
+}
+
+fn file_check(target: &Path, label: &str, relative_path: &str) -> FileCheck {
+    let path = target.join(relative_path);
+    FileCheck {
+        label: label.to_string(),
+        path: relative_path.to_string(),
+        exists: path.is_file(),
+    }
+}
+
 fn collect_git(target: &Path) -> GitEvidence {
     let top_level = command_text("git", ["rev-parse", "--show-toplevel"], target);
     if top_level.is_none() {
@@ -268,27 +431,6 @@ fn classify_doctor(git: &GitEvidence, probes: &[CommandProbe]) -> Verdict {
     ] {
         if probe_status(probes, required) != Some("pass") {
             blockers.push(format!("required probe failed: {required}"));
-        }
-    }
-
-    if probe_status(probes, "nix_version") != Some("pass") {
-        match (
-            probe_status(probes, "nix_store_volume"),
-            probe_status(probes, "nix_profile_volume"),
-            probe_status(probes, "nix_root_mount"),
-        ) {
-            (Some("pass"), Some("pass"), Some("pass")) => {
-                flags.push(
-                    "Nix store/profile paths exist, but nix is not on the current PATH".to_string(),
-                );
-            }
-            (Some("pass"), Some("pass"), _) => {
-                flags.push(
-                    "Nix Store volume is mounted at /Volumes/Nix Store, but /nix activation path is absent".to_string(),
-                );
-            }
-            _ => flags
-                .push("frontier/runtime tool not installed locally yet: nix_version".to_string()),
         }
     }
 
@@ -530,6 +672,82 @@ fn render_canary_report(doctor: &DoctorEvidence, verdict: &Verdict, notes: &[Str
     body
 }
 
+fn render_preflight_report(evidence: &RemotePreflightEvidence) -> String {
+    let mut body = String::new();
+    body.push_str("# REMOTE_NIXOS_PREFLIGHT\n\n");
+    body.push_str(&format!("Generated: `{}`\n\n", evidence.generated_at_utc));
+    body.push_str(&format!("Target: `{}`\n\n", evidence.target));
+    body.push_str(&format!(
+        "Remote Host: `{}`\n\n",
+        evidence.remote_host.as_deref().unwrap_or("unset")
+    ));
+    body.push_str(&format!("VERDICT: `{}`\n\n", evidence.verdict.status));
+
+    body.push_str("## Verdict Reasons\n\n");
+    for reason in &evidence.verdict.reasons {
+        body.push_str(&format!("- {reason}\n"));
+    }
+
+    body.push_str("\n## Gates\n\n");
+    body.push_str("| Gate | Status | Evidence |\n");
+    body.push_str("| --- | --- | --- |\n");
+    body.push_str(&format!(
+        "| Local conductor doctor | `{}` | `docs/remote-workhorse/preflight/evidence/current/doctor.json` |\n",
+        evidence.doctor.verdict.status
+    ));
+    body.push_str(&format!(
+        "| Required files | `{}` | `{}/{} present` |\n",
+        if evidence.files.iter().all(|file| file.exists) {
+            "PASS"
+        } else {
+            "BLOCK"
+        },
+        evidence.files.iter().filter(|file| file.exists).count(),
+        evidence.files.len()
+    ));
+    body.push_str(&format!(
+        "| DigitalOcean read auth | `{}` | `doctl_account_status` |\n",
+        probe_status(&evidence.probes, "doctl_account_status").unwrap_or("missing")
+    ));
+    body.push_str(&format!(
+        "| Remote host selected | `{}` | `{}` |\n",
+        if evidence.remote_host.is_some() {
+            "PASS"
+        } else {
+            "FLAG"
+        },
+        evidence.remote_host.as_deref().unwrap_or("unset")
+    ));
+    body.push_str("| Computer Use mutation gate | `PENDING` | Run only after this preflight is PASS or consciously accepted. |\n");
+    body.push_str("| Remote NixOS mutation gate | `PENDING` | First remote command must be read-only host/OS/Nix proof. |\n");
+
+    body.push_str("\n## Local Probe Summary\n\n");
+    for probe in &evidence.doctor.probes {
+        body.push_str(&format!(
+            "- `{}`: `{}` exit `{:?}`\n",
+            probe.id, probe.status, probe.exit_code
+        ));
+    }
+
+    body.push_str("\n## Cloud Probe Summary\n\n");
+    for probe in &evidence.probes {
+        body.push_str(&format!(
+            "- `{}`: `{}` exit `{:?}`\n",
+            probe.id, probe.status, probe.exit_code
+        ));
+    }
+
+    body.push_str("\n## Computer Use Entry Rules\n\n");
+    body.push_str("- Start read-only: host identity, OS release, kernel, uptime, disk, memory, users, services.\n");
+    body.push_str("- Capture command, exit status, and artifact path for every step.\n");
+    body.push_str("- Take cloud snapshot/backout evidence before any persistent NixOS mutation.\n");
+    body.push_str("- Use `nixos-rebuild test` before `switch`; preserve rollback path.\n");
+    body.push_str(
+        "- Stop on unknown credentials, missing target host, dirty repo, or absent backout plan.\n",
+    );
+    body
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -589,7 +807,7 @@ mod tests {
     }
 
     #[test]
-    fn doctor_distinguishes_inactive_nix_store_from_missing_nix() {
+    fn doctor_treats_local_nix_as_optional_accelerator() {
         let git = GitEvidence {
             is_repo: true,
             top_level: Some("/tmp/repo".into()),
@@ -611,9 +829,9 @@ mod tests {
             fake_probe("doctl_version", "pass"),
         ];
         let verdict = classify_doctor(&git, &probes);
-        assert_eq!(verdict.status, "FLAG");
+        assert_eq!(verdict.status, "PASS");
         assert!(
-            verdict
+            !verdict
                 .reasons
                 .iter()
                 .any(|reason| reason.contains("Nix Store volume"))

@@ -9,9 +9,11 @@ doctor:
 canary:
     cargo run -p runtimectl -- canary --target . --evidence-dir docs/remote-workhorse/phase1/evidence/current --report docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md
 
+preflight:
+    scripts/preflight.sh
+
 fmt:
     cargo fmt
 
 test:
     cargo test
-
