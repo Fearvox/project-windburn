@@ -1,6 +1,6 @@
 # REMOTE_NIXOS_PREFLIGHT
 
-Generated: `2026-05-03T04:46:48.041256Z`
+Generated: `2026-05-03T04:59:41.02628Z`
 
 Target: `/Users/0xvox/Windburn/.`
 
@@ -18,9 +18,10 @@ VERDICT: `FLAG`
 | Gate | Status | Evidence |
 | --- | --- | --- |
 | Local conductor doctor | `PASS` | `docs/remote-workhorse/preflight/evidence/current/doctor.json` |
-| Required files | `PASS` | `7/7 present` |
+| Required files | `PASS` | `8/8 present` |
 | DigitalOcean read auth | `fail` | `doctl_account_status` |
 | DigitalOcean read-only inventory | `PENDING` | `0/11 probes passed` |
+| DigitalOcean managed-service reconnaissance | `PENDING` | `0/21 advisory probes passed` |
 | Remote host selected | `FLAG` | `unset` |
 | Computer Use mutation gate | `PENDING` | Run only after this preflight is PASS or consciously accepted. |
 | Remote NixOS mutation gate | `PENDING` | First remote command must be read-only host/OS/Nix proof. |
@@ -60,6 +61,27 @@ VERDICT: `FLAG`
 - `doctl_images_public`: `fail` exit `Some(1)`
 - `doctl_firewalls`: `fail` exit `Some(1)`
 - `doctl_volumes`: `fail` exit `Some(1)`
+- `doctl_projects`: `fail` exit `Some(1)`
+- `doctl_apps`: `fail` exit `Some(1)`
+- `doctl_databases`: `fail` exit `Some(1)`
+- `doctl_vpcs`: `fail` exit `Some(1)`
+- `doctl_load_balancers`: `fail` exit `Some(1)`
+- `doctl_reserved_ips`: `fail` exit `Some(1)`
+- `doctl_tags`: `fail` exit `Some(1)`
+- `doctl_registries`: `fail` exit `Some(1)`
+- `doctl_monitoring_alerts`: `fail` exit `Some(1)`
+- `doctl_uptime_checks`: `fail` exit `Some(1)`
+- `doctl_gradient_regions`: `fail` exit `Some(1)`
+- `doctl_gradient_models`: `fail` exit `Some(1)`
+- `doctl_gradient_agents`: `fail` exit `Some(1)`
+- `doctl_gradient_knowledge_bases`: `fail` exit `Some(1)`
+- `doctl_dedicated_inference_endpoints`: `fail` exit `Some(1)`
+- `doctl_dedicated_inference_sizes`: `fail` exit `Some(1)`
+- `doctl_dedicated_inference_model_config`: `fail` exit `Some(1)`
+- `doctl_serverless_namespaces`: `fail` exit `Some(1)`
+- `doctl_nfs_atl1`: `fail` exit `Some(1)`
+- `doctl_nfs_nyc2`: `fail` exit `Some(1)`
+- `doctl_nfs_ams3`: `fail` exit `Some(1)`
 
 ## DigitalOcean Read-Only Command Set
 
@@ -79,6 +101,31 @@ These commands are intentionally non-mutating and were cross-checked against the
 - Firewalls: `doctl compute firewall list --format ID,Name,Status,DropletIDs,Tags,PendingChanges --no-header`
 - Volumes: `doctl compute volume list --format ID,Name,Size,Region,DropletIDs,Tags --no-header`
 - Host key proof, after a host is selected: `ssh-keyscan -T 5 <host>` and optional `ssh-keygen -F <host>` lookup.
+
+## DigitalOcean Managed-Service Reconnaissance
+
+These probes are read-only and advisory. They map DigitalOcean's managed services into the workhorse plan without creating, updating, or deleting resources.
+
+- Projects: `doctl projects list --format ID,Name,Purpose,Environment,IsDefault --no-header`
+- App Platform: `doctl apps list --format ID,Spec.Name,DefaultIngress,ActiveDeployment.ID,Updated --no-header`
+- Managed Databases: `doctl databases list --format ID,Name,Engine,Version,Region,Status,Size,StorageMib --no-header`
+- VPCs: `doctl vpcs list --format ID,Name,IPRange,Region,Default --no-header`
+- Load Balancers: `doctl compute load-balancer list --format ID,Name,IP,IPv6,Status,Region,VPCUUID,DropletIDs,HealthCheck --no-header`
+- Reserved IPs: `doctl compute reserved-ip list --format IP,Region,DropletID,DropletName,ProjectID --no-header`
+- Tags: `doctl compute tag list --format Name,DropletCount --no-header`
+- Container Registry: `doctl registries list --format Name,Endpoint,Region --no-header`
+- Monitoring alerts: `doctl monitoring alert list --format UUID,Type,Description,Entities,Tags,Emails,Enabled --no-header`
+- Uptime checks: `doctl monitoring uptime list --format ID,Name,Type,Target,Regions,Enabled --no-header`
+- Gradient regions: `doctl gradient list-regions --format Region,ServesInference,ServesBatch --no-header`
+- Gradient models: `doctl gradient list-models --format Id,Name,isFoundational,Version --no-header`
+- Gradient agents: `doctl gradient agent list --format Id,Name,Region,Model-id,Project-id --no-header`
+- Gradient knowledge bases: `doctl gradient knowledge-base list --format UUID,Name,Region,ProjectId,DatabaseId,IsPublic,LastIndexingJob --no-header`
+- Dedicated inference endpoints: `doctl dedicated-inference list --format ID,Name,Region,Status,VPCUUID,PublicEndpoint,PrivateEndpoint --no-header`
+- Dedicated inference sizes: `doctl dedicated-inference get-sizes --format GPUSlug,PricePerHour,CPU,Memory,GPUCount,GPUVramGB,GPUModel,Regions --no-header`
+- Dedicated inference model fit: `doctl dedicated-inference get-gpu-model-config --format ModelSlug,ModelName,IsModelGated,GPUSlugs --no-header`
+- Serverless namespaces: `doctl serverless namespaces list --format Label,Region,ID,Host --no-header`
+- Network File Storage by candidate region: `doctl nfs list --region <region> --format ID,Name,Size,Region,Status,VpcIDs --no-header`
+- Spaces bucket inventory is not covered by this `doctl 1.155.0` gate because the local CLI only exposes Spaces access-key commands; use S3-compatible tooling or MCP/API after explicit scope selection.
 
 ## Auth Boundary
 

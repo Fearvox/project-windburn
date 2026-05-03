@@ -89,6 +89,33 @@ probe = [
 repair = "Keep cloud operations read-only until account auth, object inventory, firewall posture, and rollback candidates are captured."
 
 [[preflight_gates]]
+id = "doctl_managed_service_recon"
+required_before = "managed_sidecar_selection"
+advisory = true
+probe = [
+  "doctl projects list --format ID,Name,Purpose,Environment,IsDefault --no-header",
+  "doctl apps list --format ID,Spec.Name,DefaultIngress,ActiveDeployment.ID,Updated --no-header",
+  "doctl databases list --format ID,Name,Engine,Version,Region,Status,Size,StorageMib --no-header",
+  "doctl vpcs list --format ID,Name,IPRange,Region,Default --no-header",
+  "doctl compute load-balancer list --format ID,Name,IP,IPv6,Status,Region,VPCUUID,DropletIDs,HealthCheck --no-header",
+  "doctl compute reserved-ip list --format IP,Region,DropletID,DropletName,ProjectID --no-header",
+  "doctl compute tag list --format Name,DropletCount --no-header",
+  "doctl registries list --format Name,Endpoint,Region --no-header",
+  "doctl monitoring alert list --format UUID,Type,Description,Entities,Tags,Emails,Enabled --no-header",
+  "doctl monitoring uptime list --format ID,Name,Type,Target,Regions,Enabled --no-header",
+  "doctl gradient list-regions --format Region,ServesInference,ServesBatch --no-header",
+  "doctl gradient list-models --format Id,Name,isFoundational,Version --no-header",
+  "doctl gradient agent list --format Id,Name,Region,Model-id,Project-id --no-header",
+  "doctl gradient knowledge-base list --format UUID,Name,Region,ProjectId,DatabaseId,IsPublic,LastIndexingJob --no-header",
+  "doctl dedicated-inference list --format ID,Name,Region,Status,VPCUUID,PublicEndpoint,PrivateEndpoint --no-header",
+  "doctl dedicated-inference get-sizes --format GPUSlug,PricePerHour,CPU,Memory,GPUCount,GPUVramGB,GPUModel,Regions --no-header",
+  "doctl dedicated-inference get-gpu-model-config --format ModelSlug,ModelName,IsModelGated,GPUSlugs --no-header",
+  "doctl serverless namespaces list --format Label,Region,ID,Host --no-header",
+  "doctl nfs list --region <candidate-region> --format ID,Name,Size,Region,Status,VpcIDs --no-header",
+]
+repair = "Use DIGITALOCEAN_CAPABILITY_MAP.md to choose sidecars only after read-only managed-service evidence is captured or repair-carded."
+
+[[preflight_gates]]
 id = "remote_host_identity"
 required_before = "computer_use_mutation"
 probe = ["ssh-keyscan -T 5 <host>", "hostnamectl", "cat /etc/os-release", "uname -a"]

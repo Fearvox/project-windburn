@@ -129,6 +129,30 @@ const DOCTL_READ_INVENTORY_PROBE_IDS: &[&str] = &[
     "doctl_volumes",
 ];
 
+const DOCTL_MANAGED_SERVICE_PROBE_IDS: &[&str] = &[
+    "doctl_projects",
+    "doctl_apps",
+    "doctl_databases",
+    "doctl_vpcs",
+    "doctl_load_balancers",
+    "doctl_reserved_ips",
+    "doctl_tags",
+    "doctl_registries",
+    "doctl_monitoring_alerts",
+    "doctl_uptime_checks",
+    "doctl_gradient_regions",
+    "doctl_gradient_models",
+    "doctl_gradient_agents",
+    "doctl_gradient_knowledge_bases",
+    "doctl_dedicated_inference_endpoints",
+    "doctl_dedicated_inference_sizes",
+    "doctl_dedicated_inference_model_config",
+    "doctl_serverless_namespaces",
+    "doctl_nfs_atl1",
+    "doctl_nfs_nyc2",
+    "doctl_nfs_ams3",
+];
+
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
@@ -337,6 +361,11 @@ fn run_preflight(
             "external index",
             "docs/external-indexes/frontier-runtime-repos.md",
         ),
+        file_check(
+            &target,
+            "DigitalOcean capability map",
+            "docs/remote-workhorse/preflight/DIGITALOCEAN_CAPABILITY_MAP.md",
+        ),
     ];
     let mut probes = vec![
         run_probe("just_list", "just", ["--list"], &target),
@@ -475,6 +504,251 @@ fn run_preflight(
                 "list",
                 "--format",
                 "ID,Name,Size,Region,DropletIDs,Tags",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_projects",
+            &[
+                "projects",
+                "list",
+                "--format",
+                "ID,Name,Purpose,Environment,IsDefault",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_apps",
+            &[
+                "apps",
+                "list",
+                "--format",
+                "ID,Spec.Name,DefaultIngress,ActiveDeployment.ID,Updated",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_databases",
+            &[
+                "databases",
+                "list",
+                "--format",
+                "ID,Name,Engine,Version,Region,Status,Size,StorageMib",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_vpcs",
+            &[
+                "vpcs",
+                "list",
+                "--format",
+                "ID,Name,IPRange,Region,Default",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_load_balancers",
+            &[
+                "compute",
+                "load-balancer",
+                "list",
+                "--format",
+                "ID,Name,IP,IPv6,Status,Region,VPCUUID,DropletIDs,HealthCheck",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_reserved_ips",
+            &[
+                "compute",
+                "reserved-ip",
+                "list",
+                "--format",
+                "IP,Region,DropletID,DropletName,ProjectID",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_tags",
+            &[
+                "compute",
+                "tag",
+                "list",
+                "--format",
+                "Name,DropletCount",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_registries",
+            &[
+                "registries",
+                "list",
+                "--format",
+                "Name,Endpoint,Region",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_monitoring_alerts",
+            &[
+                "monitoring",
+                "alert",
+                "list",
+                "--format",
+                "UUID,Type,Description,Entities,Tags,Emails,Enabled",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_uptime_checks",
+            &[
+                "monitoring",
+                "uptime",
+                "list",
+                "--format",
+                "ID,Name,Type,Target,Regions,Enabled",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_gradient_regions",
+            &[
+                "gradient",
+                "list-regions",
+                "--format",
+                "Region,ServesInference,ServesBatch",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_gradient_models",
+            &[
+                "gradient",
+                "list-models",
+                "--format",
+                "Id,Name,isFoundational,Version",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_gradient_agents",
+            &[
+                "gradient",
+                "agent",
+                "list",
+                "--format",
+                "Id,Name,Region,Model-id,Project-id",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_gradient_knowledge_bases",
+            &[
+                "gradient",
+                "knowledge-base",
+                "list",
+                "--format",
+                "UUID,Name,Region,ProjectId,DatabaseId,IsPublic,LastIndexingJob",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_dedicated_inference_endpoints",
+            &[
+                "dedicated-inference",
+                "list",
+                "--format",
+                "ID,Name,Region,Status,VPCUUID,PublicEndpoint,PrivateEndpoint",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_dedicated_inference_sizes",
+            &[
+                "dedicated-inference",
+                "get-sizes",
+                "--format",
+                "GPUSlug,PricePerHour,CPU,Memory,GPUCount,GPUVramGB,GPUModel,Regions",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_dedicated_inference_model_config",
+            &[
+                "dedicated-inference",
+                "get-gpu-model-config",
+                "--format",
+                "ModelSlug,ModelName,IsModelGated,GPUSlugs",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_serverless_namespaces",
+            &[
+                "serverless",
+                "namespaces",
+                "list",
+                "--format",
+                "Label,Region,ID,Host",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_nfs_atl1",
+            &[
+                "nfs",
+                "list",
+                "--region",
+                "atl1",
+                "--format",
+                "ID,Name,Size,Region,Status,VpcIDs",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_nfs_nyc2",
+            &[
+                "nfs",
+                "list",
+                "--region",
+                "nyc2",
+                "--format",
+                "ID,Name,Size,Region,Status,VpcIDs",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_doctl_probe(
+            "doctl_nfs_ams3",
+            &[
+                "nfs",
+                "list",
+                "--region",
+                "ams3",
+                "--format",
+                "ID,Name,Size,Region,Status,VpcIDs",
                 "--no-header",
             ],
             &target,
@@ -930,6 +1204,10 @@ fn render_preflight_report(evidence: &RemotePreflightEvidence) -> String {
         .iter()
         .filter(|probe_id| probe_status(&evidence.probes, probe_id) == Some("pass"))
         .count();
+    let managed_service_passes = DOCTL_MANAGED_SERVICE_PROBE_IDS
+        .iter()
+        .filter(|probe_id| probe_status(&evidence.probes, probe_id) == Some("pass"))
+        .count();
 
     body.push_str("# REMOTE_NIXOS_PREFLIGHT\n\n");
     body.push_str(&format!("Generated: `{}`\n\n", evidence.generated_at_utc));
@@ -977,6 +1255,18 @@ fn render_preflight_report(evidence: &RemotePreflightEvidence) -> String {
         },
         cloud_inventory_passes,
         DOCTL_READ_INVENTORY_PROBE_IDS.len()
+    ));
+    body.push_str(&format!(
+        "| DigitalOcean managed-service reconnaissance | `{}` | `{}/{} advisory probes passed` |\n",
+        if managed_service_passes == DOCTL_MANAGED_SERVICE_PROBE_IDS.len() {
+            "PASS"
+        } else if probe_status(&evidence.probes, "doctl_account_status") == Some("pass") {
+            "PARTIAL"
+        } else {
+            "PENDING"
+        },
+        managed_service_passes,
+        DOCTL_MANAGED_SERVICE_PROBE_IDS.len()
     ));
     body.push_str(&format!(
         "| Remote host selected | `{}` | `{}` |\n",
@@ -1032,6 +1322,33 @@ fn render_preflight_report(evidence: &RemotePreflightEvidence) -> String {
     body.push_str("- Firewalls: `doctl compute firewall list --format ID,Name,Status,DropletIDs,Tags,PendingChanges --no-header`\n");
     body.push_str("- Volumes: `doctl compute volume list --format ID,Name,Size,Region,DropletIDs,Tags --no-header`\n");
     body.push_str("- Host key proof, after a host is selected: `ssh-keyscan -T 5 <host>` and optional `ssh-keygen -F <host>` lookup.\n");
+
+    body.push_str("\n## DigitalOcean Managed-Service Reconnaissance\n\n");
+    body.push_str("These probes are read-only and advisory. They map DigitalOcean's managed services into the workhorse plan without creating, updating, or deleting resources.\n\n");
+    body.push_str("- Projects: `doctl projects list --format ID,Name,Purpose,Environment,IsDefault --no-header`\n");
+    body.push_str("- App Platform: `doctl apps list --format ID,Spec.Name,DefaultIngress,ActiveDeployment.ID,Updated --no-header`\n");
+    body.push_str("- Managed Databases: `doctl databases list --format ID,Name,Engine,Version,Region,Status,Size,StorageMib --no-header`\n");
+    body.push_str(
+        "- VPCs: `doctl vpcs list --format ID,Name,IPRange,Region,Default --no-header`\n",
+    );
+    body.push_str("- Load Balancers: `doctl compute load-balancer list --format ID,Name,IP,IPv6,Status,Region,VPCUUID,DropletIDs,HealthCheck --no-header`\n");
+    body.push_str("- Reserved IPs: `doctl compute reserved-ip list --format IP,Region,DropletID,DropletName,ProjectID --no-header`\n");
+    body.push_str("- Tags: `doctl compute tag list --format Name,DropletCount --no-header`\n");
+    body.push_str(
+        "- Container Registry: `doctl registries list --format Name,Endpoint,Region --no-header`\n",
+    );
+    body.push_str("- Monitoring alerts: `doctl monitoring alert list --format UUID,Type,Description,Entities,Tags,Emails,Enabled --no-header`\n");
+    body.push_str("- Uptime checks: `doctl monitoring uptime list --format ID,Name,Type,Target,Regions,Enabled --no-header`\n");
+    body.push_str("- Gradient regions: `doctl gradient list-regions --format Region,ServesInference,ServesBatch --no-header`\n");
+    body.push_str("- Gradient models: `doctl gradient list-models --format Id,Name,isFoundational,Version --no-header`\n");
+    body.push_str("- Gradient agents: `doctl gradient agent list --format Id,Name,Region,Model-id,Project-id --no-header`\n");
+    body.push_str("- Gradient knowledge bases: `doctl gradient knowledge-base list --format UUID,Name,Region,ProjectId,DatabaseId,IsPublic,LastIndexingJob --no-header`\n");
+    body.push_str("- Dedicated inference endpoints: `doctl dedicated-inference list --format ID,Name,Region,Status,VPCUUID,PublicEndpoint,PrivateEndpoint --no-header`\n");
+    body.push_str("- Dedicated inference sizes: `doctl dedicated-inference get-sizes --format GPUSlug,PricePerHour,CPU,Memory,GPUCount,GPUVramGB,GPUModel,Regions --no-header`\n");
+    body.push_str("- Dedicated inference model fit: `doctl dedicated-inference get-gpu-model-config --format ModelSlug,ModelName,IsModelGated,GPUSlugs --no-header`\n");
+    body.push_str("- Serverless namespaces: `doctl serverless namespaces list --format Label,Region,ID,Host --no-header`\n");
+    body.push_str("- Network File Storage by candidate region: `doctl nfs list --region <region> --format ID,Name,Size,Region,Status,VpcIDs --no-header`\n");
+    body.push_str("- Spaces bucket inventory is not covered by this `doctl 1.155.0` gate because the local CLI only exposes Spaces access-key commands; use S3-compatible tooling or MCP/API after explicit scope selection.\n");
 
     body.push_str("\n## Auth Boundary\n\n");
     body.push_str("- `runtimectl preflight` uses the first non-empty token from `DIGITALOCEAN_ACCESS_TOKEN`, `DIGITALOCEAN_TOKEN`, or `DOCTL_ACCESS_TOKEN` for read-only `doctl` probes, and records only the variable name in evidence.\n");

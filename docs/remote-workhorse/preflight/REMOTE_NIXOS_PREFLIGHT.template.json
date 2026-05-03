@@ -9,7 +9,8 @@
       "scripts/check.sh",
       "scripts/preflight.sh",
       "uvx code-review-graph status --repo /Users/0xvox/Windburn"
-    ]
+    ],
+    "capability_map": "docs/remote-workhorse/preflight/DIGITALOCEAN_CAPABILITY_MAP.md"
   },
   "required_preflight_gates": [
     {
@@ -47,6 +48,12 @@
       "kind": "cloud",
       "command": "doctl account ratelimit; doctl compute region list; doctl compute size list; doctl compute droplet list; doctl compute droplet list --gpus; doctl compute ssh-key list; doctl compute snapshot list; doctl compute image list; doctl compute image list --public; doctl compute firewall list; doctl compute volume list",
       "pass_condition": "all read-only inventory probes succeed after account auth"
+    },
+    {
+      "id": "digitalocean_managed_service_recon",
+      "kind": "cloud_advisory",
+      "command": "doctl projects list; doctl apps list; doctl databases list; doctl vpcs list; doctl compute load-balancer list; doctl compute reserved-ip list; doctl compute tag list; doctl registries list; doctl monitoring alert list; doctl monitoring uptime list; doctl gradient list-regions; doctl gradient list-models; doctl gradient agent list; doctl gradient knowledge-base list; doctl dedicated-inference list; doctl dedicated-inference get-sizes; doctl dedicated-inference get-gpu-model-config; doctl serverless namespaces list; doctl nfs list --region <candidate-region>",
+      "pass_condition": "sidecar surfaces are captured or explicitly repair-carded before selecting managed services"
     },
     {
       "id": "remote_host_identity",

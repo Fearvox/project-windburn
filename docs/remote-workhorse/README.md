@@ -11,6 +11,7 @@ Read order for a new agent:
 7. `phase1/CANARY-read-only-repo-review-health.md`
 8. `preflight/REMOTE_NIXOS_PREFLIGHT.md`
 9. `preflight/COMPUTER_USE_PREFLIGHT_RUNBOOK.md`
+10. `preflight/DIGITALOCEAN_CAPABILITY_MAP.md`
 
 Phase 1 is deliberately local and read-only. It proves the workflow contract,
 tool truth, and evidence skeleton before any remote host provisioning.
