@@ -1,22 +1,20 @@
 # CANARY-read-only-repo-review-health
 
-Generated: `2026-05-03T04:17:26.639178Z`
+Generated: `2026-05-03T04:27:39.841244Z`
 
 Target: `/Users/0xvox/Windburn/.`
 
 Host: `deMacBook-Pro.local`
 
-VERDICT: `FLAG`
+VERDICT: `PASS`
 
 ## Verdict Reasons
 
-- Nix Store volume is mounted at /Volumes/Nix Store, but /nix activation path is absent
-- frontier/runtime tool not installed locally yet: just_version
-- frontier/runtime tool not installed locally yet: doctl_version
+- all Phase 1 canary checks passed
 
 ## Evidence
 
-- Git repo: `/Users/0xvox/Windburn` branch `main` run-time head `dac6006`
+- Git repo: `/Users/0xvox/Windburn` branch `main` run-time head `7595bc0`
 - tool inventory: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/TOOL_INVENTORY.json
 - Research Vault proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json
 - code-review-graph proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json
@@ -38,9 +36,9 @@ VERDICT: `FLAG`
 - `nix_profile_volume`: `pass` exit `Some(0)`
 - `colima_list`: `pass` exit `Some(0)`
 - `colima_status`: `pass` exit `Some(0)`
-- `just_version`: `missing` exit `None`
-- `doctl_version`: `missing` exit `None`
+- `just_version`: `pass` exit `Some(0)`
+- `doctl_version`: `pass` exit `Some(0)`
 
 ## Next Repair Cards
 
-- Activate or repair local Nix, and install just/doctl before claiming full remote workhorse readiness.
+- None.
