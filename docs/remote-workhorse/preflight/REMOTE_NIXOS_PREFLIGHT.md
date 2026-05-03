@@ -1,16 +1,16 @@
 # REMOTE_NIXOS_PREFLIGHT
 
-Generated: `2026-05-03T06:35:58.51161Z`
+Generated: `2026-05-03T08:08:50.610481Z`
 
 Target: `/Users/0xvox/Windburn/.`
 
-Remote Host: `unset`
+Remote Host: `24.144.113.25`
 
-VERDICT: `FLAG`
+VERDICT: `PASS`
 
 ## Verdict Reasons
 
-- remote host not selected; set WINDBURN_REMOTE_HOST or pass --remote-host before Computer Use
+- all Phase 1 canary checks passed
 
 ## Gates
 
@@ -21,7 +21,8 @@ VERDICT: `FLAG`
 | DigitalOcean read auth | `pass` | `doctl_account_status` |
 | DigitalOcean read-only inventory | `PASS` | `11/11 probes passed` |
 | DigitalOcean managed-service reconnaissance | `PARTIAL` | `19/21 advisory probes passed` |
-| Remote host selected | `FLAG` | `unset` |
+| Remote host selected | `PASS` | `24.144.113.25` |
+| SSH host key scan | `pass` | `ssh_host_keyscan` |
 | Computer Use mutation gate | `PENDING` | Run only after this preflight is PASS or consciously accepted. |
 | Remote NixOS mutation gate | `PENDING` | First remote command must be read-only host/OS/Nix proof. |
 
@@ -81,6 +82,8 @@ VERDICT: `FLAG`
 - `doctl_nfs_atl1`: `pass` exit `Some(0)`
 - `doctl_nfs_nyc2`: `pass` exit `Some(0)`
 - `doctl_nfs_ams3`: `pass` exit `Some(0)`
+- `ssh_known_host_lookup`: `fail` exit `Some(1)`
+- `ssh_host_keyscan`: `pass` exit `Some(0)`
 
 ## DigitalOcean Read-Only Command Set
 

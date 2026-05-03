@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T06:35:58.51161Z",
+  "generated_at_utc": "2026-05-03T08:08:50.610481Z",
   "target": "/Users/0xvox/Windburn/.",
-  "remote_host": null,
+  "remote_host": "24.144.113.25",
   "doctor": {
     "schema_version": 1,
-    "generated_at_utc": "2026-05-03T06:35:46.103194Z",
+    "generated_at_utc": "2026-05-03T08:08:36.565171Z",
     "host": "deMacBook-Pro.local",
     "invocation_cwd": "/Users/0xvox/Windburn",
     "target": "/Users/0xvox/Windburn/.",
@@ -13,8 +13,8 @@
       "is_repo": true,
       "top_level": "/Users/0xvox/Windburn",
       "branch": "main",
-      "head": "3e0f6a7",
-      "status_short": "## main\n M crates/runtimectl/src/main.rs\n M docs/remote-workhorse/preflight/REMOTE_NIXOS_PREFLIGHT.md\n M docs/remote-workhorse/preflight/evidence/current/doctor.json\n M docs/remote-workhorse/preflight/evidence/current/preflight.json",
+      "head": "5d64125",
+      "status_short": "## main",
       "error": null
     },
     "probes": [
@@ -104,7 +104,7 @@
         ],
         "status": "pass",
         "exit_code": 0,
-        "stdout": "Hermes Agent v0.12.0 (2026.4.30)\nProject: /Users/0xvox/.hermes/hermes-agent\nPython: 3.11.14\nOpenAI SDK: 2.30.0\nUpdate available: 81 commits behind — run 'hermes update'",
+        "stdout": "Hermes Agent v0.12.0 (2026.4.30)\nProject: /Users/0xvox/.hermes/hermes-agent\nPython: 3.11.14\nOpenAI SDK: 2.30.0\nUpdate available: 83 commits behind — run 'hermes update'",
         "stderr": ""
       },
       {
@@ -174,7 +174,7 @@
         "status": "pass",
         "exit_code": 0,
         "stdout": "",
-        "stderr": "time=\"2026-05-03T02:35:45-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T02:35:45-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T02:35:45-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T02:35:45-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T02:35:45-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T02:35:45-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
+        "stderr": "time=\"2026-05-03T04:08:36-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T04:08:36-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T04:08:36-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T04:08:36-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T04:08:36-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T04:08:36-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
       },
       {
         "id": "just_version",
@@ -257,7 +257,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "Available recipes:\n    canary\n    check\n    doctor\n    fmt\n    preflight\n    test",
+      "stdout": "Available recipes:\n    canary\n    check\n    doctor\n    fmt\n    multica-cache-apply\n    multica-cache-dry-run\n    preflight\n    test",
       "stderr": ""
     },
     {
@@ -303,7 +303,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "4924    2026-05-03 03:27:39 -0400 EDT",
+      "stdout": "4968    2026-05-03 05:03:54 -0400 EDT",
       "stderr": ""
     },
     {
@@ -357,7 +357,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "565803713    ccr-droplet    165.232.146.188    10.124.0.2    sfo3    Ubuntu 24.04 (LTS) x64    active    CCR,DS,Evensong,Research-Vault-MCP    monitoring,droplet_agent,ipv6,private_networking    \n566402244    hermes-nyc1    137.184.104.26     10.116.0.2    nyc1    Ubuntu 24.04 (LTS) x64    active    hermes                                monitoring,droplet_agent,private_networking",
+      "stdout": "565803713    ccr-droplet                165.232.146.188    10.124.0.2    sfo3    Ubuntu 24.04 (LTS) x64    active    CCR,DS,Evensong,Research-Vault-MCP           monitoring,droplet_agent,ipv6,private_networking    \n566402244    hermes-nyc1                137.184.104.26     10.116.0.2    nyc1    Ubuntu 24.04 (LTS) x64    active    hermes                                       monitoring,droplet_agent,private_networking         \n568689911    windburn-workhorse-nyc1    24.144.113.25      10.116.0.3    nyc1    Ubuntu 24.04 (LTS) x64    active    nixos-candidate,remote-workhorse,windburn    monitoring,droplet_agent,ipv6,private_networking",
       "stderr": ""
     },
     {
@@ -607,7 +607,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "CCR                   1\nDS                    1\nEvensong              1\nhermes                1\nResearch-Vault-MCP    1",
+      "stdout": "CCR                   1\nDS                    1\nEvensong              1\nhermes                1\nnixos-candidate       1\nremote-workhorse      1\nResearch-Vault-MCP    1\nwindburn              1",
       "stderr": ""
     },
     {
@@ -677,7 +677,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "Inference URL                     Region    Serves Batch    Serves Inference    Stream Inference URL\nhttps://inference.do-ai.run/v1    tor1      true            false               https://stream.do-ai.run\nhttps://inference.do-ai.run/v1    atl1      false           false               \nhttps://inference.do-ai.run/v1    ric1      false           true",
+      "stdout": "Inference URL                     Region    Serves Batch    Serves Inference    Stream Inference URL\nhttps://inference.do-ai.run/v1    tor1      false           true                \nhttps://inference.do-ai.run/v1    atl1      false           false               \nhttps://inference.do-ai.run/v1    ric1      false           true",
       "stderr": ""
     },
     {
@@ -764,7 +764,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "gpu-mi300x1-192gb     2.59 USD     20     245760     1    192     amd_mi300x     atl1\ngpu-mi300x8-1536gb    20.70 USD    160    1966080    8    1536    amd_mi300x     atl1\ngpu-h100x1-80gb       4.41 USD     20     245760     1    80      nvidia_h100    \ngpu-h200x1-141gb      4.47 USD     24     245760     1    141     nvidia_h200    atl1,nyc2\ngpu-h200x8-1128gb     35.78 USD    192    1966080    8    1128    nvidia_h200    \ngpu-mi325x1-256gb     2.98 USD     20     163840     1    256     amd_mi325x     tor1\ngpu-mi325x8-2048gb    23.82 USD    160    1310720    8    2048    amd_mi325x     tor1\ngpu-b300x1-288gb      10.39 USD    28     458752     1    288     nvidia_b300    \ngpu-b300x8-2304gb     83.10 USD    224    3670016    8    2304    nvidia_b300",
+      "stdout": "gpu-mi300x1-192gb     2.59 USD     20     245760     1    192     amd_mi300x     atl1\ngpu-mi300x8-1536gb    20.70 USD    160    1966080    8    1536    amd_mi300x     atl1\ngpu-h100x1-80gb       4.41 USD     20     245760     1    80      nvidia_h100    \ngpu-h200x1-141gb      4.47 USD     24     245760     1    141     nvidia_h200    \ngpu-h200x8-1128gb     35.78 USD    192    1966080    8    1128    nvidia_h200    \ngpu-mi325x1-256gb     2.98 USD     20     163840     1    256     amd_mi325x     tor1\ngpu-mi325x8-2048gb    23.82 USD    160    1310720    8    2048    amd_mi325x     tor1\ngpu-b300x1-288gb      10.39 USD    28     458752     1    288     nvidia_b300    \ngpu-b300x8-2304gb     83.10 USD    224    3670016    8    2304    nvidia_b300",
       "stderr": ""
     },
     {
@@ -781,7 +781,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16         NVIDIA-Nemotron-Nano-12B-v2-VL-BF16         false    gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-h100x1-80gb\nnvidia/Qwen3.5-397B-A17B-NVFP4                     Qwen3.5-397B-A17B-NVFP4                     false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nmistralai/Mistral-7B-Instruct-v0.3                 Mistral-7B-Instruct-v0.3                    false    gpu-mi300x1-192gb-contracted,gpu-h200x1-141gb,gpu-b300x1-288gb-contracted,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-mi300x1-192gb\ndeepseek-ai/DeepSeek-V4-Pro                        DeepSeek-V4-Pro                             false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nopenai/gpt-oss-120b                                OpenAI GPT-OSS 120B                         false    gpu-mi300x1-192gb,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb-contracted,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb-contracted,gpu-h100x1-80gb,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb\nQwen/Qwen3-32B                                     Qwen3-32B                                   false    gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted\nmeta-llama/Llama-Guard-4-12B                       Llama-Guard-4-12B                           true     gpu-h100x1-80gb,gpu-h200x1-141gb,gpu-b300x1-288gb,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi325x1-256gb-contracted\nmeta-llama/Llama-4-Maverick-17B-128E-Instruct      Llama-4-Maverick-17B-128E-Instruct          true     gpu-mi325x8-2048gb,gpu-mi325x8-2048gb-contracted\ndeepseek-ai/DeepSeek-R1-Distill-Llama-70B          DeepSeek-R1-Distill-Llama-70B               false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nopenai/gpt-oss-20b                                 OpenAI GPT-OSS 20B                          false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nmistralai/Ministral-3-8B-Instruct-2512             Ministral-3-8B-Instruct-2512                false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted\nMiniMaxAI/MiniMax-M2.5                             MiniMax-M2.5                                false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted\nnvidia/DeepSeek-V3.2-NVFP4                         DeepSeek-V3.2-NVFP4                         false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nmoonshotai/Kimi-K2.6                               Kimi-K2.6                                   false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nzai-org/GLM-5-FP8                                  GLM-5-FP8                                   false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nQwen/Qwen2.5-14B-Instruct                          Qwen2.5-14B-Instruct                        false    gpu-mi300x1-192gb,gpu-mi325x1-256gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted\ndeepseek-ai/DeepSeek-R1                            DeepSeek-R1                                 false    gpu-h200x8-1128gb,gpu-h200x8-1128gb-contracted,gpu-mi300x8-1536gb,gpu-mi300x8-1536gb-contracted,gpu-mi325x8-2048gb,gpu-mi325x8-2048gb-contracted\ngoogle/gemma-4-31B-it                              gemma-4-31B-it                              false    gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nQwen/Qwen3-Coder-30B-A3B-Instruct                  Qwen3-Coder-30B-A3B-Instruct                false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nnvidia/Kimi-K2.5-NVFP4                             Kimi-K2.5-NVFP4                             false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nnvidia/MiniMax-M2.5-NVFP4                          MiniMax-M2.5-NVFP4                          true     gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nmeta-llama/Llama-3.1-8B-Instruct                   Llama-3.1-8B-Instruct                       true     gpu-mi300x1-192gb,gpu-mi325x1-256gb-contracted,gpu-h200x1-141gb,gpu-b300x1-288gb,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb-contracted\nmeta-llama/Llama-3.3-70B-Instruct                  Llama-3.3-70B-Instruct                      true     gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted\nmistralai/Ministral-3-14B-Instruct-2512            Ministral-3-14B-Instruct-2512               false    gpu-mi300x1-192gb,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted\ndeepseek-ai/DeepSeek-V3                            DeepSeek-V3                                 false    gpu-b300x8-2304gb-contracted,gpu-mi300x8-1536gb,gpu-mi300x8-1536gb-contracted,gpu-mi325x8-2048gb,gpu-mi325x8-2048gb-contracted,gpu-h200x8-1128gb,gpu-h200x8-1128gb-contracted,gpu-b300x8-2304gb\nnvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16         NVIDIA-Nemotron-3-Nano-30B-A3B-BF16         false    gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted\nnvidia/NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-BF16    NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-BF16    false    gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted",
+      "stdout": "meta-llama/Llama-3.1-8B-Instruct                   Llama-3.1-8B-Instruct                       true     gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb\nmistralai/Ministral-3-8B-Instruct-2512             Ministral-3-8B-Instruct-2512                false    gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-h100x1-80gb,gpu-h200x1-141gb,gpu-mi300x1-192gb,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted\ndeepseek-ai/DeepSeek-R1                            DeepSeek-R1                                 false    gpu-h200x8-1128gb,gpu-h200x8-1128gb-contracted,gpu-mi300x8-1536gb,gpu-mi300x8-1536gb-contracted,gpu-mi325x8-2048gb,gpu-mi325x8-2048gb-contracted\nnvidia/Qwen3.5-397B-A17B-NVFP4                     Qwen3.5-397B-A17B-NVFP4                     false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nnvidia/DeepSeek-V3.2-NVFP4                         DeepSeek-V3.2-NVFP4                         false    gpu-b300x8-2304gb-contracted,gpu-b300x8-2304gb\ndeepseek-ai/DeepSeek-R1-Distill-Llama-70B          DeepSeek-R1-Distill-Llama-70B               false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nzai-org/GLM-5-FP8                                  GLM-5-FP8                                   false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nmistralai/Ministral-3-14B-Instruct-2512            Ministral-3-14B-Instruct-2512               false    gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\ndeepseek-ai/DeepSeek-V3                            DeepSeek-V3                                 false    gpu-mi300x8-1536gb-contracted,gpu-mi325x8-2048gb,gpu-mi325x8-2048gb-contracted,gpu-h200x8-1128gb,gpu-h200x8-1128gb-contracted,gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted,gpu-mi300x8-1536gb\nnvidia/NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-BF16    NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-BF16    false    gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted\nmoonshotai/Kimi-K2.6                               Kimi-K2.6                                   false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nQwen/Qwen2.5-14B-Instruct                          Qwen2.5-14B-Instruct                        false    gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-h100x1-80gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb\nopenai/gpt-oss-120b                                OpenAI GPT-OSS 120B                         false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-h100x1-80gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-mi300x1-192gb-contracted\nnvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16         NVIDIA-Nemotron-3-Nano-30B-A3B-BF16         false    gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted\nQwen/Qwen3-32B                                     Qwen3-32B                                   false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted\nnvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16         NVIDIA-Nemotron-Nano-12B-v2-VL-BF16         false    gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted\nmeta-llama/Llama-Guard-4-12B                       Llama-Guard-4-12B                           true     gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-mi325x1-256gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb-contracted\nQwen/Qwen3-Coder-30B-A3B-Instruct                  Qwen3-Coder-30B-A3B-Instruct                false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nmeta-llama/Llama-4-Maverick-17B-128E-Instruct      Llama-4-Maverick-17B-128E-Instruct          true     gpu-mi325x8-2048gb,gpu-mi325x8-2048gb-contracted\nmeta-llama/Llama-3.3-70B-Instruct                  Llama-3.3-70B-Instruct                      true     gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted\nmistralai/Mistral-7B-Instruct-v0.3                 Mistral-7B-Instruct-v0.3                    false    gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-h200x1-141gb,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb\ndeepseek-ai/DeepSeek-V4-Pro                        DeepSeek-V4-Pro                             false    gpu-b300x8-2304gb-contracted,gpu-b300x8-2304gb\nMiniMaxAI/MiniMax-M2.5                             MiniMax-M2.5                                false    gpu-mi325x1-256gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi325x1-256gb\ngoogle/gemma-4-31B-it                              gemma-4-31B-it                              false    gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h200x1-141gb\nopenai/gpt-oss-20b                                 OpenAI GPT-OSS 20B                          false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nnvidia/Kimi-K2.5-NVFP4                             Kimi-K2.5-NVFP4                             false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nnvidia/MiniMax-M2.5-NVFP4                          MiniMax-M2.5-NVFP4                          true     gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted",
       "stderr": ""
     },
     {
@@ -858,12 +858,37 @@
       "exit_code": 0,
       "stdout": "",
       "stderr": ""
+    },
+    {
+      "id": "ssh_known_host_lookup",
+      "command": [
+        "ssh-keygen",
+        "-F",
+        "24.144.113.25"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "ssh_host_keyscan",
+      "command": [
+        "ssh-keyscan",
+        "-T",
+        "5",
+        "24.144.113.25"
+      ],
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "# 24.144.113.25:22 SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.13\n24.144.113.25 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCjaeTNmRpK5TZI3PQFA/zlik3Sg80xdR7bxAB//oUZUzilVjU8BoiwrAWDevGCfEZljbBUNEVV511McyZOE9erpQaOb4rnn8Gy18xMmYnfOhShv1EeYGnssQ7RKuqIHUJhUgIPabcOcVD5CwdFiXAVQbKg23VArBwgD87b8LuTH0okdw8hIhqm7u3dBRFvHMSl7prCA4QkkquK9MEG2EiRwMr0PS235vnstuTfJ9FaUXFahasuc8aYUTIC2GniACy9dQEFNswf8pgWSi6mSMqXJ5OALgTB3Tg1a/jCu4VXeuaw9nq+6PXiWFU3FpJJ3ucR9wZ1hyWBEecF9Rh3Te88pg+E/Jl0bRA7i++ZEBcxDpu4DzfHOADbeI8zmyGVyTpLvNKbbJNeRrfbfn+0lCbB9TxPlSS80nEKnqdKICPf5OcUMOhDf7oDuOs7A45ldLVBlIJm+Nx8MP0b8LWVhzUbg/oGi+TxHsElpr5YY8GByWuXd+TdiZiHExSk8HDD5E0=\n# 24.144.113.25:22 SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.13\n# 24.144.113.25:22 SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.13\n24.144.113.25 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAako7qwLV4T4GWILwe7zVNgzMkw1+pm/FDGqPKFjaA1/636I//Mmat8sA5/devb1maQCS3aA5s3kW5LRkP2j58=\n# 24.144.113.25:22 SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.13\n24.144.113.25 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIDO46qucBF4gEDIndWDByiTIOCTP2yD0DH9hGdOM6EJ\n# 24.144.113.25:22 SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.13",
+      "stderr": ""
     }
   ],
   "verdict": {
-    "status": "FLAG",
+    "status": "PASS",
     "reasons": [
-      "remote host not selected; set WINDBURN_REMOTE_HOST or pass --remote-host before Computer Use"
+      "all Phase 1 canary checks passed"
     ]
   }
 }
