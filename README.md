@@ -11,6 +11,7 @@ scripts/check.sh
 scripts/preflight.sh
 scripts/remote-host-proof.sh
 scripts/digitalocean-snapshot.sh
+scripts/nixos-conversion.sh
 scripts/multica-codex-cache-janitor.sh
 ```
 
@@ -25,6 +26,7 @@ If `just` is installed:
 just check
 just remote-proof
 just snapshot-dry-run
+just nixos-conversion-dry-run
 ```
 
 ## Repo Map
@@ -35,6 +37,7 @@ just snapshot-dry-run
 - `docs/external-indexes/` - generated GitHub indexes for frontier stack repos.
 - `flake.nix` - Nix dev shell/build scaffold for the later remote workhorse cell.
 - `docs/remote-workhorse/preflight/` - gates before Computer Use touches remote NixOS.
+- `nixos/hosts/windburn-workhorse-nyc1/` - first-boot NixOS host import.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary

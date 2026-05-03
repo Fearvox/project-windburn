@@ -21,6 +21,12 @@ snapshot-dry-run:
 snapshot-apply:
     scripts/digitalocean-snapshot.sh --apply --confirm-billable-snapshot
 
+nixos-conversion-dry-run:
+    scripts/nixos-conversion.sh
+
+nixos-conversion-apply:
+    scripts/nixos-conversion.sh --apply --confirm-destructive-nixos-conversion --confirm-snapshot-id 227115138
+
 multica-cache-dry-run:
     scripts/multica-codex-cache-janitor.sh
 

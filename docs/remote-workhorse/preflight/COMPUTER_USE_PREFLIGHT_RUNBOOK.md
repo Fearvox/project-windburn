@@ -16,6 +16,7 @@ scripts/check.sh
 WINDBURN_REMOTE_HOST=24.144.113.25 scripts/preflight.sh
 scripts/remote-host-proof.sh
 scripts/digitalocean-snapshot.sh
+scripts/nixos-conversion.sh
 uvx code-review-graph status --repo /Users/0xvox/Windburn
 ```
 
@@ -38,6 +39,8 @@ Required local truth before remote work:
   host-key checking and read-only OS/Nix probes.
 - Snapshot `227115138`
   (`windburn-workhorse-nyc1-base-20260503-0830Z`) exists before NixOS
+  conversion.
+- `scripts/nixos-conversion.sh` dry-run passes before any destructive NixOS
   conversion.
 
 ## DigitalOcean Read-Only Cloud Checks

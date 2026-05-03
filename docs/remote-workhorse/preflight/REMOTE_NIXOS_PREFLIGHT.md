@@ -1,6 +1,6 @@
 # REMOTE_NIXOS_PREFLIGHT
 
-Generated: `2026-05-03T08:33:36.88815Z`
+Generated: `2026-05-03T08:39:28.010632Z`
 
 Target: `/Users/0xvox/Windburn/.`
 
@@ -17,7 +17,7 @@ VERDICT: `PASS`
 | Gate | Status | Evidence |
 | --- | --- | --- |
 | Local conductor doctor | `PASS` | `docs/remote-workhorse/preflight/evidence/current/doctor.json` |
-| Required files | `PASS` | `8/8 present` |
+| Required files | `PASS` | `9/9 present` |
 | DigitalOcean read auth | `pass` | `doctl_account_status` |
 | DigitalOcean read-only inventory | `PASS` | `11/11 probes passed` |
 | DigitalOcean managed-service reconnaissance | `PARTIAL` | `19/21 advisory probes passed` |

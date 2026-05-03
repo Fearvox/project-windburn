@@ -14,6 +14,7 @@ Read order for a new agent:
 10. `preflight/DIGITALOCEAN_CAPABILITY_MAP.md`
 11. `preflight/DIGITALOCEAN_HOST_SELECTION_CARD.md`
 12. `preflight/REMOTE_HOST_PROOF.md`
+13. `preflight/NIXOS_CONVERSION_RUNBOOK.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
 and base snapshot proven, while the remaining NixOS conversion mutation still

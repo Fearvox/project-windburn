@@ -366,6 +366,11 @@ fn run_preflight(
             "DigitalOcean capability map",
             "docs/remote-workhorse/preflight/DIGITALOCEAN_CAPABILITY_MAP.md",
         ),
+        file_check(
+            &target,
+            "NixOS conversion runbook",
+            "docs/remote-workhorse/preflight/NIXOS_CONVERSION_RUNBOOK.md",
+        ),
     ];
     let mut probes = vec![
         run_probe("just_list", "just", ["--list"], &target),
