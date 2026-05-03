@@ -115,6 +115,20 @@ struct RemotePreflightEvidence {
     verdict: Verdict,
 }
 
+const DOCTL_READ_INVENTORY_PROBE_IDS: &[&str] = &[
+    "doctl_account_ratelimit",
+    "doctl_regions",
+    "doctl_sizes",
+    "doctl_droplets",
+    "doctl_gpu_droplets",
+    "doctl_ssh_keys",
+    "doctl_snapshots",
+    "doctl_images_private",
+    "doctl_images_public",
+    "doctl_firewalls",
+    "doctl_volumes",
+];
+
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
@@ -288,6 +302,9 @@ fn run_preflight(
     let target = absolutize(target_arg)?;
     let evidence_dir = absolutize(evidence_dir_arg)?;
     let report = absolutize(report_arg)?;
+    let remote_host = remote_host
+        .map(|host| host.trim().to_string())
+        .filter(|host| !host.is_empty());
     fs::create_dir_all(&evidence_dir)
         .with_context(|| format!("create preflight evidence dir {}", evidence_dir.display()))?;
 
@@ -321,7 +338,7 @@ fn run_preflight(
             "docs/external-indexes/frontier-runtime-repos.md",
         ),
     ];
-    let probes = vec![
+    let mut probes = vec![
         run_probe("just_list", "just", ["--list"], &target),
         run_probe("doctl_auth_list", "doctl", ["auth", "list"], &target),
         run_probe(
@@ -330,7 +347,165 @@ fn run_preflight(
             ["account", "get", "--format", "Status", "--no-header"],
             &target,
         ),
+        run_probe(
+            "doctl_account_ratelimit",
+            "doctl",
+            [
+                "account",
+                "ratelimit",
+                "--format",
+                "Remaining,Reset",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_probe(
+            "doctl_regions",
+            "doctl",
+            [
+                "compute",
+                "region",
+                "list",
+                "--format",
+                "Slug,Available",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_probe(
+            "doctl_sizes",
+            "doctl",
+            [
+                "compute",
+                "size",
+                "list",
+                "--format",
+                "Slug,Memory,VCPUs,Disk,PriceMonthly",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_probe(
+            "doctl_droplets",
+            "doctl",
+            [
+                "compute",
+                "droplet",
+                "list",
+                "--format",
+                "ID,Name,PublicIPv4,PrivateIPv4,Region,Image,Status,Tags,Features,Volumes",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_probe(
+            "doctl_gpu_droplets",
+            "doctl",
+            [
+                "compute",
+                "droplet",
+                "list",
+                "--gpus",
+                "--format",
+                "ID,Name,PublicIPv4,Region,Image,Status,Features",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_probe(
+            "doctl_ssh_keys",
+            "doctl",
+            [
+                "compute",
+                "ssh-key",
+                "list",
+                "--format",
+                "ID,Name,FingerPrint",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_probe(
+            "doctl_snapshots",
+            "doctl",
+            [
+                "compute",
+                "snapshot",
+                "list",
+                "--format",
+                "ID,Name,CreatedAt,Regions,ResourceId,ResourceType,MinDiskSize,Size,Tags",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_probe(
+            "doctl_images_private",
+            "doctl",
+            [
+                "compute",
+                "image",
+                "list",
+                "--format",
+                "ID,Name,Type,Distribution,Slug,Public,MinDisk",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_probe(
+            "doctl_images_public",
+            "doctl",
+            [
+                "compute",
+                "image",
+                "list",
+                "--public",
+                "--format",
+                "ID,Name,Distribution,Slug,Public,MinDisk",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_probe(
+            "doctl_firewalls",
+            "doctl",
+            [
+                "compute",
+                "firewall",
+                "list",
+                "--format",
+                "ID,Name,Status,DropletIDs,Tags,PendingChanges",
+                "--no-header",
+            ],
+            &target,
+        ),
+        run_probe(
+            "doctl_volumes",
+            "doctl",
+            [
+                "compute",
+                "volume",
+                "list",
+                "--format",
+                "ID,Name,Size,Region,DropletIDs,Tags",
+                "--no-header",
+            ],
+            &target,
+        ),
     ];
+    if let Some(host) = remote_host.as_deref() {
+        probes.push(run_probe(
+            "ssh_known_host_lookup",
+            "ssh-keygen",
+            ["-F", host],
+            &target,
+        ));
+        probes.push(run_probe(
+            "ssh_host_keyscan",
+            "ssh-keyscan",
+            ["-T", "5", host],
+            &target,
+        ));
+    }
 
     let mut blockers = Vec::new();
     let mut flags = Vec::new();
@@ -347,7 +522,7 @@ fn run_preflight(
         }
     }
 
-    if remote_host.as_deref().unwrap_or_default().trim().is_empty() {
+    if remote_host.is_none() {
         flags.push(
             "remote host not selected; set WINDBURN_REMOTE_HOST or pass --remote-host before Computer Use"
                 .to_string(),
@@ -359,6 +534,20 @@ fn run_preflight(
             "DigitalOcean account read probe failed; refresh doctl auth before cloud snapshot/firewall checks"
                 .to_string(),
         );
+    } else {
+        for probe_id in DOCTL_READ_INVENTORY_PROBE_IDS {
+            if probe_status(&probes, probe_id) != Some("pass") {
+                blockers.push(format!(
+                    "DigitalOcean read-only inventory probe failed: {probe_id}"
+                ));
+            }
+        }
+    }
+
+    if remote_host.is_some() {
+        if probe_status(&probes, "ssh_host_keyscan") != Some("pass") {
+            flags.push("remote host identity probe did not pass yet: ssh_host_keyscan".to_string());
+        }
     }
 
     let verdict = canary_verdict(blockers, flags);
@@ -674,6 +863,11 @@ fn render_canary_report(doctor: &DoctorEvidence, verdict: &Verdict, notes: &[Str
 
 fn render_preflight_report(evidence: &RemotePreflightEvidence) -> String {
     let mut body = String::new();
+    let cloud_inventory_passes = DOCTL_READ_INVENTORY_PROBE_IDS
+        .iter()
+        .filter(|probe_id| probe_status(&evidence.probes, probe_id) == Some("pass"))
+        .count();
+
     body.push_str("# REMOTE_NIXOS_PREFLIGHT\n\n");
     body.push_str(&format!("Generated: `{}`\n\n", evidence.generated_at_utc));
     body.push_str(&format!("Target: `{}`\n\n", evidence.target));
@@ -710,6 +904,18 @@ fn render_preflight_report(evidence: &RemotePreflightEvidence) -> String {
         probe_status(&evidence.probes, "doctl_account_status").unwrap_or("missing")
     ));
     body.push_str(&format!(
+        "| DigitalOcean read-only inventory | `{}` | `{}/{} probes passed` |\n",
+        if cloud_inventory_passes == DOCTL_READ_INVENTORY_PROBE_IDS.len() {
+            "PASS"
+        } else if probe_status(&evidence.probes, "doctl_account_status") == Some("pass") {
+            "BLOCK"
+        } else {
+            "PENDING"
+        },
+        cloud_inventory_passes,
+        DOCTL_READ_INVENTORY_PROBE_IDS.len()
+    ));
+    body.push_str(&format!(
         "| Remote host selected | `{}` | `{}` |\n",
         if evidence.remote_host.is_some() {
             "PASS"
@@ -718,6 +924,12 @@ fn render_preflight_report(evidence: &RemotePreflightEvidence) -> String {
         },
         evidence.remote_host.as_deref().unwrap_or("unset")
     ));
+    if evidence.remote_host.is_some() {
+        body.push_str(&format!(
+            "| SSH host key scan | `{}` | `ssh_host_keyscan` |\n",
+            probe_status(&evidence.probes, "ssh_host_keyscan").unwrap_or("missing")
+        ));
+    }
     body.push_str("| Computer Use mutation gate | `PENDING` | Run only after this preflight is PASS or consciously accepted. |\n");
     body.push_str("| Remote NixOS mutation gate | `PENDING` | First remote command must be read-only host/OS/Nix proof. |\n");
 
@@ -736,6 +948,38 @@ fn render_preflight_report(evidence: &RemotePreflightEvidence) -> String {
             probe.id, probe.status, probe.exit_code
         ));
     }
+
+    body.push_str("\n## DigitalOcean Read-Only Command Set\n\n");
+    body.push_str("These commands are intentionally non-mutating and were cross-checked against the local `doctl 1.155.0` help output after consulting DigitalOcean Ask Docs.\n\n");
+    body.push_str("- Auth context list: `doctl auth list`\n");
+    body.push_str("- Account status: `doctl account get --format Status --no-header`\n");
+    body.push_str(
+        "- API rate limit: `doctl account ratelimit --format Remaining,Reset --no-header`\n",
+    );
+    body.push_str("- Regions: `doctl compute region list --format Slug,Available --no-header`\n");
+    body.push_str("- Sizes: `doctl compute size list --format Slug,Memory,VCPUs,Disk,PriceMonthly --no-header`\n");
+    body.push_str("- Droplets: `doctl compute droplet list --format ID,Name,PublicIPv4,PrivateIPv4,Region,Image,Status,Tags,Features,Volumes --no-header`\n");
+    body.push_str("- GPU Droplets: `doctl compute droplet list --gpus --format ID,Name,PublicIPv4,Region,Image,Status,Features --no-header`\n");
+    body.push_str(
+        "- SSH keys: `doctl compute ssh-key list --format ID,Name,FingerPrint --no-header`\n",
+    );
+    body.push_str("- Snapshots: `doctl compute snapshot list --format ID,Name,CreatedAt,Regions,ResourceId,ResourceType,MinDiskSize,Size,Tags --no-header`\n");
+    body.push_str("- Private images: `doctl compute image list --format ID,Name,Type,Distribution,Slug,Public,MinDisk --no-header`\n");
+    body.push_str("- Public images: `doctl compute image list --public --format ID,Name,Distribution,Slug,Public,MinDisk --no-header`\n");
+    body.push_str("- Firewalls: `doctl compute firewall list --format ID,Name,Status,DropletIDs,Tags,PendingChanges --no-header`\n");
+    body.push_str("- Volumes: `doctl compute volume list --format ID,Name,Size,Region,DropletIDs,Tags --no-header`\n");
+    body.push_str("- Host key proof, after a host is selected: `ssh-keyscan -T 5 <host>` and optional `ssh-keygen -F <host>` lookup.\n");
+
+    body.push_str("\n## Auth Boundary\n\n");
+    body.push_str("- `doctl auth init --context <name>` stores a persistent local context and requires action-time confirmation before we run it.\n");
+    body.push_str("- `doctl --access-token <token> ...` can run one command without initializing a context, but the token must never be pasted into chat or evidence.\n");
+    body.push_str("- Current preflight artifacts may contain cloud inventory such as Droplet IDs and IPs once auth works; keep them local unless explicitly redacted for sharing.\n");
+
+    body.push_str("\n## DigitalOcean Rollback Gotchas\n\n");
+    body.push_str("- Rebuilds can change SSH host keys; capture the new key with `ssh-keyscan`, and only clean stale `known_hosts` entries deliberately.\n");
+    body.push_str("- Firewall rules must preserve SSH and outbound HTTPS for Nix downloads before attaching them to the host.\n");
+    body.push_str("- Snapshot/image/volume evidence must exist before persistent NixOS mutation; never delete snapshot candidates during preflight.\n");
+    body.push_str("- Size, region, GPU image, backups, monitoring agent, private networking, and volume limits should be checked from read-only inventory before create/update operations.\n");
 
     body.push_str("\n## Computer Use Entry Rules\n\n");
     body.push_str("- Start read-only: host identity, OS release, kernel, uptime, disk, memory, users, services.\n");

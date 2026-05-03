@@ -43,10 +43,16 @@
       "pass_condition": "read-only account probe succeeds"
     },
     {
+      "id": "cloud_read_only_inventory",
+      "kind": "cloud",
+      "command": "doctl account ratelimit; doctl compute region list; doctl compute size list; doctl compute droplet list; doctl compute droplet list --gpus; doctl compute ssh-key list; doctl compute snapshot list; doctl compute image list; doctl compute image list --public; doctl compute firewall list; doctl compute volume list",
+      "pass_condition": "all read-only inventory probes succeed after account auth"
+    },
+    {
       "id": "remote_host_identity",
       "kind": "remote_read_only",
-      "command": "hostnamectl; cat /etc/os-release; uname -a",
-      "pass_condition": "host identity and OS are captured"
+      "command": "ssh-keyscan -T 5 <host>; hostnamectl; cat /etc/os-release; uname -a",
+      "pass_condition": "SSH host key, host identity, and OS are captured"
     },
     {
       "id": "remote_nix_truth",
@@ -57,11 +63,10 @@
     {
       "id": "backout_proof",
       "kind": "safety",
-      "command": "cloud snapshot or rollback plan proof",
-      "pass_condition": "operator can roll back before mutation"
+      "command": "snapshot/image candidate; firewall SSH+443 posture; known_hosts plan; size/region/image/volume fit",
+      "pass_condition": "operator can roll back before mutation and host key/firewall/snapshot risks are bounded"
     }
   ],
   "computer_use_entry_rule": "Start with read-only host/OS/Nix proof. Do not mutate remote state until preflight gates are PASS or explicitly accepted with a repair card.",
   "verdict": "PASS|FLAG|BLOCK"
 }
-

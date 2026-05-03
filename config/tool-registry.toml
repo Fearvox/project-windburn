@@ -72,10 +72,33 @@ probe = ["doctl", "account", "get", "--format", "Status", "--no-header"]
 repair = "Refresh doctl auth before relying on DigitalOcean account, snapshot, firewall, or droplet evidence."
 
 [[preflight_gates]]
+id = "doctl_read_only_inventory"
+required_before = "remote_host_selection_or_cloud_mutation"
+probe = [
+  "doctl account ratelimit --format Remaining,Reset --no-header",
+  "doctl compute droplet list --format ID,Name,PublicIPv4,PrivateIPv4,Region,Image,Status,Tags,Features,Volumes --no-header",
+  "doctl compute ssh-key list --format ID,Name,FingerPrint --no-header",
+  "doctl compute snapshot list --format ID,Name,CreatedAt,Regions,ResourceId,ResourceType,MinDiskSize,Size,Tags --no-header",
+  "doctl compute image list --format ID,Name,Type,Distribution,Slug,Public,MinDisk --no-header",
+  "doctl compute image list --public --format ID,Name,Distribution,Slug,Public,MinDisk --no-header",
+  "doctl compute firewall list --format ID,Name,Status,DropletIDs,Tags,PendingChanges --no-header",
+  "doctl compute region list --format Slug,Available --no-header",
+  "doctl compute size list --format Slug,Memory,VCPUs,Disk,PriceMonthly --no-header",
+  "doctl compute volume list --format ID,Name,Size,Region,DropletIDs,Tags --no-header",
+]
+repair = "Keep cloud operations read-only until account auth, object inventory, firewall posture, and rollback candidates are captured."
+
+[[preflight_gates]]
 id = "remote_host_identity"
 required_before = "computer_use_mutation"
-probe = ["hostnamectl", "cat /etc/os-release", "uname -a"]
-repair = "Set WINDBURN_REMOTE_HOST and capture read-only host identity before mutation."
+probe = ["ssh-keyscan -T 5 <host>", "hostnamectl", "cat /etc/os-release", "uname -a"]
+repair = "Set WINDBURN_REMOTE_HOST, capture SSH host key proof, and capture read-only host identity before mutation."
+
+[[preflight_gates]]
+id = "rollback_gotchas"
+required_before = "nixos_rebuild_or_firewall_attach"
+probe = ["snapshot/image candidate", "firewall SSH+443 posture", "known_hosts plan", "size/region/image/volume fit"]
+repair = "Prove backout path before rebuilds; host key changes, firewall misrules, missing snapshots, and invalid image/size/volume choices must be repair-carded."
 
 [[preflight_gates]]
 id = "remote_nix_truth"

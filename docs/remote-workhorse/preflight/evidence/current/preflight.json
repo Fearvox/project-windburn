@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T04:27:53.175833Z",
+  "generated_at_utc": "2026-05-03T04:43:47.654946Z",
   "target": "/Users/0xvox/Windburn/.",
   "remote_host": null,
   "doctor": {
     "schema_version": 1,
-    "generated_at_utc": "2026-05-03T04:27:53.144315Z",
+    "generated_at_utc": "2026-05-03T04:43:47.497701Z",
     "host": "deMacBook-Pro.local",
     "invocation_cwd": "/Users/0xvox/Windburn",
     "target": "/Users/0xvox/Windburn/.",
@@ -13,8 +13,8 @@
       "is_repo": true,
       "top_level": "/Users/0xvox/Windburn",
       "branch": "main",
-      "head": "441fe9e",
-      "status_short": "## main",
+      "head": "b6a3502",
+      "status_short": "## main\n M config/tool-registry.toml\n M crates/runtimectl/src/main.rs\n M docs/remote-workhorse/preflight/COMPUTER_USE_PREFLIGHT_RUNBOOK.md\n M docs/remote-workhorse/preflight/REMOTE_NIXOS_PREFLIGHT.md\n M docs/remote-workhorse/preflight/REMOTE_NIXOS_PREFLIGHT.template.json\n M docs/remote-workhorse/preflight/evidence/current/doctor.json\n M docs/remote-workhorse/preflight/evidence/current/preflight.json",
       "error": null
     },
     "probes": [
@@ -174,7 +174,7 @@
         "status": "pass",
         "exit_code": 0,
         "stdout": "",
-        "stderr": "time=\"2026-05-03T00:27:52-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T00:27:52-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T00:27:52-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T00:27:52-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T00:27:52-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T00:27:52-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
+        "stderr": "time=\"2026-05-03T00:43:47-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T00:43:47-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T00:43:47-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T00:43:47-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T00:43:47-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T00:43:47-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
       },
       {
         "id": "just_version",
@@ -275,6 +275,183 @@
         "get",
         "--format",
         "Status",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_account_ratelimit",
+      "command": [
+        "doctl",
+        "account",
+        "ratelimit",
+        "--format",
+        "Remaining,Reset",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_regions",
+      "command": [
+        "doctl",
+        "compute",
+        "region",
+        "list",
+        "--format",
+        "Slug,Available",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_sizes",
+      "command": [
+        "doctl",
+        "compute",
+        "size",
+        "list",
+        "--format",
+        "Slug,Memory,VCPUs,Disk,PriceMonthly",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_droplets",
+      "command": [
+        "doctl",
+        "compute",
+        "droplet",
+        "list",
+        "--format",
+        "ID,Name,PublicIPv4,PrivateIPv4,Region,Image,Status,Tags,Features,Volumes",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_gpu_droplets",
+      "command": [
+        "doctl",
+        "compute",
+        "droplet",
+        "list",
+        "--gpus",
+        "--format",
+        "ID,Name,PublicIPv4,Region,Image,Status,Features",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_ssh_keys",
+      "command": [
+        "doctl",
+        "compute",
+        "ssh-key",
+        "list",
+        "--format",
+        "ID,Name,FingerPrint",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_snapshots",
+      "command": [
+        "doctl",
+        "compute",
+        "snapshot",
+        "list",
+        "--format",
+        "ID,Name,CreatedAt,Regions,ResourceId,ResourceType,MinDiskSize,Size,Tags",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_images_private",
+      "command": [
+        "doctl",
+        "compute",
+        "image",
+        "list",
+        "--format",
+        "ID,Name,Type,Distribution,Slug,Public,MinDisk",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_images_public",
+      "command": [
+        "doctl",
+        "compute",
+        "image",
+        "list",
+        "--public",
+        "--format",
+        "ID,Name,Distribution,Slug,Public,MinDisk",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_firewalls",
+      "command": [
+        "doctl",
+        "compute",
+        "firewall",
+        "list",
+        "--format",
+        "ID,Name,Status,DropletIDs,Tags,PendingChanges",
+        "--no-header"
+      ],
+      "status": "fail",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+    },
+    {
+      "id": "doctl_volumes",
+      "command": [
+        "doctl",
+        "compute",
+        "volume",
+        "list",
+        "--format",
+        "ID,Name,Size,Region,DropletIDs,Tags",
         "--no-header"
       ],
       "status": "fail",
