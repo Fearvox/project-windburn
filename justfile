@@ -60,6 +60,21 @@ remote-hermes-codex-smoke:
 droplet-engagement-review:
     scripts/droplet-engagement-review.sh --out docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md
 
+do-observability:
+    scripts/digitalocean-observability.sh --out docs/remote-workhorse/preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md
+
+do-observability-apply:
+    scripts/digitalocean-observability.sh --apply --confirm-do-observability --out docs/remote-workhorse/preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md
+
+hermes-health:
+    scripts/hermes-health-gate.sh --out docs/remote-workhorse/preflight/HERMES_HEALTH_GATE.md
+
+hermes-maintenance-inspect:
+    scripts/hermes-maintenance.sh --out docs/remote-workhorse/preflight/HERMES_MAINTENANCE.md
+
+hermes-maintenance-apply:
+    scripts/hermes-maintenance.sh --apply-update --ensure-tmux --confirm-hermes-maintenance --out docs/remote-workhorse/preflight/HERMES_MAINTENANCE.md
+
 multica-cache-dry-run:
     scripts/multica-codex-cache-janitor.sh
 

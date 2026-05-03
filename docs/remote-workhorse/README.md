@@ -22,6 +22,9 @@ Read order for a new agent:
 17. `preflight/PROVIDER_SECRET_SMOKE.md`
 18. `preflight/HERMES_CODEX_RUNTIME_PROOF.md`
 19. `preflight/DROPLET_ENGAGEMENT_REVIEW.md`
+20. `preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md`
+21. `preflight/HERMES_HEALTH_GATE.md`
+22. `preflight/HERMES_MAINTENANCE.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
 and base snapshot proven. The staged NixOS install has completed its guarded
@@ -38,3 +41,7 @@ The remote Hermes `openai-codex` runtime route is proven in
 The current multi-droplet engagement review is recorded in
 `preflight/DROPLET_ENGAGEMENT_REVIEW.md` and can be refreshed with
 `scripts/droplet-engagement-review.sh --out docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md`.
+The DigitalOcean observability desired state, Hermes health gate, and Hermes
+update/tmux maintenance path are recorded in
+`preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md`,
+`preflight/HERMES_HEALTH_GATE.md`, and `preflight/HERMES_MAINTENANCE.md`.

@@ -1,6 +1,6 @@
 # Droplet Engagement Review
 
-Generated: `2026-05-03T17:12:49Z`
+Generated: `2026-05-03T23:43:12Z`
 
 Target repo: `/Users/0xvox/Windburn`
 
@@ -20,18 +20,18 @@ counts/listeners instead of raw task transcripts.
 | DigitalOcean control plane | `PASS` | account_status=active |
 | DigitalOcean uptime checks | `FLAG` | no uptime checks returned |
 | DigitalOcean monitoring alerts | `FLAG` | no monitoring alerts returned |
-| CCR public route | `FLAG` | curl: (7) Failed to connect to 165.232.146.188 port 8888 after 75 ms: Couldn't connect to server |
+| CCR public route | `FLAG` | curl: (7) Failed to connect to 165.232.146.188 port 8888 after 76 ms: Couldn't connect to server |
 | `ccr-droplet` internal embedding route | `PASS_INTERNAL` | SSH + `http://100.65.234.77:8080/v1/models` + embeddings smoke |
-| `hermes-nyc1` task/MCP engagement | `ENGAGED_FLAG_HEALTH_GATE` | Hermes gateway/process/MCP counts over SSH |
+| `hermes-nyc1` task/MCP engagement | `ENGAGED_HEALTH_GATE_PASS` | Hermes gateway/process/MCP counts over SSH; health_gate=PASS |
 | `windburn-workhorse-nyc1` foundation health | `FOUNDATION_ONLY` | health timer + current health JSON over SSH |
-| code-review-graph freshness | `FLAG` | proof_commit=227a3a66d124; head=e0153b0876af; dirty_files=10 |
+| code-review-graph freshness | `FLAG` | proof_commit=227a3a66d124; head=e989fecd28e2; dirty_files=12 |
 
 ## Droplets
 
 | Name | Host | Expected role | Current review |
 | --- | --- | --- | --- |
 | `ccr-droplet` | `165.232.146.188` | CCR/RV embedding node | Internal embedding API is the trusted route; public `:8888` is only a legacy canary unless restored. |
-| `hermes-nyc1` | `137.184.104.26` | Hermes/Multica/RV task lane | Engaged when gateway plus Hermes, Multica, or Research Vault MCP process counts are non-zero; still needs a dedicated health gate. |
+| `hermes-nyc1` | `137.184.104.26` | Hermes/Multica/RV task lane | Engaged when gateway plus Hermes, Multica, or Research Vault MCP process counts are non-zero and `HERMES_HEALTH_GATE.md` is PASS. |
 | `windburn-workhorse-nyc1` | `24.144.113.25` | NixOS workhorse foundation | Healthy foundation when timer and health JSON are fresh; not counted as task-engaged until a runner/MCP process appears. |
 
 ## DigitalOcean Evidence
@@ -68,14 +68,14 @@ Public canary:
 ```text
 endpoint=http://165.232.146.188:8888/v1/models
 status=FLAG
-curl: (7) Failed to connect to 165.232.146.188 port 8888 after 75 ms: Couldn't connect to server
+curl: (7) Failed to connect to 165.232.146.188 port 8888 after 76 ms: Couldn't connect to server
 ```
 
 Internal SSH/Tailscale canary:
 
 ```text
 host=ccr-droplet
-uptime=up 1 week, 2 days, 10 hours, 34 minutes
+uptime=up 1 week, 2 days, 17 hours, 5 minutes
 bge_m3_embed_service=active
 llama_server_service=inactive
 llama_server_process_count=1
@@ -90,16 +90,16 @@ embedding_len=1024
 
 ```text
 host=hermes-nyc1
-uptime=up 1 week, 4 days, 10 hours, 54 minutes
+uptime=up 1 week, 4 days, 17 hours, 25 minutes
 hermes_gateway_service=active
 multica_service=inactive
 do_agent_service=active
 droplet_agent_service=active
 tailscaled_service=active
 hermes_chat_count=5
-research_vault_mcp_count=26
+research_vault_mcp_count=29
 multica_daemon_count=1
-recent_gateway_warning_count=0
+recent_gateway_warning_count=1
 listener=LISTEN 0      128                        0.0.0.0:8644       0.0.0.0:*    users:[redacted]
 listener=LISTEN 0      512                        0.0.0.0:18765      0.0.0.0:*    users:[redacted]
 listener=LISTEN 0      512                        0.0.0.0:18766      0.0.0.0:*    users:[redacted]
@@ -115,13 +115,13 @@ listener=LISTEN 0      4096                          [::]:22            [::]:*  
 
 ```text
 host=windburn-workhorse-nyc1
-uptime= 17:12:58  up   6:17,  0 users,  load average: 0.02, 0.01, 0.00
+uptime= 23:43:21  up  12:47,  0 users,  load average: 0.00, 0.00, 0.00
 os=NixOS 25.11 (Xantusia)
 windburn_health_service=inactive
 windburn_health_timer=active
 failed_units=0
-health_file_mtime=2026-05-03 17:10:23.053404637 +0000
-health_generated_at_utc=2026-05-03T17:10:22Z
+health_file_mtime=2026-05-03 23:39:23.804978784 +0000
+health_generated_at_utc=2026-05-03T23:39:23Z
 health_system_state=running
 health_failed_units=0
 hermes_chat_count=0
@@ -133,7 +133,7 @@ listener=LISTEN 0      128             [::]:22           [::]:*    users:[redact
 ## code-review-graph Evidence
 
 ```text
-proof_commit=227a3a66d124; head=e0153b0876af; dirty_files=10
+proof_commit=227a3a66d124; head=e989fecd28e2; dirty_files=12
 
 Nodes: 41
 Edges: 441

@@ -191,6 +191,15 @@ hermes_status="SKIPPED"
 hermes_output="--skip-ssh"
 windburn_status="SKIPPED"
 windburn_output="--skip-ssh"
+hermes_health_gate_status="missing"
+hermes_health_gate_doc="$ROOT/docs/remote-workhorse/preflight/HERMES_HEALTH_GATE.md"
+if [ -f "$hermes_health_gate_doc" ]; then
+  if grep -q 'VERDICT: `PASS`' "$hermes_health_gate_doc"; then
+    hermes_health_gate_status="PASS"
+  else
+    hermes_health_gate_status="FLAG"
+  fi
+fi
 
 if [ "$SKIP_SSH" -eq 0 ]; then
   if [ ! -f "$IDENTITY" ]; then
@@ -258,7 +267,11 @@ HERMES
     if hermes_output="$(ssh_script "$HERMES_HOST" "$hermes_probe" 2>&1)"; then
       if printf '%s\n' "$hermes_output" | grep -q 'hermes_gateway_service=active' &&
         printf '%s\n' "$hermes_output" | grep -Eq 'hermes_chat_count=[1-9]|research_vault_mcp_count=[1-9]|multica_daemon_count=[1-9]'; then
-        hermes_status="ENGAGED_FLAG_HEALTH_GATE"
+        if [ "$hermes_health_gate_status" = "PASS" ]; then
+          hermes_status="ENGAGED_HEALTH_GATE_PASS"
+        else
+          hermes_status="ENGAGED_FLAG_HEALTH_GATE"
+        fi
       else
         hermes_status="FLAG"
       fi
@@ -324,7 +337,10 @@ else
 fi
 
 if command -v uvx >/dev/null 2>&1; then
-  graph_cli="$(capture_local timeout 20 uvx code-review-graph status --repo "$ROOT" || true)"
+  graph_cli="$(timeout 20 uvx code-review-graph status --repo "$ROOT" 2>/dev/null || true)"
+  if [ -z "$(printf '%s\n' "$graph_cli" | first_line)" ]; then
+    graph_cli="code-review-graph status produced no stdout; stderr suppressed to keep evidence readable"
+  fi
 else
   graph_cli="uvx missing"
 fi
@@ -335,7 +351,7 @@ if [ "$doctl_status" != "PASS" ] ||
   [ "$doctl_alert_status" != "PASS" ] ||
   [ "$public_ccr_status" != "PASS" ] ||
   [ "$ccr_status" != "PASS_INTERNAL" ] ||
-  [ "$hermes_status" != "ENGAGED" ] ||
+  [ "$hermes_status" != "ENGAGED_HEALTH_GATE_PASS" ] ||
   [ "$windburn_status" != "ENGAGED" ] ||
   [ "$graph_status" != "PASS" ]; then
   overall="FLAG"
@@ -367,7 +383,7 @@ counts/listeners instead of raw task transcripts.
 | DigitalOcean monitoring alerts | \`$doctl_alert_status\` | $doctl_alert_summary |
 | CCR public route | \`$public_ccr_status\` | $public_ccr_summary |
 | \`ccr-droplet\` internal embedding route | \`$ccr_status\` | SSH + \`$CCR_INTERNAL_ENDPOINT/v1/models\` + embeddings smoke |
-| \`hermes-nyc1\` task/MCP engagement | \`$hermes_status\` | Hermes gateway/process/MCP counts over SSH |
+| \`hermes-nyc1\` task/MCP engagement | \`$hermes_status\` | Hermes gateway/process/MCP counts over SSH; health_gate=$hermes_health_gate_status |
 | \`windburn-workhorse-nyc1\` foundation health | \`$windburn_status\` | health timer + current health JSON over SSH |
 | code-review-graph freshness | \`$graph_status\` | $graph_summary |
 
@@ -376,7 +392,7 @@ counts/listeners instead of raw task transcripts.
 | Name | Host | Expected role | Current review |
 | --- | --- | --- | --- |
 | \`ccr-droplet\` | \`$CCR_HOST\` | CCR/RV embedding node | Internal embedding API is the trusted route; public \`:8888\` is only a legacy canary unless restored. |
-| \`hermes-nyc1\` | \`$HERMES_HOST\` | Hermes/Multica/RV task lane | Engaged when gateway plus Hermes, Multica, or Research Vault MCP process counts are non-zero; still needs a dedicated health gate. |
+| \`hermes-nyc1\` | \`$HERMES_HOST\` | Hermes/Multica/RV task lane | Engaged when gateway plus Hermes, Multica, or Research Vault MCP process counts are non-zero and \`HERMES_HEALTH_GATE.md\` is PASS. |
 | \`windburn-workhorse-nyc1\` | \`$WINDBURN_HOST\` | NixOS workhorse foundation | Healthy foundation when timer and health JSON are fresh; not counted as task-engaged until a runner/MCP process appears. |
 
 ## DigitalOcean Evidence

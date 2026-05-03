@@ -19,6 +19,9 @@ scripts/remote-provider-smoke.sh
 scripts/remote-codex-auth-sync.sh
 scripts/remote-hermes-codex-smoke.sh
 scripts/droplet-engagement-review.sh
+scripts/digitalocean-observability.sh
+scripts/hermes-health-gate.sh
+scripts/hermes-maintenance.sh
 scripts/multica-codex-cache-janitor.sh
 ```
 
@@ -41,6 +44,9 @@ just remote-provider-smoke
 just remote-codex-auth-dry-run
 just remote-hermes-codex-smoke
 just droplet-engagement-review
+just do-observability
+just hermes-health
+just hermes-maintenance-inspect
 ```
 
 ## Repo Map
@@ -63,6 +69,12 @@ just droplet-engagement-review
   remote model-call smoke.
 - `scripts/droplet-engagement-review.sh` - read-only DO/CCR/Hermes/Windburn
   engagement gate for remote pre-flight.
+- `scripts/digitalocean-observability.sh` - dry-run first DO uptime/alert
+  desired-state gate.
+- `scripts/hermes-health-gate.sh` - read-only Hermes service, task, update, and
+  tmux runtime-entry health gate.
+- `scripts/hermes-maintenance.sh` - guarded Hermes update and fixed tmux
+  runtime-entry maintenance path.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary
