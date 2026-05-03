@@ -190,6 +190,10 @@ Provider secret/smoke entrypoints now live at:
 
 - `scripts/remote-secret-sync.sh`
 - `scripts/remote-provider-smoke.sh`
+- `scripts/remote-codex-auth-sync.sh`
+- `scripts/remote-hermes-codex-smoke.sh`
 
 The current provider credential gate and repair artifact are recorded in
 `docs/remote-workhorse/preflight/PROVIDER_SECRET_SMOKE.md`.
+The first Hermes/Codex runtime proof is recorded in
+`docs/remote-workhorse/preflight/HERMES_CODEX_RUNTIME_PROOF.md`.

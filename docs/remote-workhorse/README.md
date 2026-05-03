@@ -19,6 +19,7 @@ Read order for a new agent:
 15. `preflight/NIXOS_BOOT_PROOF.md`
 16. `preflight/NIXOS_FOUNDATION_PROOF.md`
 17. `preflight/PROVIDER_SECRET_SMOKE.md`
+18. `preflight/HERMES_CODEX_RUNTIME_PROOF.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
 and base snapshot proven. The staged NixOS install has completed its guarded
@@ -30,3 +31,5 @@ The first foundation switch, reboot persistence proof, and post-foundation
 snapshot are recorded in `preflight/NIXOS_FOUNDATION_PROOF.md`.
 Provider credential sync and the current remote provider smoke `FLAG` are
 recorded in `preflight/PROVIDER_SECRET_SMOKE.md`.
+The remote Hermes `openai-codex` runtime route is proven in
+`preflight/HERMES_CODEX_RUNTIME_PROOF.md`.

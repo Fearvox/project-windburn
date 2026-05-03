@@ -45,6 +45,15 @@ remote-secret-apply:
 remote-provider-smoke:
     scripts/remote-provider-smoke.sh --apply --confirm-provider-smoke
 
+remote-codex-auth-dry-run:
+    scripts/remote-codex-auth-sync.sh
+
+remote-codex-auth-apply:
+    scripts/remote-codex-auth-sync.sh --apply --confirm-remote-codex-auth-sync
+
+remote-hermes-codex-smoke:
+    scripts/remote-hermes-codex-smoke.sh --apply --confirm-remote-hermes-codex-smoke
+
 multica-cache-dry-run:
     scripts/multica-codex-cache-janitor.sh
 

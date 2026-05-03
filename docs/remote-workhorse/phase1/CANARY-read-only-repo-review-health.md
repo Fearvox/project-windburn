@@ -1,6 +1,6 @@
 # CANARY-read-only-repo-review-health
 
-Generated: `2026-05-03T11:08:08.099235Z`
+Generated: `2026-05-03T12:48:13.524701Z`
 
 Target: `/Users/0xvox/Windburn/.`
 
@@ -14,7 +14,7 @@ VERDICT: `PASS`
 
 ## Evidence
 
-- Git repo: `/Users/0xvox/Windburn` branch `main` run-time head `d0dd19a`
+- Git repo: `/Users/0xvox/Windburn` branch `main` run-time head `99d1126`
 - tool inventory: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/TOOL_INVENTORY.json
 - Research Vault proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json
 - code-review-graph proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json
@@ -35,7 +35,7 @@ VERDICT: `PASS`
 - `nix_store_volume`: `pass` exit `Some(0)`
 - `nix_profile_volume`: `pass` exit `Some(0)`
 - `colima_list`: `pass` exit `Some(0)`
-- `colima_status`: `pass` exit `Some(0)`
+- `colima_status`: `fail` exit `Some(1)`
 - `just_version`: `pass` exit `Some(0)`
 - `doctl_version`: `pass` exit `Some(0)`
 

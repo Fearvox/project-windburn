@@ -15,6 +15,8 @@ scripts/nixos-conversion.sh
 scripts/nixos-remote-rebuild.sh
 scripts/remote-secret-sync.sh
 scripts/remote-provider-smoke.sh
+scripts/remote-codex-auth-sync.sh
+scripts/remote-hermes-codex-smoke.sh
 scripts/multica-codex-cache-janitor.sh
 ```
 
@@ -33,6 +35,8 @@ just nixos-conversion-dry-run
 just nixos-rebuild-dry-run
 just remote-secret-dry-run
 just remote-provider-smoke
+just remote-codex-auth-dry-run
+just remote-hermes-codex-smoke
 ```
 
 ## Repo Map
@@ -47,6 +51,10 @@ just remote-provider-smoke
 - `scripts/nixos-remote-rebuild.sh` - guarded remote NixOS test/switch deploy.
 - `scripts/remote-secret-sync.sh` - allowlisted root-only provider secret sync.
 - `scripts/remote-provider-smoke.sh` - remote provider smoke and repair card.
+- `scripts/remote-codex-auth-sync.sh` - root-only Codex CLI plus Hermes
+  `openai-codex` auth sync.
+- `scripts/remote-hermes-codex-smoke.sh` - pinned Hermes `openai-codex`
+  remote model-call smoke.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary
@@ -57,5 +65,7 @@ This repo now has a DigitalOcean workhorse booted as NixOS 25.11:
 through `nixos-rebuild test` before `switch`. Provider smoke is intentionally
 gated behind root-only allowlisted secret sync and currently reports
 `REMOTE_PROVIDER_SECRET_MISSING` until usable provider credentials are installed.
+The Codex EDU path is separately proven through Hermes `openai-codex` with
+artifact `/srv/windburn/runs/hermes-codex-smoke/20260503T124810Z-hermes-codex-smoke/result.json`.
 Phase 1 still succeeds only when a new agent can rerun the proof path, see which
 tools are usable, and return `PASS`, `FLAG`, or `BLOCK` without guesswork.
