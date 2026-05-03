@@ -1,6 +1,6 @@
 # REMOTE_NIXOS_PREFLIGHT
 
-Generated: `2026-05-03T04:43:47.654946Z`
+Generated: `2026-05-03T04:46:48.041256Z`
 
 Target: `/Users/0xvox/Windburn/.`
 
@@ -82,6 +82,7 @@ These commands are intentionally non-mutating and were cross-checked against the
 
 ## Auth Boundary
 
+- `runtimectl preflight` uses the first non-empty token from `DIGITALOCEAN_ACCESS_TOKEN`, `DIGITALOCEAN_TOKEN`, or `DOCTL_ACCESS_TOKEN` for read-only `doctl` probes, and records only the variable name in evidence.
 - `doctl auth init --context <name>` stores a persistent local context and requires action-time confirmation before we run it.
 - `doctl --access-token <token> ...` can run one command without initializing a context, but the token must never be pasted into chat or evidence.
 - Current preflight artifacts may contain cloud inventory such as Droplet IDs and IPs once auth works; keep them local unless explicitly redacted for sharing.

@@ -11,6 +11,11 @@ scripts/check.sh
 scripts/preflight.sh
 ```
 
+For one-shot DigitalOcean read-only preflight without storing a `doctl` context,
+export `DIGITALOCEAN_ACCESS_TOKEN`, `DIGITALOCEAN_TOKEN`, or
+`DOCTL_ACCESS_TOKEN` in your local shell before `scripts/preflight.sh`. Evidence
+records only the variable name, not the token value.
+
 If `just` is installed:
 
 ```sh

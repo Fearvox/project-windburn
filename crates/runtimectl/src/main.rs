@@ -341,16 +341,14 @@ fn run_preflight(
     let mut probes = vec![
         run_probe("just_list", "just", ["--list"], &target),
         run_probe("doctl_auth_list", "doctl", ["auth", "list"], &target),
-        run_probe(
+        run_doctl_probe(
             "doctl_account_status",
-            "doctl",
-            ["account", "get", "--format", "Status", "--no-header"],
+            &["account", "get", "--format", "Status", "--no-header"],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_account_ratelimit",
-            "doctl",
-            [
+            &[
                 "account",
                 "ratelimit",
                 "--format",
@@ -359,10 +357,9 @@ fn run_preflight(
             ],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_regions",
-            "doctl",
-            [
+            &[
                 "compute",
                 "region",
                 "list",
@@ -372,10 +369,9 @@ fn run_preflight(
             ],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_sizes",
-            "doctl",
-            [
+            &[
                 "compute",
                 "size",
                 "list",
@@ -385,10 +381,9 @@ fn run_preflight(
             ],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_droplets",
-            "doctl",
-            [
+            &[
                 "compute",
                 "droplet",
                 "list",
@@ -398,10 +393,9 @@ fn run_preflight(
             ],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_gpu_droplets",
-            "doctl",
-            [
+            &[
                 "compute",
                 "droplet",
                 "list",
@@ -412,10 +406,9 @@ fn run_preflight(
             ],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_ssh_keys",
-            "doctl",
-            [
+            &[
                 "compute",
                 "ssh-key",
                 "list",
@@ -425,10 +418,9 @@ fn run_preflight(
             ],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_snapshots",
-            "doctl",
-            [
+            &[
                 "compute",
                 "snapshot",
                 "list",
@@ -438,10 +430,9 @@ fn run_preflight(
             ],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_images_private",
-            "doctl",
-            [
+            &[
                 "compute",
                 "image",
                 "list",
@@ -451,10 +442,9 @@ fn run_preflight(
             ],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_images_public",
-            "doctl",
-            [
+            &[
                 "compute",
                 "image",
                 "list",
@@ -465,10 +455,9 @@ fn run_preflight(
             ],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_firewalls",
-            "doctl",
-            [
+            &[
                 "compute",
                 "firewall",
                 "list",
@@ -478,10 +467,9 @@ fn run_preflight(
             ],
             &target,
         ),
-        run_probe(
+        run_doctl_probe(
             "doctl_volumes",
-            "doctl",
-            [
+            &[
                 "compute",
                 "volume",
                 "list",
@@ -708,6 +696,81 @@ where
             stderr: error.to_string(),
         },
     }
+}
+
+fn run_doctl_probe(id: &str, args: &[&str], cwd: &Path) -> CommandProbe {
+    let token = doctl_access_token_from_env();
+    let token_ref = token.as_ref().map(|(name, value)| (*name, value.as_str()));
+    let (actual_args, display_command) = doctl_args_with_optional_token(args, token_ref);
+
+    let mut command = Command::new("doctl");
+    command.args(&actual_args).current_dir(cwd);
+
+    match command.output() {
+        Ok(output) => CommandProbe {
+            id: id.to_string(),
+            command: display_command,
+            status: if output.status.success() {
+                "pass".to_string()
+            } else {
+                "fail".to_string()
+            },
+            exit_code: output.status.code(),
+            stdout: clean_text(&output.stdout),
+            stderr: clean_text(&output.stderr),
+        },
+        Err(error) if error.kind() == io::ErrorKind::NotFound => CommandProbe {
+            id: id.to_string(),
+            command: display_command,
+            status: "missing".to_string(),
+            exit_code: None,
+            stdout: String::new(),
+            stderr: error.to_string(),
+        },
+        Err(error) => CommandProbe {
+            id: id.to_string(),
+            command: display_command,
+            status: "error".to_string(),
+            exit_code: None,
+            stdout: String::new(),
+            stderr: error.to_string(),
+        },
+    }
+}
+
+fn doctl_access_token_from_env() -> Option<(&'static str, String)> {
+    [
+        "DIGITALOCEAN_ACCESS_TOKEN",
+        "DIGITALOCEAN_TOKEN",
+        "DOCTL_ACCESS_TOKEN",
+    ]
+    .into_iter()
+    .find_map(|name| {
+        std::env::var(name)
+            .ok()
+            .filter(|value| !value.trim().is_empty())
+            .map(|value| (name, value))
+    })
+}
+
+fn doctl_args_with_optional_token(
+    args: &[&str],
+    token_env: Option<(&str, &str)>,
+) -> (Vec<String>, Vec<String>) {
+    let mut actual_args = Vec::new();
+    let mut display_command = vec!["doctl".to_string()];
+
+    if let Some((name, token)) = token_env.filter(|(_, token)| !token.trim().is_empty()) {
+        actual_args.push("--access-token".to_string());
+        actual_args.push(token.to_string());
+        display_command.push("--access-token".to_string());
+        display_command.push(format!("${name}"));
+    }
+
+    actual_args.extend(args.iter().map(|arg| (*arg).to_string()));
+    display_command.extend(args.iter().map(|arg| (*arg).to_string()));
+
+    (actual_args, display_command)
 }
 
 fn command_text<I, S>(program: &str, args: I, cwd: &Path) -> Option<String>
@@ -971,6 +1034,7 @@ fn render_preflight_report(evidence: &RemotePreflightEvidence) -> String {
     body.push_str("- Host key proof, after a host is selected: `ssh-keyscan -T 5 <host>` and optional `ssh-keygen -F <host>` lookup.\n");
 
     body.push_str("\n## Auth Boundary\n\n");
+    body.push_str("- `runtimectl preflight` uses the first non-empty token from `DIGITALOCEAN_ACCESS_TOKEN`, `DIGITALOCEAN_TOKEN`, or `DOCTL_ACCESS_TOKEN` for read-only `doctl` probes, and records only the variable name in evidence.\n");
     body.push_str("- `doctl auth init --context <name>` stores a persistent local context and requires action-time confirmation before we run it.\n");
     body.push_str("- `doctl --access-token <token> ...` can run one command without initializing a context, but the token must never be pasted into chat or evidence.\n");
     body.push_str("- Current preflight artifacts may contain cloud inventory such as Droplet IDs and IPs once auth works; keep them local unless explicitly redacted for sharing.\n");
@@ -1086,6 +1150,43 @@ mod tests {
                 .iter()
                 .any(|reason| reason.contains("not installed locally yet: nix_version"))
         );
+    }
+
+    #[test]
+    fn doctl_token_command_redacts_secret_in_evidence() {
+        let (actual_args, display_command) = doctl_args_with_optional_token(
+            &["account", "get"],
+            Some(("DIGITALOCEAN_ACCESS_TOKEN", "dop_v1_secret")),
+        );
+
+        assert_eq!(
+            actual_args,
+            vec!["--access-token", "dop_v1_secret", "account", "get"]
+        );
+        assert_eq!(
+            display_command,
+            vec![
+                "doctl",
+                "--access-token",
+                "$DIGITALOCEAN_ACCESS_TOKEN",
+                "account",
+                "get",
+            ]
+        );
+        assert!(
+            !display_command
+                .iter()
+                .any(|part| part.contains("dop_v1_secret"))
+        );
+    }
+
+    #[test]
+    fn doctl_token_command_uses_ambient_context_when_env_missing() {
+        let (actual_args, display_command) =
+            doctl_args_with_optional_token(&["account", "get"], None);
+
+        assert_eq!(actual_args, vec!["account", "get"]);
+        assert_eq!(display_command, vec!["doctl", "account", "get"]);
     }
 
     fn required_probe_set(status: &str) -> Vec<CommandProbe> {

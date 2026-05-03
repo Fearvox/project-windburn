@@ -53,6 +53,18 @@ context, so get explicit action-time confirmation before running it. For a
 single command, `doctl --access-token <token> ...` avoids storing a context, but
 the token must stay out of chat, logs, and evidence.
 
+`runtimectl preflight` also supports one-shot read-only auth from local shell
+environment without storing a context. It checks the first non-empty value from:
+
+```sh
+DIGITALOCEAN_ACCESS_TOKEN
+DIGITALOCEAN_TOKEN
+DOCTL_ACCESS_TOKEN
+```
+
+When one is set, evidence records `doctl --access-token $VARIABLE_NAME ...`, not
+the token value. Never paste the token into chat or commit it into repo files.
+
 ## Computer Use Read-Only First Commands
 
 First remote session commands must only observe:
