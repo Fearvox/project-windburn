@@ -1,14 +1,39 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T03:41:23Z",
+  "generated_at_utc": "2026-05-03T04:11:58Z",
   "status": "ok",
   "tool": "mcp__code_review_graph__.list_repos_tool",
-  "registered_repository_count": 0,
-  "repos": [],
-  "bootstrap_required": true,
+  "registered_repository_count": 1,
+  "repos": [
+    {
+      "path": "/Users/0xvox/Windburn",
+      "alias": "windburn"
+    }
+  ],
+  "bootstrap_required": false,
+  "build_status": {
+    "command": "uvx code-review-graph build --repo /Users/0xvox/Windburn",
+    "nodes": 34,
+    "edges": 313,
+    "files": 2,
+    "languages": [
+      "rust",
+      "bash"
+    ],
+    "last_updated": "2026-05-03T00:11:34",
+    "built_on_branch": "main",
+    "built_at_commit_prefix": "227a3a66d124"
+  },
+  "search_probe": {
+    "tool": "mcp__code_review_graph__.cross_repo_search_tool",
+    "query": "runtimectl",
+    "result_count": 10,
+    "repos_searched": [
+      "windburn"
+    ]
+  },
   "verdict": {
-    "status": "FLAG",
-    "reason": "code-review-graph is configured but cannot support target-specific review until this repo is registered and freshness is proven."
+    "status": "PASS",
+    "reason": "Windburn is registered, built, and searchable through the MCP code-review-graph path."
   }
 }
-

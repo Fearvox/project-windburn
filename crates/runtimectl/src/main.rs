@@ -436,7 +436,7 @@ fn render_canary_report(doctor: &DoctorEvidence, verdict: &Verdict, notes: &[Str
     }
     body.push_str("\n## Evidence\n\n");
     body.push_str(&format!(
-        "- Git repo: `{}` branch `{}` head `{}`\n",
+        "- Git repo: `{}` branch `{}` run-time head `{}`\n",
         doctor.git.top_level.as_deref().unwrap_or("missing"),
         doctor.git.branch.as_deref().unwrap_or("unknown"),
         doctor.git.head.as_deref().unwrap_or("unknown")
@@ -458,11 +458,36 @@ fn render_canary_report(doctor: &DoctorEvidence, verdict: &Verdict, notes: &[Str
     if verdict.status == "PASS" {
         body.push_str("- None.\n");
     } else {
-        body.push_str("- Register this repository in code-review-graph before making graph-dependent review claims.\n");
-        body.push_str("- Install or remote-provision Nix/just/doctl before claiming full remote workhorse readiness.\n");
-        body.push_str(
-            "- Add a durable Research Vault note for the accepted Remote Workhorse design.\n",
-        );
+        let mut wrote_repair = false;
+        if verdict
+            .reasons
+            .iter()
+            .any(|reason| reason.contains("code-review-graph"))
+        {
+            body.push_str("- Register this repository in code-review-graph before making graph-dependent review claims.\n");
+            wrote_repair = true;
+        }
+        if verdict
+            .reasons
+            .iter()
+            .any(|reason| reason.contains("Research Vault"))
+        {
+            body.push_str(
+                "- Add a durable Research Vault note for the accepted Remote Workhorse design.\n",
+            );
+            wrote_repair = true;
+        }
+        if verdict.reasons.iter().any(|reason| {
+            reason.contains("nix_version")
+                || reason.contains("just_version")
+                || reason.contains("doctl_version")
+        }) {
+            body.push_str("- Install or remote-provision Nix/just/doctl before claiming full remote workhorse readiness.\n");
+            wrote_repair = true;
+        }
+        if !wrote_repair {
+            body.push_str("- Inspect verdict reasons and add a concrete owner/action repair card before continuing.\n");
+        }
     }
     body
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T03:41:23Z",
+  "generated_at_utc": "2026-05-03T04:11:58Z",
   "status": "reachable_by_mcp",
   "health": {
     "total": 110,
@@ -19,15 +19,26 @@
     "software-engineering/security": 6
   },
   "search_probe": {
-    "query": "remote workhorse tool registry runtime evidence Research Vault MCP",
+    "query": "Windburn Remote Workhorse Phase 1 contract-first canary",
     "limit": 5,
-    "total": 0,
-    "results": []
+    "total": 1,
+    "results": [
+      {
+        "id": "Windburn-Remote-Workhorse-Phase-",
+        "title": "Windburn Remote Workhorse Phase 1 contract-first canary",
+        "category": "ai-agents/operating-doctrine",
+        "summaryLevel": "deep"
+      }
+    ]
   },
-  "durable_note_required": true,
+  "durable_note_required": false,
+  "durable_note": {
+    "id": "1777781513760--Windburn-Remote-Workhorse-Phase-",
+    "path": "/Users/0xvox/Documents/Evensong/research-vault/knowledge/ai-agents/operating-doctrine/1777781513760--Windburn-Remote-Workhorse-Phase-.md",
+    "written_at_utc": "2026-05-03T04:11:53.853Z"
+  },
   "verdict": {
-    "status": "FLAG",
-    "reason": "Research Vault is alive, but the exact accepted Remote Workhorse design is not yet a durable vault note."
+    "status": "PASS",
+    "reason": "Research Vault is alive and the accepted Remote Workhorse Phase 1 note is searchable."
   }
 }
-

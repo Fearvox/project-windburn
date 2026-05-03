@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T03:41:23Z",
+  "generated_at_utc": "2026-05-03T04:11:58Z",
   "source": "live codex mcp list and local command probes",
   "local_commands": [
     {
@@ -101,8 +101,7 @@
     "reasons": [
       "Local Phase 1 runtime is usable.",
       "Nix, just, and doctl are not installed locally.",
-      "code-review-graph has zero registered repositories, so graph-dependent claims are gated."
+      "Research Vault durable note and code-review-graph registration are now proven."
     ]
   }
 }
-

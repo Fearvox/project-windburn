@@ -88,10 +88,14 @@ readiness without evidence.
 - `nix` is not installed locally.
 - `just` is not installed locally.
 - `doctl` is not installed locally.
-- Research Vault exact query returned zero results, so a durable note is needed.
-- code-review-graph has zero registered repositories.
 
 These are `FLAG` conditions for Phase 1, not blockers for the local scaffold.
 They become blockers only if a later run claims full remote workhorse readiness
 or graph-backed review without repairing them.
 
+## Resolved After Bootstrap
+
+- Research Vault durable note is now written and searchable as
+  `Windburn Remote Workhorse Phase 1 contract-first canary`.
+- code-review-graph now has `/Users/0xvox/Windburn` registered as `windburn`,
+  built on `main`, and searchable through the MCP graph path.
