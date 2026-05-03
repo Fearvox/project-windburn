@@ -1,0 +1,11 @@
+.DS_Store
+.worktrees/
+target/
+node_modules/
+.env
+.env.*
+!.env.example
+tmp/
+var/
+*.log
+
