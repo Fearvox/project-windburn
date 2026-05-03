@@ -9,6 +9,7 @@ evidence, tool truth, and a read-only canary before remote provisioning.
 ```sh
 scripts/check.sh
 scripts/preflight.sh
+scripts/multica-codex-cache-janitor.sh
 ```
 
 For one-shot DigitalOcean read-only preflight without storing a `doctl` context,
@@ -30,6 +31,7 @@ just check
 - `docs/external-indexes/` - generated GitHub indexes for frontier stack repos.
 - `flake.nix` - Nix dev shell/build scaffold for the later remote workhorse cell.
 - `docs/remote-workhorse/preflight/` - gates before Computer Use touches remote NixOS.
+- `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary
 

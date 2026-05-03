@@ -12,6 +12,12 @@ canary:
 preflight:
     scripts/preflight.sh
 
+multica-cache-dry-run:
+    scripts/multica-codex-cache-janitor.sh
+
+multica-cache-apply:
+    scripts/multica-codex-cache-janitor.sh --apply
+
 fmt:
     cargo fmt
 
