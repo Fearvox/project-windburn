@@ -1,6 +1,6 @@
 # REMOTE_NIXOS_PREFLIGHT
 
-Generated: `2026-05-03T05:01:08.028968Z`
+Generated: `2026-05-03T06:35:58.51161Z`
 
 Target: `/Users/0xvox/Windburn/.`
 
@@ -11,7 +11,6 @@ VERDICT: `FLAG`
 ## Verdict Reasons
 
 - remote host not selected; set WINDBURN_REMOTE_HOST or pass --remote-host before Computer Use
-- DigitalOcean account read probe failed; refresh doctl auth before cloud snapshot/firewall checks
 
 ## Gates
 
@@ -19,9 +18,9 @@ VERDICT: `FLAG`
 | --- | --- | --- |
 | Local conductor doctor | `PASS` | `docs/remote-workhorse/preflight/evidence/current/doctor.json` |
 | Required files | `PASS` | `8/8 present` |
-| DigitalOcean read auth | `fail` | `doctl_account_status` |
-| DigitalOcean read-only inventory | `PENDING` | `0/11 probes passed` |
-| DigitalOcean managed-service reconnaissance | `PENDING` | `0/21 advisory probes passed` |
+| DigitalOcean read auth | `pass` | `doctl_account_status` |
+| DigitalOcean read-only inventory | `PASS` | `11/11 probes passed` |
+| DigitalOcean managed-service reconnaissance | `PARTIAL` | `19/21 advisory probes passed` |
 | Remote host selected | `FLAG` | `unset` |
 | Computer Use mutation gate | `PENDING` | Run only after this preflight is PASS or consciously accepted. |
 | Remote NixOS mutation gate | `PENDING` | First remote command must be read-only host/OS/Nix proof. |
@@ -49,39 +48,39 @@ VERDICT: `FLAG`
 
 - `just_list`: `pass` exit `Some(0)`
 - `doctl_auth_list`: `pass` exit `Some(0)`
-- `doctl_account_status`: `fail` exit `Some(1)`
-- `doctl_account_ratelimit`: `fail` exit `Some(1)`
-- `doctl_regions`: `fail` exit `Some(1)`
-- `doctl_sizes`: `fail` exit `Some(1)`
-- `doctl_droplets`: `fail` exit `Some(1)`
-- `doctl_gpu_droplets`: `fail` exit `Some(1)`
-- `doctl_ssh_keys`: `fail` exit `Some(1)`
-- `doctl_snapshots`: `fail` exit `Some(1)`
-- `doctl_images_private`: `fail` exit `Some(1)`
-- `doctl_images_public`: `fail` exit `Some(1)`
-- `doctl_firewalls`: `fail` exit `Some(1)`
-- `doctl_volumes`: `fail` exit `Some(1)`
-- `doctl_projects`: `fail` exit `Some(1)`
-- `doctl_apps`: `fail` exit `Some(1)`
-- `doctl_databases`: `fail` exit `Some(1)`
-- `doctl_vpcs`: `fail` exit `Some(1)`
-- `doctl_load_balancers`: `fail` exit `Some(1)`
-- `doctl_reserved_ips`: `fail` exit `Some(1)`
-- `doctl_tags`: `fail` exit `Some(1)`
-- `doctl_registries`: `fail` exit `Some(1)`
-- `doctl_monitoring_alerts`: `fail` exit `Some(1)`
-- `doctl_uptime_checks`: `fail` exit `Some(1)`
-- `doctl_gradient_regions`: `fail` exit `Some(1)`
-- `doctl_gradient_models`: `fail` exit `Some(1)`
-- `doctl_gradient_agents`: `fail` exit `Some(1)`
-- `doctl_gradient_knowledge_bases`: `fail` exit `Some(1)`
-- `doctl_dedicated_inference_endpoints`: `fail` exit `Some(1)`
-- `doctl_dedicated_inference_sizes`: `fail` exit `Some(1)`
-- `doctl_dedicated_inference_model_config`: `fail` exit `Some(1)`
-- `doctl_serverless_namespaces`: `fail` exit `Some(1)`
-- `doctl_nfs_atl1`: `fail` exit `Some(1)`
-- `doctl_nfs_nyc2`: `fail` exit `Some(1)`
-- `doctl_nfs_ams3`: `fail` exit `Some(1)`
+- `doctl_account_status`: `pass` exit `Some(0)`
+- `doctl_account_ratelimit`: `pass` exit `Some(0)`
+- `doctl_regions`: `pass` exit `Some(0)`
+- `doctl_sizes`: `pass` exit `Some(0)`
+- `doctl_droplets`: `pass` exit `Some(0)`
+- `doctl_gpu_droplets`: `pass` exit `Some(0)`
+- `doctl_ssh_keys`: `pass` exit `Some(0)`
+- `doctl_snapshots`: `pass` exit `Some(0)`
+- `doctl_images_private`: `pass` exit `Some(0)`
+- `doctl_images_public`: `pass` exit `Some(0)`
+- `doctl_firewalls`: `pass` exit `Some(0)`
+- `doctl_volumes`: `pass` exit `Some(0)`
+- `doctl_projects`: `pass` exit `Some(0)`
+- `doctl_apps`: `pass` exit `Some(0)`
+- `doctl_databases`: `pass` exit `Some(0)`
+- `doctl_vpcs`: `pass` exit `Some(0)`
+- `doctl_load_balancers`: `pass` exit `Some(0)`
+- `doctl_reserved_ips`: `pass` exit `Some(0)`
+- `doctl_tags`: `pass` exit `Some(0)`
+- `doctl_registries`: `pass` exit `Some(0)`
+- `doctl_monitoring_alerts`: `pass` exit `Some(0)`
+- `doctl_uptime_checks`: `pass` exit `Some(0)`
+- `doctl_gradient_regions`: `pass` exit `Some(0)`
+- `doctl_gradient_models`: `pass` exit `Some(0)`
+- `doctl_gradient_agents`: `tool_bug` exit `Some(2)`
+- `doctl_gradient_knowledge_bases`: `tool_bug` exit `Some(2)`
+- `doctl_dedicated_inference_endpoints`: `pass` exit `Some(0)`
+- `doctl_dedicated_inference_sizes`: `pass` exit `Some(0)`
+- `doctl_dedicated_inference_model_config`: `pass` exit `Some(0)`
+- `doctl_serverless_namespaces`: `pass` exit `Some(0)`
+- `doctl_nfs_atl1`: `pass` exit `Some(0)`
+- `doctl_nfs_nyc2`: `pass` exit `Some(0)`
+- `doctl_nfs_ams3`: `pass` exit `Some(0)`
 
 ## DigitalOcean Read-Only Command Set
 

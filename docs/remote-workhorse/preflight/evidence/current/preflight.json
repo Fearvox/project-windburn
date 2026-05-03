@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T05:01:08.028968Z",
+  "generated_at_utc": "2026-05-03T06:35:58.51161Z",
   "target": "/Users/0xvox/Windburn/.",
   "remote_host": null,
   "doctor": {
     "schema_version": 1,
-    "generated_at_utc": "2026-05-03T05:01:07.649752Z",
+    "generated_at_utc": "2026-05-03T06:35:46.103194Z",
     "host": "deMacBook-Pro.local",
     "invocation_cwd": "/Users/0xvox/Windburn",
     "target": "/Users/0xvox/Windburn/.",
@@ -13,8 +13,8 @@
       "is_repo": true,
       "top_level": "/Users/0xvox/Windburn",
       "branch": "main",
-      "head": "ef16079",
-      "status_short": "## main",
+      "head": "3e0f6a7",
+      "status_short": "## main\n M crates/runtimectl/src/main.rs\n M docs/remote-workhorse/preflight/REMOTE_NIXOS_PREFLIGHT.md\n M docs/remote-workhorse/preflight/evidence/current/doctor.json\n M docs/remote-workhorse/preflight/evidence/current/preflight.json",
       "error": null
     },
     "probes": [
@@ -174,7 +174,7 @@
         "status": "pass",
         "exit_code": 0,
         "stdout": "",
-        "stderr": "time=\"2026-05-03T01:01:07-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T01:01:07-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T01:01:07-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T01:01:07-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T01:01:07-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T01:01:07-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
+        "stderr": "time=\"2026-05-03T02:35:45-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T02:35:45-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T02:35:45-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T02:35:45-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T02:35:45-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T02:35:45-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
       },
       {
         "id": "just_version",
@@ -276,36 +276,42 @@
       "id": "doctl_account_status",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "account",
         "get",
         "--format",
         "Status",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "active",
+      "stderr": ""
     },
     {
       "id": "doctl_account_ratelimit",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "account",
         "ratelimit",
         "--format",
         "Remaining,Reset",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "4924    2026-05-03 03:27:39 -0400 EDT",
+      "stderr": ""
     },
     {
       "id": "doctl_regions",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "region",
         "list",
@@ -313,15 +319,17 @@
         "Slug,Available",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "nyc1    true\nsfo1    false\nnyc2    true\nams2    false\nsgp1    true\nlon1    true\nnyc3    true\nams3    true\nfra1    true\ntor1    true\nsfo2    true\nblr1    true\nsfo3    true\nsyd1    true\natl1    true\nric1    true",
+      "stderr": ""
     },
     {
       "id": "doctl_sizes",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "size",
         "list",
@@ -329,15 +337,17 @@
         "Slug,Memory,VCPUs,Disk,PriceMonthly",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "s-1vcpu-512mb-10gb         512        1      10      4.00\ns-1vcpu-1gb                1024       1      25      6.00\ns-1vcpu-1gb-intel          1024       1      25      7.00\ns-1vcpu-1gb-35gb-intel     1024       1      35      8.00\ns-1vcpu-2gb                2048       1      50      12.00\ns-1vcpu-2gb-intel          2048       1      50      14.00\ns-1vcpu-2gb-70gb-intel     2048       1      70      16.00\ns-2vcpu-2gb                2048       2      60      18.00\ns-2vcpu-2gb-intel          2048       2      60      21.00\ns-2vcpu-2gb-90gb-intel     2048       2      90      24.00\ns-2vcpu-4gb                4096       2      80      24.00\ns-2vcpu-4gb-intel          4096       2      80      28.00\ns-2vcpu-4gb-120gb-intel    4096       2      120     32.00\nc-2                        4096       2      25      42.00\ns-2vcpu-8gb-160gb-intel    8192       2      160     48.00\ns-4vcpu-8gb                8192       4      160     48.00\ns-4vcpu-8gb-intel          8192       4      160     56.00\ng-2vcpu-8gb                8192       2      25      63.00\ns-4vcpu-8gb-240gb-intel    8192       4      240     64.00\ngd-2vcpu-8gb               8192       2      50      68.00\nm-2vcpu-16gb               16384      2      50      84.00\nc-4                        8192       4      50      84.00\ngpu-4000adax1-20gb         32768      8      500     565.44\ngpu-l40sx1-48gb            65536      8      500     1168.08\ngpu-6000adax1-48gb         65536      8      500     1168.08\ngpu-mi300x1-192gb          245760     20     720     1480.56\ngpu-h100x1-80gb            245760     20     720     2522.16\ngpu-h200x1-141gb           245760     24     720     2559.36\ngpu-mi300x8-1536gb         1966080    160    2046    11844.48\ngpu-h100x8-640gb           1966080    160    2046    17796.48\ngpu-h200x8-1128gb          1966080    192    2046    20474.88",
+      "stderr": ""
     },
     {
       "id": "doctl_droplets",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "droplet",
         "list",
@@ -345,15 +355,17 @@
         "ID,Name,PublicIPv4,PrivateIPv4,Region,Image,Status,Tags,Features,Volumes",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "565803713    ccr-droplet    165.232.146.188    10.124.0.2    sfo3    Ubuntu 24.04 (LTS) x64    active    CCR,DS,Evensong,Research-Vault-MCP    monitoring,droplet_agent,ipv6,private_networking    \n566402244    hermes-nyc1    137.184.104.26     10.116.0.2    nyc1    Ubuntu 24.04 (LTS) x64    active    hermes                                monitoring,droplet_agent,private_networking",
+      "stderr": ""
     },
     {
       "id": "doctl_gpu_droplets",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "droplet",
         "list",
@@ -362,15 +374,17 @@
         "ID,Name,PublicIPv4,Region,Image,Status,Features",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_ssh_keys",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "ssh-key",
         "list",
@@ -378,15 +392,17 @@
         "ID,Name,FingerPrint",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "55726039    SSH-RV-MCP-EVENSONG    bd:bf:8a:04:ac:cc:1a:c7:d2:b1:6e:d0:36:ee:9b:af",
+      "stderr": ""
     },
     {
       "id": "doctl_snapshots",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "snapshot",
         "list",
@@ -394,15 +410,17 @@
         "ID,Name,CreatedAt,Regions,ResourceId,ResourceType,MinDiskSize,Size,Tags",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_images_private",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "image",
         "list",
@@ -410,15 +428,17 @@
         "ID,Name,Type,Distribution,Slug,Public,MinDisk",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "112379295    Convoy 0.6.0 on Ubuntu 20.04                                                       application    Ubuntu         convoy                                       false    25\n113137715    Nakama 3.12.0 on Ubuntu 18.04                                                      application    Ubuntu         nakama-18-04                                 false    25\n114133748    Odoo 14 on Ubuntu 20.04                                                            application    Ubuntu         bigcloud-odoo                                false    25\n114445163    RStudio 2021.09.2+382 on Ubuntu 20.04                                              application    Ubuntu         rstudio-20-04                                false    25\n114537960    Invoice Ninja 5 on Ubuntu 20.0.4                                                   application    Ubuntu         invoiceninja-20-0-4                          false    25\n116470971    nPool 1.8 on Ubuntu 20.04                                                          application    Ubuntu         npool                                        false    25\n117726186    BotGuard Ingress Controller 1.0 on Debian 11 (bullseye)                            application    Debian         botguardo-botguardingressc                   false    25\n117873390    Intel gProfiler Crypto Demo 1.3 on Ubuntu 20.04                                    application    Ubuntu         intel-intelgprofilercr                       false    80\n118649344    Callaba Cloud Live Streaming 6.0 on Ubuntu 20.04 (LTS)                             application    Ubuntu         callabacloud-callabacloudlive                false    60\n118853397    Pi-hole VPN 0.2.1-beta on Debian 11                                                application    Debian         sharklabs-piholevpn                          false    10\n119537555    log-store 0.6.3 on Ubuntu 22.04                                                    application    Ubuntu         logstore                                     false    25\n119773526    OpenMPTCProuter 0.1.0-beta on Debian 11                                            application    Debian         sharklabs-openmptcprouter                    false    10\n119776176    ShellHub 0.10.4 on Ubuntu 22.04                                                    application    Ubuntu         shellhub                                     false    25\n120503505    SOOS DAST Droplet 0.3.4 on Ubuntu 20.04                                            application    Ubuntu         soos-soosdastdroplet                         false    25\n121125522    Flashphoner Web Call Server 5.2.1484 on CentOS 7.6                                 application    CentOS         flashphoner-7-6                              false    50\n121749717    wpcontroller 20221127181653 on Ubuntu 22.04                                        application    Ubuntu         warpspeedvpn-wpcontroller                    false    25\n121873995    Micro 3.15.0 on 22.04                                                              application    Ubuntu         m3o-micro                                    false    25\n122224025    StretchShop 0.6.8 on Ubuntu 22.04                                                  application    Ubuntu         stretchshop                                  false    25\n122871403    Akaunting on Ubuntu 20.04                                                          application    Ubuntu         akaunting-20-04                              false    25\n123266137    Znuny 6.4.5 on Debian 10 (buster)                                                  application    Debian         znuny                                        false    25\n123334937    NGINX 1.23.3 on Ubuntu 22.04                                                       application    Ubuntu         nginx                                        false    25\n123448769    OTT Stream 1.0 on Centos 7                                                         application    CentOS         playboxtechnolog-ottstream                   false    50\n124191065    Stacks Blockchain 2.05.0.6.0 on Debian 11                                          application    Debian         stacksfoundation-stacksblockchain            false    80\n126385394    HQbird Firebird  3.0-10.1.1209 on CentOS 7                                         application    CentOS         ibsurgeon-hqbirdfirebird                     false    80\n126828281    RunCloud-20.04 2.6.1.1 on Ubuntu 20.04                                             application    Ubuntu         runcloud-runcloud2004-20-04                  false    25\n126897486    Workflow Server 3 3.1.1 on Ubuntu 22.04                                            application    Ubuntu         optimajet-workflowserver3                    false    25\n127543848    WorkflowServer 3.1.1 on Ubuntu 22.04                                               application    Ubuntu         optimajet-workflowserver-18-04               false    25\n128822461    titra 0.90.2 on Ubuntu 22.04                                                       application    Ubuntu         kromit-titra-20-04                           false    25\n128824718    MEAN 1.0 on Ubuntu 22.04                                                           application    Ubuntu         mean                                         false    25\n129183927    PhotoPrism on Ubuntu 22.04                                                         application    Ubuntu         photoprism-20-04                             false    25\n129589827    Openblocks 1.1.8 on Ubuntu 20.04 (LTS)                                             application    Ubuntu         openblocks                                   false    50\n130115563    Easypanel 1.16.0 on Ubuntu 22.04                                                   application    Ubuntu         easypanel                                    false    25\n130673319    AzuraCast 0.17.7 on Ubuntu 22.04                                                   application    Ubuntu         azuracast-20-04                              false    50\n131016796    OriginTrail node 6 on Ubuntu 20.04                                                 application    Ubuntu         origintrail-origintrailnode                  false    25\n131020599    Jelastic PaaS 8.2-5 on Centos 7                                                    application    CentOS         jelastic-jelasticpaas-7                      false    160\n131398269    Zabbix Proxy 6.4 6.4.1 on Alma Linux 9.1                                           application    AlmaLinux      zabbix-zabbixproxy64                         false    50\n131398384    Zabbix Server 6.4 6.4.1 on Rocky Linux 9.1                                         application    AlmaLinux      zabbix-zabbixserver64                        false    50\n131398452    Zabbix Server 6.0 6.0.17 on Alma Linux 9.1                                         application    AlmaLinux      zabbix-zabbixserver60                        false    50\n131787130    Netmaker 0.18.7 on Ubuntu 22.10                                                    application    Ubuntu         gravitl-netmaker                             false    25\n132425380    Activepieces 0.3.13 on Ubuntu 22.04                                                application    Ubuntu         activepieces                                 false    10\n134175468    DreamFactory 5.0.1 on Ubuntu 20.04.6                                               application    Ubuntu         dreamfactory                                 false    25\n134995392    Minecraft: Java Edition Server 1.20.1 on Ubuntu 22.04                              application    Ubuntu         sharklabs-minecraftjavaedi-18-04             false    25\n135377501    ZesleCP 3.1.20 on CentOS 7.x                                                       application    CentOS         zeslecp-7                                    false    25\n135999646    DeepSparse Inference Runtime 1.5.2 on Ubuntu 22.10                                 application    Ubuntu         neuralmagic-deepsparseinfere                 false    25\n136815446    Caligrafy 2.0 on 22.10                                                             application    Ubuntu         caligrafybypostc-caligrafy                   false    25\n138018827    Discourse on Ubuntu 22.04                                                          application    Ubuntu         discourse-20-04                              false    50\n138079920    LinuxGSM 1.0 on Ubuntu 22.04                                                       application    Ubuntu         linuxgsm                                     false    25\n138203563    Haltdos Pro WAF 1.0.1 on Ubuntu 22.04                                              application    Ubuntu         haltdos-haltdosprowaf                        false    25\n138610344    Haltdos WAF Pro 1.0.1 on Ubuntu 22.04                                              application    Ubuntu         haltdos-haltdoswafpro                        false    25\n140366115    YPSPS-1 83.11.0.30 on Ubuntu 20.04 LTS                                             application    Ubuntu         yeastar-ypsps1                               false    50\n140488730    Appwrite 1.4 on Ubuntu 22.04                                                       application    Ubuntu         appwrite-20-04                               false    25\n140492804    OriginTrail DKG testnet node 6 on Ubuntu 20.04                                     application    Ubuntu         origintrail-origintraildkgte                 false    25\n140498883    OriginTrail DKG mainnet node 6 on Ubuntu 20.04                                     application    Ubuntu         origintrail-origintraildkgma                 false    25\n141324528    Osmosis 19.2.0 on Ubuntu 22.04                                                     application    Ubuntu         osmosislabs-osmosis                          false    25\n142737922    Odoo ERP 16 on Ubuntu 22.04                                                        application    Ubuntu         sharklabs-erpodoo                            false    25\n143550723    SpinupWP 1.0 on Ubuntu 22.04                                                       application    Ubuntu         spinupwp                                     false    25\n143627059    Konnect VPN Access Server 2310.0 on Ubuntu 20.04                                   application    Ubuntu         kuyio-konnectvpna                            false    25\n143644364    WPCloudDeploy 5.5.0 on Ubuntu 20.04                                                application    Ubuntu         wpclouddeploy                                false    25\n143813694    MariaDB 10.6.12 on Ubuntu 22.04                                                    application    Ubuntu         mariadb                                      false    25\n144493247    CSMM 1.20.2 on Ubuntu 20.04                                                        application    Ubuntu         csmm-20-04                                   false    25\n145189564    Deskpro on Ubuntu 22.04                                                            application    Ubuntu         deskpro                                      false    80\n145262042    Mastodon 4.2.1 on Debian 12                                                        application    Debian         mastodon-18-04                               false    50\n146033344    Flask 3.0.0 on Ubuntu 22.04                                                        application    Ubuntu         flask                                        false    10\n146095122    Supabase 3.8 on Ubuntu 22.04                                                       application    Ubuntu         supabase                                     false    50\n146287385    VS Code Server 4.19.1 on Ubuntu 22.04 (LTS)                                        application    Ubuntu         codertechnologie-vscodeserver                false    25\n146288584    Code Server 4.19.1 on Ubuntu 22.04 (LTS)                                           applicat...[truncated]",
+      "stderr": ""
     },
     {
       "id": "doctl_images_public",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "image",
         "list",
@@ -427,15 +447,17 @@
         "ID,Name,Distribution,Slug,Public,MinDisk",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "112379295    Convoy 0.6.0 on Ubuntu 20.04                                                       Ubuntu         convoy                                       false    25\n113137715    Nakama 3.12.0 on Ubuntu 18.04                                                      Ubuntu         nakama-18-04                                 false    25\n114133748    Odoo 14 on Ubuntu 20.04                                                            Ubuntu         bigcloud-odoo                                false    25\n114445163    RStudio 2021.09.2+382 on Ubuntu 20.04                                              Ubuntu         rstudio-20-04                                false    25\n114537960    Invoice Ninja 5 on Ubuntu 20.0.4                                                   Ubuntu         invoiceninja-20-0-4                          false    25\n116470971    nPool 1.8 on Ubuntu 20.04                                                          Ubuntu         npool                                        false    25\n117726186    BotGuard Ingress Controller 1.0 on Debian 11 (bullseye)                            Debian         botguardo-botguardingressc                   false    25\n117873390    Intel gProfiler Crypto Demo 1.3 on Ubuntu 20.04                                    Ubuntu         intel-intelgprofilercr                       false    80\n118649344    Callaba Cloud Live Streaming 6.0 on Ubuntu 20.04 (LTS)                             Ubuntu         callabacloud-callabacloudlive                false    60\n118853397    Pi-hole VPN 0.2.1-beta on Debian 11                                                Debian         sharklabs-piholevpn                          false    10\n119537555    log-store 0.6.3 on Ubuntu 22.04                                                    Ubuntu         logstore                                     false    25\n119773526    OpenMPTCProuter 0.1.0-beta on Debian 11                                            Debian         sharklabs-openmptcprouter                    false    10\n119776176    ShellHub 0.10.4 on Ubuntu 22.04                                                    Ubuntu         shellhub                                     false    25\n120503505    SOOS DAST Droplet 0.3.4 on Ubuntu 20.04                                            Ubuntu         soos-soosdastdroplet                         false    25\n121125522    Flashphoner Web Call Server 5.2.1484 on CentOS 7.6                                 CentOS         flashphoner-7-6                              false    50\n121749717    wpcontroller 20221127181653 on Ubuntu 22.04                                        Ubuntu         warpspeedvpn-wpcontroller                    false    25\n121873995    Micro 3.15.0 on 22.04                                                              Ubuntu         m3o-micro                                    false    25\n122224025    StretchShop 0.6.8 on Ubuntu 22.04                                                  Ubuntu         stretchshop                                  false    25\n122871403    Akaunting on Ubuntu 20.04                                                          Ubuntu         akaunting-20-04                              false    25\n123266137    Znuny 6.4.5 on Debian 10 (buster)                                                  Debian         znuny                                        false    25\n123334937    NGINX 1.23.3 on Ubuntu 22.04                                                       Ubuntu         nginx                                        false    25\n123448769    OTT Stream 1.0 on Centos 7                                                         CentOS         playboxtechnolog-ottstream                   false    50\n124191065    Stacks Blockchain 2.05.0.6.0 on Debian 11                                          Debian         stacksfoundation-stacksblockchain            false    80\n126385394    HQbird Firebird  3.0-10.1.1209 on CentOS 7                                         CentOS         ibsurgeon-hqbirdfirebird                     false    80\n126828281    RunCloud-20.04 2.6.1.1 on Ubuntu 20.04                                             Ubuntu         runcloud-runcloud2004-20-04                  false    25\n126897486    Workflow Server 3 3.1.1 on Ubuntu 22.04                                            Ubuntu         optimajet-workflowserver3                    false    25\n127543848    WorkflowServer 3.1.1 on Ubuntu 22.04                                               Ubuntu         optimajet-workflowserver-18-04               false    25\n128822461    titra 0.90.2 on Ubuntu 22.04                                                       Ubuntu         kromit-titra-20-04                           false    25\n128824718    MEAN 1.0 on Ubuntu 22.04                                                           Ubuntu         mean                                         false    25\n129183927    PhotoPrism on Ubuntu 22.04                                                         Ubuntu         photoprism-20-04                             false    25\n129589827    Openblocks 1.1.8 on Ubuntu 20.04 (LTS)                                             Ubuntu         openblocks                                   false    50\n130115563    Easypanel 1.16.0 on Ubuntu 22.04                                                   Ubuntu         easypanel                                    false    25\n130673319    AzuraCast 0.17.7 on Ubuntu 22.04                                                   Ubuntu         azuracast-20-04                              false    50\n131016796    OriginTrail node 6 on Ubuntu 20.04                                                 Ubuntu         origintrail-origintrailnode                  false    25\n131020599    Jelastic PaaS 8.2-5 on Centos 7                                                    CentOS         jelastic-jelasticpaas-7                      false    160\n131398269    Zabbix Proxy 6.4 6.4.1 on Alma Linux 9.1                                           AlmaLinux      zabbix-zabbixproxy64                         false    50\n131398384    Zabbix Server 6.4 6.4.1 on Rocky Linux 9.1                                         AlmaLinux      zabbix-zabbixserver64                        false    50\n131398452    Zabbix Server 6.0 6.0.17 on Alma Linux 9.1                                         AlmaLinux      zabbix-zabbixserver60                        false    50\n131787130    Netmaker 0.18.7 on Ubuntu 22.10                                                    Ubuntu         gravitl-netmaker                             false    25\n132425380    Activepieces 0.3.13 on Ubuntu 22.04                                                Ubuntu         activepieces                                 false    10\n134175468    DreamFactory 5.0.1 on Ubuntu 20.04.6                                               Ubuntu         dreamfactory                                 false    25\n134995392    Minecraft: Java Edition Server 1.20.1 on Ubuntu 22.04                              Ubuntu         sharklabs-minecraftjavaedi-18-04             false    25\n135377501    ZesleCP 3.1.20 on CentOS 7.x                                                       CentOS         zeslecp-7                                    false    25\n135509519    9 x64                                                                              Rocky Linux    rockylinux-9-x64                             true     10\n135999646    DeepSparse Inference Runtime 1.5.2 on Ubuntu 22.10                                 Ubuntu         neuralmagic-deepsparseinfere                 false    25\n136815446    Caligrafy 2.0 on 22.10                                                             Ubuntu         caligrafybypostc-caligrafy                   false    25\n138018827    Discourse on Ubuntu 22.04                                                          Ubuntu         discourse-20-04                              false    50\n138079920    LinuxGSM 1.0 on Ubuntu 22.04                                                       Ubuntu         linuxgsm                                     false    25\n138203563    Haltdos Pro WAF 1.0.1 on Ubuntu 22.04                                              Ubuntu         haltdos-haltdosprowaf                        false    25\n138610344    Haltdos WAF Pro 1.0.1 on Ubuntu 22.04                                              Ubuntu         haltdos-haltdoswafpro                        false    25\n140366115    YPSPS-1 83.11.0.30 on Ubuntu 20.04 LTS                                             Ubuntu         yeastar-ypsps1                               false    50\n140488730    Appwrite 1.4 on Ubuntu 22.04                                                       Ubuntu         appwrite-20-04                               false    25\n140492804    OriginTrail DKG testnet node 6 on Ubuntu 20.04                                     Ubuntu         origintrail-origintraildkgte                 false    25\n140498883    OriginTrail DKG mainnet node 6 on Ubuntu 20.04                                     Ubuntu         origintrail-origintraildkgma                 false    25\n141324528    Osmosis 19.2.0 on Ubuntu 22.04                                                     Ubuntu         osmosislabs-osmosis                          false    25\n142737922    Odoo ERP 16 on Ubuntu 22.04                                                        Ubuntu         sharklabs-erpodoo                            false    25\n143033891    8 x64                                                                              Rocky Linux    rockylinux-8-x64                             true     10\n143550723    SpinupWP 1.0 on Ubuntu 22.04                                                       Ubuntu         spinupwp                                     false    25\n143627059    Konnect VPN Access Server 2310.0 on Ubuntu 20.04                                   Ubuntu         kuyio-konnectvpna                            false    25\n143644364    WPCloudDeploy 5.5.0 on Ubuntu 20.04                                                Ubuntu         wpclouddeploy                                false    25\n143813694    MariaDB 10.6.12 on Ubuntu 22.04                                                    Ubuntu         mariadb                                      false    25\n144493247    CSMM 1.20.2 on Ubuntu 20.04                                                        Ubuntu         csmm-20-04                                   false    25\n145189564    Deskpro on Ubuntu 22.04                                                            Ubuntu         deskpro                                      false    80\n145262042    Mastodon 4.2.1 on Debian 12                                                        Debian         mastodon-18-04                               false    50\n146033344    Flask 3.0.0 on Ubuntu 22.04                                                        Ubuntu         flask                                        false    10\n146095122    Supabase 3.8 on Ubuntu 22.04                                                       Ubuntu         supabase                                     false    50\n146287385    VS Code Server 4.19.1 on Ubuntu 22.04 (LTS)                                        Ubuntu         codertechnologie-vscodeserver                false    25\n146288584    Code Server 4.19.1 on Ubuntu 22.04 (LTS)                                           Ubuntu         sharklabs-codeserver1                        false    25\n146964731    BevywiseMQTTRoute 4.0 on Ubuntu 22.04                                              Ubuntu         bevywise-bevywisemqttrout                    false    25\n147430679    Ubuntu Desktop (GNOME) 1.524 on Ubuntu 22.04                                       Ubuntu         ubuntudesktopgno                             false    50\n147525444    RackWare Cloud Migration 7.4.5.6 on CentOS 7.x                                     CentOS         rackware-rackwarecloudmig                    false    60\n147974713    Swarm Lightnode 0.1a on Ubuntu 20.04                      ...[truncated]",
+      "stderr": ""
     },
     {
       "id": "doctl_firewalls",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "firewall",
         "list",
@@ -443,15 +465,17 @@
         "ID,Name,Status,DropletIDs,Tags,PendingChanges",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_volumes",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "volume",
         "list",
@@ -459,75 +483,85 @@
         "ID,Name,Size,Region,DropletIDs,Tags",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_projects",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "projects",
         "list",
         "--format",
         "ID,Name,Purpose,Environment,IsDefault",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "621e2718-6f76-449b-ac63-551cbda7cab1    first-project            true",
+      "stderr": ""
     },
     {
       "id": "doctl_apps",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "apps",
         "list",
         "--format",
         "ID,Spec.Name,DefaultIngress,ActiveDeployment.ID,Updated",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_databases",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "databases",
         "list",
         "--format",
         "ID,Name,Engine,Version,Region,Status,Size,StorageMib",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_vpcs",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "vpcs",
         "list",
         "--format",
         "ID,Name,IPRange,Region,Default",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "60f72853-fb82-47dd-ba03-f309a9011d08    default-nyc1    10.116.0.0/20    nyc1    true\n837d85fd-c6fa-40b7-bd85-d6b5f8142acc    default-sfo3    10.124.0.0/20    sfo3    true",
+      "stderr": ""
     },
     {
       "id": "doctl_load_balancers",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "load-balancer",
         "list",
@@ -535,15 +569,17 @@
         "ID,Name,IP,IPv6,Status,Region,VPCUUID,DropletIDs,HealthCheck",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_reserved_ips",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "reserved-ip",
         "list",
@@ -551,15 +587,17 @@
         "IP,Region,DropletID,DropletName,ProjectID",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_tags",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "compute",
         "tag",
         "list",
@@ -567,30 +605,34 @@
         "Name,DropletCount",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "CCR                   1\nDS                    1\nEvensong              1\nhermes                1\nResearch-Vault-MCP    1",
+      "stderr": ""
     },
     {
       "id": "doctl_registries",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "registries",
         "list",
         "--format",
         "Name,Endpoint,Region",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_monitoring_alerts",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "monitoring",
         "alert",
         "list",
@@ -598,15 +640,17 @@
         "UUID,Type,Description,Entities,Tags,Emails,Enabled",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "UUID    Type    Description    Compare    Value    Window    Entities    Tags    Emails    Slack Channels    Enabled",
+      "stderr": ""
     },
     {
       "id": "doctl_uptime_checks",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "monitoring",
         "uptime",
         "list",
@@ -614,45 +658,51 @@
         "ID,Name,Type,Target,Regions,Enabled",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_gradient_regions",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "gradient",
         "list-regions",
         "--format",
         "Region,ServesInference,ServesBatch",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "Inference URL                     Region    Serves Batch    Serves Inference    Stream Inference URL\nhttps://inference.do-ai.run/v1    tor1      true            false               https://stream.do-ai.run\nhttps://inference.do-ai.run/v1    atl1      false           false               \nhttps://inference.do-ai.run/v1    ric1      false           true",
+      "stderr": ""
     },
     {
       "id": "doctl_gradient_models",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "gradient",
         "list-models",
         "--format",
         "Id,Name,isFoundational,Version",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "ID                                      Name                                              Agreement                             Created At                       Updated At                       Is Foundational    Parent ID                               Upload Complete    URL    Version\n18bc9b8f-73c5-11f0-b074-4e013e2ddde4    OpenAI GPT-oss-120b                               Apache 2.0 License                    2025-08-07 19:31:20 +0000 UTC    2026-04-29 23:18:03 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n153b8921-73c5-11f0-b074-4e013e2ddde4    OpenAI GPT-oss-20b                                Apache 2.0 License                    2025-08-07 19:31:15 +0000 UTC    2026-04-29 23:18:03 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\nd754f2d7-d1f0-11ef-bf8f-4e013e2ddde4    Llama 3.3 Instruct (70B)                          Meta Llama 3.3 Community License      2025-01-13 20:56:20 +0000 UTC    2026-04-29 23:18:03 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n88515689-75c6-11ef-bf8f-4e013e2ddde4    Llama 3.1 Instruct (8B)                           Meta Llama 3.1 Community License      2024-08-23 20:59:41 +0000 UTC    2026-04-22 17:41:50 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\nb6b7ac88-e575-11ef-bf8f-4e013e2ddde4    DeepSeek R1 Distill Llama 70B                     DeepSeek license language             2025-02-07 17:05:21 +0000 UTC    2026-04-29 23:18:03 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n84ae55b1-6888-11f0-bf8f-4e013e2ddde4    Anthropic Claude Opus 4                           Anthropic Terms                       2025-07-24 12:19:59 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n84ae51c6-6888-11f0-bf8f-4e013e2ddde4    Anthropic Claude Sonnet 4                         Anthropic Terms                       2025-07-24 12:19:59 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n28bada65-0e66-11f0-bf8f-4e013e2ddde4    Anthropic Claude 3.7 Sonnet                       Anthropic Terms                       2025-03-31 19:27:18 +0000 UTC    2026-04-24 16:40:26 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\nf285d639-769e-11ef-bf8f-4e013e2ddde4    Anthropic Claude 3.5 Sonnet                       Anthropic Terms                       2024-09-19 15:50:51 +0000 UTC    2026-04-24 16:40:26 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n2bc4eb0c-d442-11ef-bf8f-4e013e2ddde4    Anthropic Claude 3.5 Haiku                        Anthropic Terms                       2025-01-16 19:43:33 +0000 UTC    2026-04-24 16:40:26 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n339e07f3-d442-11ef-bf8f-4e013e2ddde4    Anthropic Claude 3 Opus                           Anthropic Terms                       2025-01-16 19:43:47 +0000 UTC    2026-04-24 16:40:26 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n9a36406a-f300-11ef-bf8f-4e013e2ddde4    OpenAI o1                                         OpenAI Policies                       2025-02-24 22:42:18 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n1b07e52b-73c5-11f0-b074-4e013e2ddde4    OpenAI GPT-5                                      OpenAI Policies                       2025-08-07 19:31:24 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n84ae10af-6888-11f0-bf8f-4e013e2ddde4    OpenAI GPT-4.1                                    OpenAI Policies                       2025-07-24 12:19:59 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n57fc127a-5836-11f0-bf8f-4e013e2ddde4    OpenAI o3                                         OpenAI Policies                       2025-07-03 17:51:27 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n9a364867-f300-11ef-bf8f-4e013e2ddde4    OpenAI GPT-4o                                     OpenAI Policies                       2025-02-24 22:42:18 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n9a3644c7-f300-11ef-bf8f-4e013e2ddde4    OpenAI GPT-4o mini                                OpenAI Policies                       2025-02-24 22:42:18 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n9a36366f-f300-11ef-bf8f-4e013e2ddde4    OpenAI o3 mini                                    OpenAI Policies                       2025-02-24 22:42:18 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n9fef3f5d-8db0-11f0-b074-4e013e2ddde4    OpenAI GPT-5 Mini                                 OpenAI Policies                       2025-09-09 19:10:18 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\na23d75ac-8db0-11f0-b074-4e013e2ddde4    OpenAI GPT-5 Nano                                 OpenAI Policies                       2025-09-09 19:10:22 +0000 UTC    2026-04-23 17:54:31 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n00000000-0000-0000-0000-000000000029    OpenAI GPT Image 1                                OpenAI Policies                       2025-10-01 14:51:40 +0000 UTC    2026-04-30 19:55:32 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n3a25f5a8-5e7d-11f0-bf8f-4e013e2ddde4    Qwen3 32B                                         Meta Llama 3.1 Community License      2025-07-11 17:33:58 +0000 UTC    2026-04-29 23:18:03 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\nf285d2ec-769e-11ef-bf8f-4e013e2ddde4    Mistral Nemo Instruct                             Apache 2.0 License                    2024-09-19 15:50:51 +0000 UTC    2026-04-09 20:24:34 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n653bafad-3e8e-11f1-b074-4e013e2ddde4    Mistral 7B Instruct v0.3                          Apache 2.0 License                    2026-04-22 21:01:12 +0000 UTC    2026-04-22 21:01:12 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n653af576-3e8e-11f1-b074-4e013e2ddde4    Ministral 3 8B                                    Apache 2.0 License                    2026-04-22 21:01:12 +0000 UTC    2026-04-22 21:01:12 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n653c3e1b-3e8e-11f1-b074-4e013e2ddde4    Qwen 2.5 14B Instruct                             Apache 2.0 License                    2026-04-22 21:01:12 +0000 UTC    2026-04-22 21:01:12 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n65397f58-3e8e-11f1-b074-4e013e2ddde4    Nemotron 3 Nano 30B A3B                           NVIDIA Nemotron Open Model License    2026-04-22 21:01:12 +0000 UTC    2026-04-22 21:01:12 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n653a42a0-3e8e-11f1-b074-4e013e2ddde4    DeepSeek V3                                       DeepSeek-V3 Model License             2026-04-22 21:01:12 +0000 UTC    2026-04-22 21:01:12 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n22653204-79ed-11ef-bf8f-4e013e2ddde4    GTE Large EN v1.5                                                                       2024-09-23 20:48:06 +0000 UTC    2026-04-26 02:29:23 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n068d06ca-ab89-11f0-b074-4e013e2ddde4    Fal Fast SDXL                                                                           2025-10-17 18:42:25 +0000 UTC    2026-04-28 21:20:41 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n069d6fe0-ab89-11f0-b074-4e013e2ddde4    Fal Flux Schnell                                                                        2025-10-17 18:42:25 +0000 UTC    2026-04-28 21:20:41 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n06dcfc89-ab89-11f0-b074-4e013e2ddde4    Fal Stable Audio 2.5                                                                    2025-10-17 18:42:26 +0000 UTC    2026-04-28 21:20:41 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n072bbbff-ab89-11f0-b074-4e013e2ddde4    Fal ElevenLabs TTS Multilingual v2                                                      2025-10-17 18:42:26 +0000 UTC    2026-04-28 21:20:41 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n1377dcee-3cf9-11f1-b074-4e013e2ddde4    Qwen3 TTS                                                                               2026-04-20 20:39:49 +0000 UTC    2026-04-27 23:58:50 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n4b46b0e9-3b43-11f1-b074-4e013e2ddde4    Stable Diffusion 3.5 Large                                                              2026-04-18 16:26:03 +0000 UTC    2026-04-27 23:58:50 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n3c343874-3fc6-11f1-b074-4e013e2ddde4    Nemotron-nano 12b v2-vl                                                                 2026-04-24 10:13:27 +0000 UTC    2026-05-01 11:42:00 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\ndea6a450-3aab-11f1-b074-4e013e2ddde4    Wan 2.2 T2V                                                                             2026-04-17 22:22:07 +0000 UTC    2026-04-27 23:58:50 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n0fc5598e-3abb-11f1-b074-4e013e2ddde4    Ministral 3 14B                                                                         2026-04-18 00:10:52 +0000 UTC    2026-04-27 23:16:07 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n061f8523-39c8-11f1-b074-4e013e2ddde4    Qwen3 Coder Flash                                                                       2026-04-16 19:11:08 +0000 UTC    2026-04-27 23:16:07 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n1fbd36b1-40e5-11f1-b074-4e013e2ddde4    Nemotron 3 Nano Omni                                                                    2026-04-25 20:27:04 +0000 UTC    2026-05-01 20:36:53 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\nefbeebdd-3839-11f1-b074-4e013e2ddde4    Gemma 4                                           Arcee AI Terms & Conditions           2026-04-14 19:41:31 +0000 UTC    2026-05-01 11:42:42 +0000 UTC    true               00000000-0000-0000-0000-000000000000    true                      1.0.0\n58fc5449-224a-11f1-b074-4e01...[truncated]",
+      "stderr": ""
     },
     {
       "id": "doctl_gradient_agents",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "gradient",
         "agent",
         "list",
@@ -660,15 +710,17 @@
         "Id,Name,Region,Model-id,Project-id",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "tool_bug",
+      "exit_code": 2,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": "doctl 1.155.0 Gradient pagination bug: command panicked while listing an empty or inaccessible collection; keep this advisory and use the DigitalOcean API/MCP or a newer doctl before depending on this inventory."
     },
     {
       "id": "doctl_gradient_knowledge_bases",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "gradient",
         "knowledge-base",
         "list",
@@ -676,60 +728,68 @@
         "UUID,Name,Region,ProjectId,DatabaseId,IsPublic,LastIndexingJob",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "tool_bug",
+      "exit_code": 2,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": "doctl 1.155.0 Gradient pagination bug: command panicked while listing an empty or inaccessible collection; keep this advisory and use the DigitalOcean API/MCP or a newer doctl before depending on this inventory."
     },
     {
       "id": "doctl_dedicated_inference_endpoints",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "dedicated-inference",
         "list",
         "--format",
         "ID,Name,Region,Status,VPCUUID,PublicEndpoint,PrivateEndpoint",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_dedicated_inference_sizes",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "dedicated-inference",
         "get-sizes",
         "--format",
         "GPUSlug,PricePerHour,CPU,Memory,GPUCount,GPUVramGB,GPUModel,Regions",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "gpu-mi300x1-192gb     2.59 USD     20     245760     1    192     amd_mi300x     atl1\ngpu-mi300x8-1536gb    20.70 USD    160    1966080    8    1536    amd_mi300x     atl1\ngpu-h100x1-80gb       4.41 USD     20     245760     1    80      nvidia_h100    \ngpu-h200x1-141gb      4.47 USD     24     245760     1    141     nvidia_h200    atl1,nyc2\ngpu-h200x8-1128gb     35.78 USD    192    1966080    8    1128    nvidia_h200    \ngpu-mi325x1-256gb     2.98 USD     20     163840     1    256     amd_mi325x     tor1\ngpu-mi325x8-2048gb    23.82 USD    160    1310720    8    2048    amd_mi325x     tor1\ngpu-b300x1-288gb      10.39 USD    28     458752     1    288     nvidia_b300    \ngpu-b300x8-2304gb     83.10 USD    224    3670016    8    2304    nvidia_b300",
+      "stderr": ""
     },
     {
       "id": "doctl_dedicated_inference_model_config",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "dedicated-inference",
         "get-gpu-model-config",
         "--format",
         "ModelSlug,ModelName,IsModelGated,GPUSlugs",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
-      "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "status": "pass",
+      "exit_code": 0,
+      "stdout": "nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16         NVIDIA-Nemotron-Nano-12B-v2-VL-BF16         false    gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-h100x1-80gb\nnvidia/Qwen3.5-397B-A17B-NVFP4                     Qwen3.5-397B-A17B-NVFP4                     false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nmistralai/Mistral-7B-Instruct-v0.3                 Mistral-7B-Instruct-v0.3                    false    gpu-mi300x1-192gb-contracted,gpu-h200x1-141gb,gpu-b300x1-288gb-contracted,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-mi300x1-192gb\ndeepseek-ai/DeepSeek-V4-Pro                        DeepSeek-V4-Pro                             false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nopenai/gpt-oss-120b                                OpenAI GPT-OSS 120B                         false    gpu-mi300x1-192gb,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb-contracted,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb-contracted,gpu-h100x1-80gb,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb\nQwen/Qwen3-32B                                     Qwen3-32B                                   false    gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted\nmeta-llama/Llama-Guard-4-12B                       Llama-Guard-4-12B                           true     gpu-h100x1-80gb,gpu-h200x1-141gb,gpu-b300x1-288gb,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi325x1-256gb-contracted\nmeta-llama/Llama-4-Maverick-17B-128E-Instruct      Llama-4-Maverick-17B-128E-Instruct          true     gpu-mi325x8-2048gb,gpu-mi325x8-2048gb-contracted\ndeepseek-ai/DeepSeek-R1-Distill-Llama-70B          DeepSeek-R1-Distill-Llama-70B               false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nopenai/gpt-oss-20b                                 OpenAI GPT-OSS 20B                          false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nmistralai/Ministral-3-8B-Instruct-2512             Ministral-3-8B-Instruct-2512                false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted\nMiniMaxAI/MiniMax-M2.5                             MiniMax-M2.5                                false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted\nnvidia/DeepSeek-V3.2-NVFP4                         DeepSeek-V3.2-NVFP4                         false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nmoonshotai/Kimi-K2.6                               Kimi-K2.6                                   false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nzai-org/GLM-5-FP8                                  GLM-5-FP8                                   false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nQwen/Qwen2.5-14B-Instruct                          Qwen2.5-14B-Instruct                        false    gpu-mi300x1-192gb,gpu-mi325x1-256gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted\ndeepseek-ai/DeepSeek-R1                            DeepSeek-R1                                 false    gpu-h200x8-1128gb,gpu-h200x8-1128gb-contracted,gpu-mi300x8-1536gb,gpu-mi300x8-1536gb-contracted,gpu-mi325x8-2048gb,gpu-mi325x8-2048gb-contracted\ngoogle/gemma-4-31B-it                              gemma-4-31B-it                              false    gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nQwen/Qwen3-Coder-30B-A3B-Instruct                  Qwen3-Coder-30B-A3B-Instruct                false    gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted\nnvidia/Kimi-K2.5-NVFP4                             Kimi-K2.5-NVFP4                             false    gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nnvidia/MiniMax-M2.5-NVFP4                          MiniMax-M2.5-NVFP4                          true     gpu-b300x8-2304gb,gpu-b300x8-2304gb-contracted\nmeta-llama/Llama-3.1-8B-Instruct                   Llama-3.1-8B-Instruct                       true     gpu-mi300x1-192gb,gpu-mi325x1-256gb-contracted,gpu-h200x1-141gb,gpu-b300x1-288gb,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb-contracted\nmeta-llama/Llama-3.3-70B-Instruct                  Llama-3.3-70B-Instruct                      true     gpu-mi325x1-256gb,gpu-mi325x1-256gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-mi300x1-192gb,gpu-mi300x1-192gb-contracted\nmistralai/Ministral-3-14B-Instruct-2512            Ministral-3-14B-Instruct-2512               false    gpu-mi300x1-192gb,gpu-mi325x1-256gb-contracted,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-mi300x1-192gb-contracted,gpu-mi325x1-256gb,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted\ndeepseek-ai/DeepSeek-V3                            DeepSeek-V3                                 false    gpu-b300x8-2304gb-contracted,gpu-mi300x8-1536gb,gpu-mi300x8-1536gb-contracted,gpu-mi325x8-2048gb,gpu-mi325x8-2048gb-contracted,gpu-h200x8-1128gb,gpu-h200x8-1128gb-contracted,gpu-b300x8-2304gb\nnvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16         NVIDIA-Nemotron-3-Nano-30B-A3B-BF16         false    gpu-h200x1-141gb,gpu-h200x1-141gb-contracted,gpu-b300x1-288gb,gpu-b300x1-288gb-contracted,gpu-h100x1-80gb,gpu-h100x1-80gb-contracted\nnvidia/NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-BF16    NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-BF16    false    gpu-h100x1-80gb,gpu-h100x1-80gb-contracted,gpu-h200x1-141gb,gpu-h200x1-141gb-contracted",
+      "stderr": ""
     },
     {
       "id": "doctl_serverless_namespaces",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "serverless",
         "namespaces",
         "list",
@@ -737,15 +797,17 @@
         "Label,Region,ID,Host",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_nfs_atl1",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "nfs",
         "list",
         "--region",
@@ -754,15 +816,17 @@
         "ID,Name,Size,Region,Status,VpcIDs",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_nfs_nyc2",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "nfs",
         "list",
         "--region",
@@ -771,15 +835,17 @@
         "ID,Name,Size,Region,Status,VpcIDs",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     },
     {
       "id": "doctl_nfs_ams3",
       "command": [
         "doctl",
+        "--access-token",
+        "$DIGITALOCEAN_ACCESS_TOKEN",
         "nfs",
         "list",
         "--region",
@@ -788,17 +854,16 @@
         "ID,Name,Size,Region,Status,VpcIDs",
         "--no-header"
       ],
-      "status": "fail",
-      "exit_code": 1,
+      "status": "pass",
+      "exit_code": 0,
       "stdout": "",
-      "stderr": "Error: Unable to initialize DigitalOcean API client: access token is required. (hint: run 'doctl auth init')"
+      "stderr": ""
     }
   ],
   "verdict": {
     "status": "FLAG",
     "reasons": [
-      "remote host not selected; set WINDBURN_REMOTE_HOST or pass --remote-host before Computer Use",
-      "DigitalOcean account read probe failed; refresh doctl auth before cloud snapshot/firewall checks"
+      "remote host not selected; set WINDBURN_REMOTE_HOST or pass --remote-host before Computer Use"
     ]
   }
 }

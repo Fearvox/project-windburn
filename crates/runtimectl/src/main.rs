@@ -981,18 +981,26 @@ fn run_doctl_probe(id: &str, args: &[&str], cwd: &Path) -> CommandProbe {
     command.args(&actual_args).current_dir(cwd);
 
     match command.output() {
-        Ok(output) => CommandProbe {
-            id: id.to_string(),
-            command: display_command,
-            status: if output.status.success() {
+        Ok(output) => {
+            let mut status = if output.status.success() {
                 "pass".to_string()
             } else {
                 "fail".to_string()
-            },
-            exit_code: output.status.code(),
-            stdout: clean_text(&output.stdout),
-            stderr: clean_text(&output.stderr),
-        },
+            };
+            let mut stderr = clean_text(&output.stderr);
+            if !output.status.success() && is_known_doctl_tool_bug(id, &stderr) {
+                status = "tool_bug".to_string();
+                stderr = "doctl 1.155.0 Gradient pagination bug: command panicked while listing an empty or inaccessible collection; keep this advisory and use the DigitalOcean API/MCP or a newer doctl before depending on this inventory.".to_string();
+            }
+            CommandProbe {
+                id: id.to_string(),
+                command: display_command,
+                status,
+                exit_code: output.status.code(),
+                stdout: clean_text(&output.stdout),
+                stderr,
+            }
+        }
         Err(error) if error.kind() == io::ErrorKind::NotFound => CommandProbe {
             id: id.to_string(),
             command: display_command,
@@ -1010,6 +1018,14 @@ fn run_doctl_probe(id: &str, args: &[&str], cwd: &Path) -> CommandProbe {
             stderr: error.to_string(),
         },
     }
+}
+
+fn is_known_doctl_tool_bug(id: &str, stderr: &str) -> bool {
+    matches!(
+        id,
+        "doctl_gradient_agents" | "doctl_gradient_knowledge_bases"
+    ) && stderr.contains("panic: runtime error: index out of range")
+        && stderr.contains("github.com/digitalocean/doctl/do.PaginateResp")
 }
 
 fn doctl_access_token_from_env() -> Option<(&'static str, String)> {
@@ -1504,6 +1520,23 @@ mod tests {
 
         assert_eq!(actual_args, vec!["account", "get"]);
         assert_eq!(display_command, vec!["doctl", "account", "get"]);
+    }
+
+    #[test]
+    fn doctl_gradient_pagination_panic_is_known_tool_bug() {
+        let stderr = "panic: runtime error: index out of range [0] with length 0\n\
+github.com/digitalocean/doctl/do.PaginateResp(...)";
+
+        assert!(is_known_doctl_tool_bug("doctl_gradient_agents", stderr));
+        assert!(is_known_doctl_tool_bug(
+            "doctl_gradient_knowledge_bases",
+            stderr
+        ));
+        assert!(!is_known_doctl_tool_bug("doctl_regions", stderr));
+        assert!(!is_known_doctl_tool_bug(
+            "doctl_gradient_agents",
+            "Error: access token is required"
+        ));
     }
 
     fn required_probe_set(status: &str) -> Vec<CommandProbe> {
