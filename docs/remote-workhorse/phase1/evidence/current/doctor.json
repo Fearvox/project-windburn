@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T05:00:02.7998Z",
+  "generated_at_utc": "2026-05-03T05:01:32.638102Z",
   "host": "deMacBook-Pro.local",
   "invocation_cwd": "/Users/0xvox/Windburn",
   "target": "/Users/0xvox/Windburn/.",
@@ -8,8 +8,8 @@
     "is_repo": true,
     "top_level": "/Users/0xvox/Windburn",
     "branch": "main",
-    "head": "f567aed",
-    "status_short": "## main\n M config/tool-registry.toml\n M crates/runtimectl/src/main.rs\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/preflight/COMPUTER_USE_PREFLIGHT_RUNBOOK.md\n M docs/remote-workhorse/preflight/REMOTE_NIXOS_PREFLIGHT.md\n M docs/remote-workhorse/preflight/REMOTE_NIXOS_PREFLIGHT.template.json\n M docs/remote-workhorse/preflight/evidence/current/doctor.json\n M docs/remote-workhorse/preflight/evidence/current/preflight.json\n?? docs/remote-workhorse/preflight/DIGITALOCEAN_CAPABILITY_MAP.md",
+    "head": "0449241",
+    "status_short": "## main",
     "error": null
   },
   "probes": [
@@ -169,7 +169,7 @@
       "status": "pass",
       "exit_code": 0,
       "stdout": "",
-      "stderr": "time=\"2026-05-03T01:00:02-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T01:00:02-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T01:00:02-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T01:00:02-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T01:00:02-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T01:00:02-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
+      "stderr": "time=\"2026-05-03T01:01:32-04:00\" level=info msg=\"colima is running using macOS Virtualization.Framework\"\ntime=\"2026-05-03T01:01:32-04:00\" level=info msg=\"arch: aarch64\"\ntime=\"2026-05-03T01:01:32-04:00\" level=info msg=\"runtime: docker\"\ntime=\"2026-05-03T01:01:32-04:00\" level=info msg=\"mountType: virtiofs\"\ntime=\"2026-05-03T01:01:32-04:00\" level=info msg=\"docker socket: unix:///Users/0xvox/.colima/default/docker.sock\"\ntime=\"2026-05-03T01:01:32-04:00\" level=info msg=\"containerd socket: unix:///Users/0xvox/.colima/default/containerd.sock\""
     },
     {
       "id": "just_version",
