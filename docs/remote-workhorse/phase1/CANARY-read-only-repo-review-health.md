@@ -1,8 +1,8 @@
 # CANARY-read-only-repo-review-health
 
-Generated: `2026-05-03T03:45:36.973888Z`
+Generated: `2026-05-03T03:46:46.926307Z`
 
-Target: `/Users/0xvox/Windburn/.worktrees/remote-workhorse-phase1/.`
+Target: `/Users/0xvox/Windburn/.`
 
 Host: `deMacBook-Pro.local`
 
@@ -18,10 +18,10 @@ VERDICT: `FLAG`
 
 ## Evidence
 
-- Git repo: `/Users/0xvox/Windburn/.worktrees/remote-workhorse-phase1` branch `phase/remote-workhorse-phase1` head `9c12d14`
-- tool inventory: /Users/0xvox/Windburn/.worktrees/remote-workhorse-phase1/./docs/remote-workhorse/phase1/TOOL_INVENTORY.json
-- Research Vault proof: /Users/0xvox/Windburn/.worktrees/remote-workhorse-phase1/./docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json
-- code-review-graph proof: /Users/0xvox/Windburn/.worktrees/remote-workhorse-phase1/./docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json
+- Git repo: `/Users/0xvox/Windburn` branch `main` head `4c73e0f`
+- tool inventory: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/TOOL_INVENTORY.json
+- Research Vault proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json
+- code-review-graph proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json
 - Generated doctor JSON: `docs/remote-workhorse/phase1/evidence/current/doctor.json`
 
 ## Probe Summary
