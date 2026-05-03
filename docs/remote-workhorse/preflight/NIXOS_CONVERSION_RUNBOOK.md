@@ -2,7 +2,7 @@
 
 Updated: 2026-05-03
 
-Status: `STAGED_READY_FOR_LUSTRATE_REBOOT`
+Status: `NIXOS_BOOT_VERIFIED`
 
 This runbook prepares the destructive conversion from the proven Ubuntu base
 host to NixOS. The conversion must not run without explicit action-time
@@ -14,7 +14,9 @@ confirmation.
 | --- | --- |
 | Droplet ID | `568689911` |
 | Host | `24.144.113.25` |
-| Base image | `Ubuntu 24.04.3 LTS` |
+| Source image | `Ubuntu 24.04.3 LTS` |
+| Live OS | `NixOS 25.11 (Xantusia)` |
+| NixOS version | `25.11.10031.755f5aa91337` |
 | Snapshot ID | `227115138` |
 | Snapshot name | `windburn-workhorse-nyc1-base-20260503-0830Z` |
 | Snapshot created | `2026-05-03T08:30:44Z` |
@@ -109,7 +111,7 @@ Full proof: `docs/remote-workhorse/preflight/NIXOS_STAGE_PROOF.md`
 
 ## Lustrate Reboot Gate
 
-The next command is reboot-only. It must be used instead of rerunning
+The reboot command was reboot-only. It must be used instead of rerunning
 `scripts/nixos-conversion.sh` because the install is already staged.
 
 Dry-run:
@@ -130,6 +132,22 @@ scripts/nixos-lustrate-reboot.sh \
 The script proves the staged state first, triggers a DigitalOcean reboot only
 after explicit confirmation, waits for SSH to return, verifies `ID=nixos`, and
 records whether SSH host keys changed.
+
+Result:
+
+- DigitalOcean reboot action `3168332769` completed.
+- SSH returned on `24.144.113.25`.
+- Live OS reports `NixOS 25.11 (Xantusia)`.
+- Kernel is `Linux 6.12.84 x86_64 GNU/Linux`.
+- `systemctl is-system-running` reports `running`.
+- `sshd` is `active`.
+- `/etc/NIXOS_LUSTRATE` is absent after boot.
+- `nix` and `nixos-rebuild` are present in `/run/current-system/sw/bin`.
+
+Full proof: `docs/remote-workhorse/preflight/NIXOS_BOOT_PROOF.md`
+
+After success, `scripts/nixos-lustrate-reboot.sh` is idempotent: it detects
+`remote_state=already_nixos` and exits without triggering another reboot.
 
 ## Recovery
 

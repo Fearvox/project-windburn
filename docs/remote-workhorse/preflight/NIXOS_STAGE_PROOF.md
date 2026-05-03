@@ -2,10 +2,11 @@
 
 Generated: `2026-05-03T09:10:20Z`
 
-Status: `STAGED_READY_FOR_LUSTRATE_REBOOT`
+Status: `SUPERSEDED_BY_NIXOS_BOOT_PROOF`
 
 This document records the first successful NixOS conversion stage for the
-Windburn remote workhorse. No lustrate reboot has happened yet.
+Windburn remote workhorse. The later lustrate reboot succeeded; see
+`docs/remote-workhorse/preflight/NIXOS_BOOT_PROOF.md`.
 
 ## Stage Command
 
@@ -85,7 +86,7 @@ Interpretation:
 
 ## Next Gate
 
-Use the reboot-only guard. It does not rerun `nixos-infect`.
+The reboot-only guard completed successfully. Historical command:
 
 Dry-run:
 
@@ -93,7 +94,7 @@ Dry-run:
 scripts/nixos-lustrate-reboot.sh
 ```
 
-Apply, after action-time confirmation:
+Apply command:
 
 ```sh
 scripts/nixos-lustrate-reboot.sh \
@@ -102,10 +103,12 @@ scripts/nixos-lustrate-reboot.sh \
   --confirm-snapshot-id 227115138
 ```
 
-Expected post-reboot proof:
+Post-reboot proof:
 
 - SSH returns on `24.144.113.25`.
 - `/etc/os-release` reports `ID=nixos`.
 - `nixos-version` succeeds.
 - `sshd` is active.
 - The script records whether the SSH host key stayed stable or changed.
+
+Full proof: `docs/remote-workhorse/preflight/NIXOS_BOOT_PROOF.md`

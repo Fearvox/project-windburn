@@ -16,7 +16,8 @@ Read order for a new agent:
 12. `preflight/REMOTE_HOST_PROOF.md`
 13. `preflight/NIXOS_CONVERSION_RUNBOOK.md`
 14. `preflight/NIXOS_STAGE_PROOF.md`
+15. `preflight/NIXOS_BOOT_PROOF.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
-and base snapshot proven. The NixOS install is staged on the remote host with
-`NO_REBOOT=1`; the remaining mutation is the guarded lustrate reboot gate.
+and base snapshot proven. The staged NixOS install has completed its guarded
+lustrate reboot and is now booted as NixOS 25.11.

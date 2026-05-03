@@ -25,8 +25,8 @@ usage() {
   cat <<'USAGE'
 Usage: scripts/nixos-lustrate-reboot.sh [--apply --confirm-lustrate-reboot --confirm-snapshot-id ID]
 
-Default mode is dry-run. It proves that the remote host has a staged
-NIXOS_LUSTRATE conversion and prints the guarded reboot command.
+Default mode is dry-run. It proves whether the remote host has a staged
+NIXOS_LUSTRATE conversion or is already booted as NixOS.
 
 Apply mode reboots the selected DigitalOcean Droplet, then waits for SSH to
 return as NixOS. It never reruns nixos-infect.
@@ -86,6 +86,7 @@ trap cleanup EXIT
 known_hosts="$tmpdir/known_hosts"
 pre_fingerprints="$tmpdir/pre-fingerprints"
 post_fingerprints="$tmpdir/post-fingerprints"
+remote_state="$tmpdir/remote-state"
 post_probe="$tmpdir/post-probe"
 post_error="$tmpdir/post-error"
 
@@ -135,7 +136,7 @@ echo "pre_reboot_ssh_host_fingerprints:"
 cat "$pre_fingerprints"
 
 echo
-echo "staged_remote_probe:"
+echo "remote_state_probe:"
 ssh_base "$known_hosts" \
   'set -e
    echo "whoami=$(whoami)"
@@ -144,15 +145,31 @@ ssh_base "$known_hosts" \
    echo "os=$PRETTY_NAME"
    echo "kernel=$(uname -srmo)"
    echo "boot_id=$(cat /proc/sys/kernel/random/boot_id)"
+   if [ "${ID:-}" = nixos ] && [ ! -e /etc/NIXOS_LUSTRATE ]; then
+     echo "remote_state=already_nixos"
+     echo "nixos_version=$(nixos-version)"
+     echo "system_state=$(systemctl is-system-running || true)"
+     echo "sshd_state=$(systemctl is-active sshd || true)"
+     exit 0
+   fi
+   echo "remote_state=staged_lustrate"
    test -e /etc/NIXOS && echo "etc_NIXOS=present" || { echo "etc_NIXOS=absent"; exit 1; }
    test -e /etc/NIXOS_LUSTRATE && echo "lustrate=present" || { echo "lustrate=absent"; exit 1; }
    test -e /nix/var/nix/profiles/system && echo "system_profile=present" || { echo "system_profile=absent"; exit 1; }
    echo "system_profile_target=$(readlink -f /nix/var/nix/profiles/system)"
    test -x /nix/var/nix/profiles/system/sw/bin/nixos-rebuild && echo "system_nixos_rebuild=present" || { echo "system_nixos_rebuild=absent"; exit 1; }
-   grep -R "windburn-workhorse.nix" -n /etc/nixos/configuration.nix'
+   grep -R "windburn-workhorse.nix" -n /etc/nixos/configuration.nix' \
+  | tee "$remote_state"
 
 echo
 printf 'apply_command=scripts/nixos-lustrate-reboot.sh --apply --confirm-lustrate-reboot --confirm-snapshot-id %s\n' "$SNAPSHOT_ID"
+
+if grep -q '^remote_state=already_nixos$' "$remote_state"; then
+  echo
+  echo "already_nixos=1"
+  echo "no lustrate reboot needed"
+  exit 0
+fi
 
 if [ "$APPLY" -ne 1 ]; then
   echo

@@ -2,7 +2,7 @@
 
 Generated: `2026-05-03T08:31:29Z`
 
-Status: `BASE_HOST_SNAPSHOT_PROVED_AND_NIXOS_STAGED`
+Status: `BASE_HOST_SNAPSHOT_PROVED_AND_NIXOS_BOOT_VERIFIED`
 
 This document records the read-only proof for the first Windburn remote
 workhorse candidate. It contains no DigitalOcean token value.
@@ -104,13 +104,9 @@ preflight: PASS
 
 ## Next Gate
 
-The NixOS conversion stage has completed without reboot. The next gate is the
-reboot-only lustration step:
+The NixOS conversion stage and reboot-only lustration step have completed.
 
-```sh
-scripts/nixos-lustrate-reboot.sh
-```
-
-Full stage proof:
+Proof chain:
 
 - `docs/remote-workhorse/preflight/NIXOS_STAGE_PROOF.md`
+- `docs/remote-workhorse/preflight/NIXOS_BOOT_PROOF.md`
