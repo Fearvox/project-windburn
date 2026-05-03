@@ -36,6 +36,15 @@ nixos-rebuild-test:
 nixos-rebuild-switch:
     scripts/nixos-remote-rebuild.sh --apply --confirm-remote-nixos-rebuild --mode switch
 
+remote-secret-dry-run:
+    scripts/remote-secret-sync.sh
+
+remote-secret-apply:
+    scripts/remote-secret-sync.sh --apply --confirm-remote-secret-sync
+
+remote-provider-smoke:
+    scripts/remote-provider-smoke.sh --apply --confirm-provider-smoke
+
 multica-cache-dry-run:
     scripts/multica-codex-cache-janitor.sh
 

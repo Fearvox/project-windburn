@@ -185,3 +185,11 @@ foundation:
 - first Hermes/Codex smoke that writes a run artifact under
   `/srv/windburn/runs`,
 - DigitalOcean monitoring or uptime policies after the service shape is known.
+
+Provider secret/smoke entrypoints now live at:
+
+- `scripts/remote-secret-sync.sh`
+- `scripts/remote-provider-smoke.sh`
+
+The current provider credential gate and repair artifact are recorded in
+`docs/remote-workhorse/preflight/PROVIDER_SECRET_SMOKE.md`.

@@ -13,6 +13,8 @@ scripts/remote-host-proof.sh
 scripts/digitalocean-snapshot.sh
 scripts/nixos-conversion.sh
 scripts/nixos-remote-rebuild.sh
+scripts/remote-secret-sync.sh
+scripts/remote-provider-smoke.sh
 scripts/multica-codex-cache-janitor.sh
 ```
 
@@ -29,6 +31,8 @@ just remote-proof
 just snapshot-dry-run
 just nixos-conversion-dry-run
 just nixos-rebuild-dry-run
+just remote-secret-dry-run
+just remote-provider-smoke
 ```
 
 ## Repo Map
@@ -41,6 +45,8 @@ just nixos-rebuild-dry-run
 - `docs/remote-workhorse/preflight/` - gates before Computer Use touches remote NixOS.
 - `nixos/hosts/windburn-workhorse-nyc1/` - first-boot NixOS host import.
 - `scripts/nixos-remote-rebuild.sh` - guarded remote NixOS test/switch deploy.
+- `scripts/remote-secret-sync.sh` - allowlisted root-only provider secret sync.
+- `scripts/remote-provider-smoke.sh` - remote provider smoke and repair card.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary
@@ -48,6 +54,8 @@ just nixos-rebuild-dry-run
 This repo now has a DigitalOcean workhorse booted as NixOS 25.11:
 `windburn-workhorse-nyc1` (`568689911`, `24.144.113.25`) plus base snapshot
 `227115138` and foundation snapshot `227116767`. Remote NixOS changes go
-through `nixos-rebuild test` before `switch`. Phase 1 still succeeds only when a
-new agent can rerun the proof path, see which tools are usable, and return
-`PASS`, `FLAG`, or `BLOCK` without guesswork.
+through `nixos-rebuild test` before `switch`. Provider smoke is intentionally
+gated behind root-only allowlisted secret sync and currently reports
+`REMOTE_PROVIDER_SECRET_MISSING` until usable provider credentials are installed.
+Phase 1 still succeeds only when a new agent can rerun the proof path, see which
+tools are usable, and return `PASS`, `FLAG`, or `BLOCK` without guesswork.

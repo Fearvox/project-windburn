@@ -1,6 +1,6 @@
 # REMOTE_NIXOS_PREFLIGHT
 
-Generated: `2026-05-03T10:58:44.975386Z`
+Generated: `2026-05-03T11:08:32.408874Z`
 
 Target: `/Users/0xvox/Windburn/.`
 
@@ -82,7 +82,7 @@ VERDICT: `PASS`
 - `doctl_nfs_atl1`: `pass` exit `Some(0)`
 - `doctl_nfs_nyc2`: `pass` exit `Some(0)`
 - `doctl_nfs_ams3`: `pass` exit `Some(0)`
-- `ssh_known_host_lookup`: `fail` exit `Some(1)`
+- `ssh_known_host_lookup`: `pass` exit `Some(0)`
 - `ssh_host_keyscan`: `pass` exit `Some(0)`
 
 ## DigitalOcean Read-Only Command Set
