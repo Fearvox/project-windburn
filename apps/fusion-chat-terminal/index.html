@@ -68,7 +68,9 @@
 
         <section id="globalStats" class="global-stats" aria-label="Global route stats"></section>
 
-        <div class="matrix-display" aria-label="Terminal transcript">
+        <div id="surfaceTabs" class="surface-tabs" role="tablist" aria-label="Fusion surface tabs"></div>
+
+        <div id="matrixDisplay" class="matrix-display" aria-label="Terminal transcript">
           <div class="matrix-scanline" aria-hidden="true"></div>
           <ol id="transcript" class="transcript" aria-live="polite"></ol>
         </div>
@@ -94,6 +96,26 @@
             <span aria-hidden="true">&gt;</span>
           </button>
         </form>
+
+        <section id="propfirmSurface" class="propfirm-surface" aria-label="Propfirm ATA local panel" hidden>
+          <div class="propfirm-frame-head">
+            <div>
+              <span class="label">Local read-only tab</span>
+              <strong>Propfirm ATA alert feed</strong>
+            </div>
+            <a id="propfirmOpenLink" href="http://127.0.0.1:5556/fusion-panel" target="_blank" rel="noreferrer">open panel</a>
+          </div>
+          <iframe
+            id="propfirmFrame"
+            title="Propfirm ATA alert feed"
+            sandbox="allow-scripts allow-same-origin"
+            loading="lazy"
+          ></iframe>
+          <p class="propfirm-help">
+            Start FinceptTerminal with <code>python3 -m propfirm_engine.fusion_stack</code>.
+            Fusion loads <span id="propfirmUrl">http://127.0.0.1:5556/fusion-panel</span> and never receives webhook secrets.
+          </p>
+        </section>
       </section>
 
       <aside class="inspector" aria-label="Session inspector">

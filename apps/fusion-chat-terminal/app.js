@@ -2,40 +2,40 @@ const fallbackRemotes = [
   {
     id: "hermes",
     name: "Hermes Yolo",
-    host: "137.184.104.26",
+    host: "remote tmux lane",
     kind: "tmux",
     status: "PASS",
     latency: "tmux live",
-    transport: "ssh -> tmux windburn-hermes-runtime:hermes-yolo",
+    transport: "operator-gated ssh -> tmux windburn-hermes-runtime:hermes-yolo",
     command: "scripts/hermes-yolo-loop.sh --out docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md",
     taste: "primary high-context chat lane",
   },
   {
     id: "workhorse",
     name: "NixOS Workhorse",
-    host: "24.144.113.25",
+    host: "remote build lane",
     kind: "nixos",
     status: "FLAG",
     latency: "foundation",
-    transport: "ssh -> scripts/nixos-remote-rebuild.sh",
+    transport: "operator-gated ssh -> scripts/nixos-remote-rebuild.sh",
     command: "scripts/nixos-remote-rebuild.sh",
     taste: "remote build and runner cell",
   },
   {
     id: "ccr",
     name: "CCR Embed",
-    host: "165.232.146.188",
+    host: "internal embedding lane",
     kind: "internal",
     status: "FLAG",
     latency: "tailnet ok",
-    transport: "ssh -> 100.65.234.77:8080/v1",
+    transport: "operator-gated internal embedding route",
     command: "scripts/droplet-engagement-review.sh",
     taste: "embedding and review substrate",
   },
   {
     id: "codex",
     name: "Local Codex",
-    host: "/Users/0xvox/Windburn",
+    host: "local worktree",
     kind: "local",
     status: "PASS",
     latency: "local",
@@ -46,13 +46,24 @@ const fallbackRemotes = [
   {
     id: "superconductor",
     name: "Superconductor",
-    host: "/Users/0xvox/superconductor/projects/Windburn",
+    host: "linked workspace",
     kind: "shell",
     status: "PASS",
     latency: "linked",
     transport: "linked repo anchor",
     command: "scripts/superconductor-codex-intake.sh",
     taste: "multi-workspace dispatch surface",
+  },
+  {
+    id: "propfirm",
+    name: "Propfirm ATA",
+    host: "localhost panel",
+    kind: "local-tab",
+    status: "FLAG",
+    latency: "panel optional",
+    transport: "iframe -> local read-only propfirm panel",
+    command: "python3 -m propfirm_engine.fusion_stack",
+    taste: "TradingView alerts, discipline feed, no-trade display lane",
   },
 ];
 
@@ -74,10 +85,18 @@ const bridgeState = {
   status: null,
 };
 
+const propfirmPanel = {
+  url: new URLSearchParams(window.location.search).get("propfirmUrl") || "http://127.0.0.1:5556/fusion-panel",
+  loaded: false,
+};
+
+let activeSurface = "chat";
+
 const actions = [
   ["/status", "Status"],
   ["/route hermes", "Hermes"],
   ["/route workhorse", "NixOS"],
+  ["/propfirm", "Propfirm"],
   ["/broadcast preflight", "Broadcast"],
   ["/attach tmux", "Attach"],
   ["/explain flags", "Flags"],
@@ -96,6 +115,11 @@ const slashCommands = [
     command: "/route hermes",
     label: "Switch route",
     instruction: "Focus the transcript and inspector on a specific route id.",
+  },
+  {
+    command: "/propfirm",
+    label: "Propfirm alert tab",
+    instruction: "Open the local read-only Propfirm ATA panel iframe. Start FinceptTerminal fusion_stack first.",
   },
   {
     command: "/attach tmux",
@@ -215,6 +239,12 @@ const instructionTabs = document.querySelector("#instructionTabs");
 const instructionList = document.querySelector("#instructionList");
 const preflightList = document.querySelector("#preflightList");
 const transcriptEl = document.querySelector("#transcript");
+const matrixDisplay = document.querySelector("#matrixDisplay");
+const surfaceTabs = document.querySelector("#surfaceTabs");
+const propfirmSurface = document.querySelector("#propfirmSurface");
+const propfirmFrame = document.querySelector("#propfirmFrame");
+const propfirmUrl = document.querySelector("#propfirmUrl");
+const propfirmOpenLink = document.querySelector("#propfirmOpenLink");
 const form = document.querySelector("#chatForm");
 const input = document.querySelector("#promptInput");
 const commandHints = document.querySelector("#commandHints");
@@ -246,6 +276,7 @@ function boot() {
   setBridgeLabels();
   renderRoutes();
   renderQuickActions();
+  renderSurfaceTabs();
   renderInstructionTabs();
   renderInstructionList("slash");
   renderPreflight();
@@ -311,6 +342,46 @@ async function hydrateBridgeState() {
     setBridgeLabels();
     addMessage("system", "Bridge API unavailable; static fallback remains active. Use scripts/fusion-chat-bridge.sh for live read-only state.");
   }
+}
+
+function renderSurfaceTabs() {
+  surfaceTabs.innerHTML = "";
+  [
+    ["chat", "Fusion Chat"],
+    ["propfirm", "Propfirm ATA"],
+  ].forEach(([kind, label]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.role = "tab";
+    button.textContent = label;
+    button.setAttribute("aria-selected", String(kind === activeSurface));
+    button.addEventListener("click", () => setActiveSurface(kind));
+    surfaceTabs.appendChild(button);
+  });
+}
+
+function setActiveSurface(kind) {
+  activeSurface = kind === "propfirm" ? "propfirm" : "chat";
+  renderSurfaceTabs();
+  const showPropfirm = activeSurface === "propfirm";
+  matrixDisplay.hidden = showPropfirm;
+  form.hidden = showPropfirm;
+  propfirmSurface.hidden = !showPropfirm;
+  if (showPropfirm) {
+    if (!propfirmPanel.loaded) {
+      propfirmFrame.src = propfirmPanel.url;
+      propfirmPanel.loaded = true;
+    }
+    propfirmUrl.textContent = propfirmPanel.url;
+    propfirmOpenLink.href = propfirmPanel.url;
+  }
+}
+
+function openPropfirmSurface() {
+  const next = remotes.find((remote) => remote.id === "propfirm");
+  if (next) selectRemote(next.id);
+  setActiveSurface("propfirm");
+  addMessage("system", "Propfirm ATA tab opened. Start FinceptTerminal fusion_stack if the iframe is empty; browser remains display-only.");
 }
 
 function renderRoutes() {
@@ -483,6 +554,11 @@ function selectRemote(id) {
     button.setAttribute("aria-current", String(button.dataset.route === activeRemote.id));
   });
   renderFacts();
+  if (activeRemote.id === "propfirm") {
+    setActiveSurface("propfirm");
+  } else if (activeSurface === "propfirm") {
+    setActiveSurface("chat");
+  }
 }
 
 function renderFacts() {
@@ -526,6 +602,11 @@ async function dispatch(raw) {
     return;
   }
 
+  if (text === "/propfirm") {
+    openPropfirmSurface();
+    return;
+  }
+
   if (text === "/status") {
     const lines = remotes.map((remote) => `${remote.status.padEnd(5)} ${remote.id.padEnd(14)} ${remote.latency}`);
     const repo = bridgeState.status?.repo;
@@ -537,7 +618,7 @@ async function dispatch(raw) {
   }
 
   if (text === "/attach tmux") {
-    addMessage("remote", "Next backend bridge target: ssh root@137.184.104.26 -t 'tmux attach -t windburn-hermes-runtime'.");
+    addMessage("remote", "Next backend bridge target: operator-gated tmux attach for windburn-hermes-runtime; exact SSH endpoint stays outside the browser surface.");
     return;
   }
 

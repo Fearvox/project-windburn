@@ -10,7 +10,8 @@ const appDir = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(appDir, "../..");
 const host = process.env.WINDBURN_FUSION_CHAT_HOST ?? "127.0.0.1";
 const port = Number(process.env.WINDBURN_FUSION_CHAT_PORT ?? "5178");
-const superconductorBinding = "/Users/0xvox/superconductor/projects/Windburn";
+const propfirmPanelUrl = process.env.WINDBURN_PROPFIRM_PANEL_URL ?? "http://127.0.0.1:5556";
+const superconductorBinding = process.env.WINDBURN_SUPERCONDUCTOR_BINDING ?? "";
 
 const contentTypes = new Map([
   [".html", "text/html; charset=utf-8"],
@@ -26,9 +27,9 @@ const routeBlueprints = [
   {
     id: "hermes",
     name: "Hermes Yolo",
-    host: "137.184.104.26",
+    host: "remote tmux lane",
     kind: "tmux",
-    transport: "ssh -> tmux windburn-hermes-runtime:hermes-yolo",
+    transport: "operator-gated ssh -> tmux windburn-hermes-runtime:hermes-yolo",
     command: "scripts/hermes-yolo-loop.sh --out docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md",
     taste: "primary high-context chat lane",
     proof: "docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md",
@@ -36,9 +37,9 @@ const routeBlueprints = [
   {
     id: "workhorse",
     name: "NixOS Workhorse",
-    host: "24.144.113.25",
+    host: "remote build lane",
     kind: "nixos",
-    transport: "ssh -> scripts/nixos-remote-rebuild.sh",
+    transport: "operator-gated ssh -> scripts/nixos-remote-rebuild.sh",
     command: "scripts/nixos-remote-rebuild.sh",
     taste: "remote build and runner cell",
     proof: "docs/remote-workhorse/preflight/NIXOS_FOUNDATION_PROOF.md",
@@ -47,9 +48,9 @@ const routeBlueprints = [
   {
     id: "ccr",
     name: "CCR Embed",
-    host: "165.232.146.188",
+    host: "internal embedding lane",
     kind: "internal",
-    transport: "ssh -> 100.65.234.77:8080/v1",
+    transport: "operator-gated internal embedding route",
     command: "scripts/droplet-engagement-review.sh",
     taste: "embedding and review substrate",
     proof: "docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md",
@@ -57,7 +58,7 @@ const routeBlueprints = [
   {
     id: "codex",
     name: "Local Codex",
-    host: root,
+    host: "local worktree",
     kind: "local",
     transport: "workspace shell -> scripts/check.sh",
     command: "scripts/superconductor-codex-intake.sh && scripts/check.sh",
@@ -67,12 +68,23 @@ const routeBlueprints = [
   {
     id: "superconductor",
     name: "Superconductor",
-    host: superconductorBinding,
+    host: "linked workspace",
     kind: "shell",
     transport: "linked repo anchor; future CLI pipeline",
     command: "scripts/superconductor-codex-intake.sh",
     taste: "multi-workspace dispatch surface",
     proof: null,
+  },
+  {
+    id: "propfirm",
+    name: "Propfirm ATA",
+    host: "localhost panel",
+    kind: "local-tab",
+    transport: "iframe -> local read-only propfirm panel",
+    command: "python3 -m propfirm_engine.fusion_stack",
+    taste: "TradingView alerts, discipline feed, no-trade display lane",
+    proof: null,
+    forceFlag: "local panel optional; start FinceptTerminal fusion_stack",
   },
 ];
 
@@ -158,17 +170,18 @@ async function repoStatus() {
   const untrackedCount = worktreeLines.filter((line) => line.startsWith("?? ")).length;
   const trackedDirty = worktreeLines.some((line) => !line.startsWith("?? "));
   return {
-    root,
     branch,
     head,
-    origin,
+    origin_configured: origin !== "missing",
     ahead_of_main: Number.isNaN(Number(aheadMain)) ? aheadMain : Number(aheadMain),
     dirty: trackedDirty,
     tracked_dirty: trackedDirty,
     untracked_count: untrackedCount,
-    status_short: statusShort,
-    superconductor_binding: binding.status,
-    superconductor_binding_path: binding.path,
+    status_summary: {
+      total_lines: statusLines.length,
+      worktree_lines: worktreeLines.length,
+    },
+    workspace_binding: binding.status,
   };
 }
 
@@ -225,26 +238,52 @@ async function readProof(relativePath) {
   };
 }
 
+async function propfirmPanelStatus() {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 900);
+    const response = await fetch(`${propfirmPanelUrl.replace(/\/$/, "")}/health`, {
+      signal: controller.signal,
+      cache: "no-store",
+    });
+    clearTimeout(timer);
+    if (!response.ok) return { status: "FLAG", reason: `panel_http_${response.status}` };
+    const payload = await response.json().catch(() => ({}));
+    return {
+      status: payload.ok ? "PASS" : "FLAG",
+      reason: payload.ok ? "local panel live" : "panel health not ok",
+    };
+  } catch {
+    return { status: "FLAG", reason: "local panel offline" };
+  }
+}
+
 async function buildRemotes() {
   const binding = await superconductorBindingStatus();
+  const panel = await propfirmPanelStatus();
   const remotes = await Promise.all(
     routeBlueprints.map(async (route) => {
       const proof = route.proof ? await readProof(route.proof) : null;
       const superconductorRoute = route.id === "superconductor";
+      const propfirmRoute = route.id === "propfirm";
       const superconductorMissing =
         superconductorRoute && binding.status !== "present";
-      const status = superconductorMissing
-        ? "FLAG"
-        : route.forceFlag
+      const status = propfirmRoute
+        ? panel.status
+        : superconductorMissing
           ? "FLAG"
+          : route.forceFlag
+            ? "FLAG"
+            : superconductorRoute
+              ? "PASS"
+              : proof?.status ?? "FLAG";
+      const latency = propfirmRoute
+        ? panel.reason
+        : superconductorMissing
+          ? binding.status
           : superconductorRoute
-            ? "PASS"
-            : proof?.status ?? "FLAG";
-      const latency = superconductorMissing
-        ? binding.status
-        : superconductorRoute
-          ? "binding present"
-          : route.forceFlag ?? proof?.reason ?? "live proof";
+            ? "binding present"
+            : route.forceFlag ?? proof?.reason ?? "live proof";
 
       return {
         id: route.id,
@@ -376,7 +415,7 @@ const server = createServer(async (request, response) => {
           pid: process.pid,
           host,
           port,
-          app_dir: appDir,
+          app: "fusion-chat-terminal",
         },
         pipeline: {
           superconductor_cli: "pending",

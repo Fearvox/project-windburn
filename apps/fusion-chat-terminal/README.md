@@ -27,14 +27,13 @@ WINDBURN_FUSION_CHAT_PORT=5179 scripts/fusion-chat-bridge.sh
 - Dot-matrix web terminal UI.
 - Nous Psyche-inspired run board density: global status first, route details
   second, few operator moves.
-- Local CommitMono variable font embedded from
-  `/Users/0xvox/Downloads/CommitMonovoxV143`.
+- Local CommitMono variable font embedded from an operator-owned local font path.
 - Sticky setup assistant that detects CommitMono loading, links users to the
   right setup windows, and rewrites raw setup asks into bounded operator tasks.
 - Remote route registry for Hermes, Windburn NixOS workhorse, CCR, local Codex,
-  and Superconductor.
-- Command parser for `/status`, `/route`, `/attach tmux`, `/broadcast`, and
-  `/explain flags`.
+  Superconductor, and the local Propfirm ATA tab.
+- Command parser for `/status`, `/route`, `/propfirm`, `/attach tmux`,
+  `/broadcast`, and `/explain flags`.
 - Codex-style command reference for slash commands, `$` skill instructions, and
   browser-safe MCP connection contracts.
 - Human-readable stream cards for hook errors, async hook completions, model
@@ -43,6 +42,10 @@ WINDBURN_FUSION_CHAT_PORT=5179 scripts/fusion-chat-bridge.sh
 - Read-only local bridge endpoints for route state, repo status, preflight
   proofs, and xAI setup inspect. The UI falls back to local mock data when the
   bridge is not running.
+- Propfirm ATA surface tab: iframe `http://127.0.0.1:5556/fusion-panel` (or
+  `?propfirmUrl=` override) so TradingView webhook alerts logged by
+  FinceptTerminal can show in Fusion Chat without exposing secrets or adding a
+  browser mutation bridge.
 - No secret loading and no remote mutation from the browser.
 
 ## Setup Assistant Lane
