@@ -44,7 +44,10 @@ prints.
 
 ## Next
 
-1. Add Hermes tmux transcript tail as a stream endpoint.
-2. Consume Superconductor CLI pipeline mode as another read-only intake source
+1. Prototype the Superruntime fixture contract from
+   `SUPERRUNTIME_ORCHESTRATOR_SPEC.md` so Fusion Chat can display registered
+   runtimes and signed task envelopes without exposing Superconductor publicly.
+2. Add Hermes tmux transcript tail as a stream endpoint.
+3. Consume Superconductor CLI pipeline mode as another read-only intake source
    once it lands.
-3. Add signed command envelopes only after the read-only flow is stable.
+4. Add signed command envelopes only after the read-only flow is stable.

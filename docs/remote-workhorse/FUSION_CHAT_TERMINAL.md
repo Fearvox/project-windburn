@@ -117,10 +117,14 @@ browser-safe labels.
 1. Implement `scripts/stream-safety-preflight.sh` from
    `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md` and surface its verdict in the
    Preflight Stack.
-2. Add websocket or Server-Sent Events for Hermes tmux transcript tailing.
-3. Add Superconductor CLI pipeline intake once that CLI lands.
-4. Add signed command envelopes for gated mutating actions.
-5. Replace CSS-native dot loader with local Dot Matrix registry components once
+2. Add a fixture-backed Superruntime pane from
+   `SUPERRUNTIME_ORCHESTRATOR_SPEC.md` so public bridges, registered runtimes,
+   leases, and harness dispatch are visible without public Superconductor
+   exposure.
+3. Add websocket or Server-Sent Events for Hermes tmux transcript tailing.
+4. Add Superconductor CLI pipeline intake once that CLI lands.
+5. Add signed command envelopes for gated mutating actions.
+6. Replace CSS-native dot loader with local Dot Matrix registry components once
    package installation is approved.
-6. Import the useful `jcode` harness pieces intentionally instead of vendoring
+7. Import the useful `jcode` harness pieces intentionally instead of vendoring
    the whole upstream tree.

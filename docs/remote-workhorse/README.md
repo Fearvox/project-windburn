@@ -28,9 +28,10 @@ Read order for a new agent:
 23. `preflight/HERMES_YOLO_LOOP_PROOF.md`
 24. `FUSION_CHAT_TERMINAL.md`
 25. `FUSION_BRIDGE_V0.md`
-26. `FUSION_CHAT_PERSONALIZATION_SETTINGS_HANDOFF.md`
-27. `preflight/XAI_SETUP_AGENT_SMOKE.md`
-28. `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md`
+26. `SUPERRUNTIME_ORCHESTRATOR_SPEC.md`
+27. `FUSION_CHAT_PERSONALIZATION_SETTINGS_HANDOFF.md`
+28. `preflight/XAI_SETUP_AGENT_SMOKE.md`
+29. `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
 and base snapshot proven. The staged NixOS install has completed its guarded
@@ -57,6 +58,8 @@ The first unified remote chat entrance is recorded in
 `FUSION_CHAT_TERMINAL.md` and implemented in `../../apps/fusion-chat-terminal/`.
 The first read-only browser bridge is recorded in `FUSION_BRIDGE_V0.md` and
 served by `../../scripts/fusion-chat-bridge.sh`.
+The outer bridge/orchestrator contract for registering Superconductor as a
+private runtime/executor is recorded in `SUPERRUNTIME_ORCHESTRATOR_SPEC.md`.
 The setup/personalization maintenance lane for future Workbench swarm agents is
 recorded in `FUSION_CHAT_PERSONALIZATION_SETTINGS_HANDOFF.md`.
 The xAI setup lane credential shape and current API proof are recorded in
