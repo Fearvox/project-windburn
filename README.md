@@ -64,7 +64,8 @@ just xai-setup-smoke
 
 ## Repo Map
 
-- `docs/remote-workhorse/` - approved design, Phase 1 artifacts, canary report.
+- `docs/remote-workhorse/` - approved design, Phase 1 artifacts, canary report,
+  and the v1 Multica/gstack bootstrap runtime-queue handshake docs.
 - `docs/superconductor-codex-intake.md` - Superconductor-side Codex handoff and
   read-only intake contract.
 - `crates/runtimectl/` - Rust CLI for local doctor and canary evidence.
@@ -98,26 +99,28 @@ just xai-setup-smoke
   repo/proof hydration in the fusion chat terminal.
 - `scripts/multica-runtime-card-verify.sh` - local verifier for the redacted
   Multica runtime-card contract.
-- `scripts/windburn-captain-runtime.sh` - forced-command-friendly read-only
-  Captain runtime wrapper for status and Superruntime summaries.
+- `scripts/windburn-captain-runtime.sh` - forced-command-friendly Captain
+  runtime wrapper for stdin cards, bounded `run-card` queue execution, lease
+  slots, spool status JSON, and compact redacted summaries.
 - `scripts/xai-setup-agent.sh` - local xAI setup lane smoke gate using
   operator-owned credentials with redacted evidence.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary
 
-This repo now has a DigitalOcean workhorse booted as NixOS 25.11:
-`windburn-workhorse-nyc1` (`568689911`, `24.144.113.25`) plus base snapshot
-`227115138` and foundation snapshot `227116767`. Remote NixOS changes go
-through `nixos-rebuild test` before `switch`. Provider smoke is intentionally
-gated behind root-only allowlisted secret sync and currently reports
-`REMOTE_PROVIDER_SECRET_MISSING` until usable provider credentials are installed.
-The Codex EDU path is separately proven through Hermes `openai-codex` with
-artifact `/srv/windburn/runs/hermes-codex-smoke/20260503T124810Z-hermes-codex-smoke/result.json`.
-Phase 1 still succeeds only when a new agent can rerun the proof path, see which
-tools are usable, and return `PASS`, `FLAG`, or `BLOCK` without guesswork.
+This repo now has a DigitalOcean-backed NixOS workhorse reachable through the
+`remote-workhorse` route label. Public docs stay redacted: host details,
+snapshot ids, SSH targets, and local absolute paths belong in operator-private
+proof surfaces, not shared repo docs. Remote NixOS changes still go through
+`nixos-rebuild test` before `switch`. Provider smoke remains intentionally gated
+behind root-only allowlisted secret sync and may return
+`REMOTE_PROVIDER_SECRET_MISSING` until usable operator-owned provider profiles
+exist on the runtime host. The Codex-on-Hermes runtime path is proven in the
+remote-workhorse preflight docs through redacted evidence refs. Phase 1 still
+succeeds only when a new agent can rerun the proof path, see which tools are
+usable, and return `PASS`, `FLAG`, or `BLOCK` without guesswork.
+
 For Superconductor sessions, begin with `scripts/superconductor-codex-intake.sh`
-so the agent proves whether `/Users/0xvox/Windburn` is attached, linked, or still
-external to `/Users/0xvox/superconductor/projects/`.
-Current Superconductor binding is
-`/Users/0xvox/superconductor/projects/Windburn -> /Users/0xvox/Windburn`.
+so the agent proves whether the canonical Windburn repo is attached through the
+expected Superconductor binding without copying raw operator-local paths into
+shared docs.

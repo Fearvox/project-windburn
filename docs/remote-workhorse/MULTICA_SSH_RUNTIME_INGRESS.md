@@ -31,7 +31,122 @@ This lane is not:
 - a mutation bridge;
 - a generic shell escape.
 
-## V0 Runtime Card Contract
+## gstack / SSH Handshake
+
+The v1 bootstrap handshake uses SSH stdin plus a forced command. Multica/gstack
+submits the runtime card over stdin; the forced command supplies the bounded
+wrapper action.
+
+```text
+Multica/gstack submits runtime card over SSH stdin
+  -> forced command invokes windburn-captain-runtime.sh --card - --action run-card
+  -> runtime verifies card
+  -> runtime acquires lease slot
+  -> runtime writes status JSON to spool
+  -> runtime returns compact PASS/FLAG/BLOCK summary
+  -> Multica polls/collects redacted status/evidence refs
+```
+
+Important distinction:
+
+- `run-card` is the forced-command wrapper action, not the runtime-card
+  `requested_action`.
+- The runtime card still carries only the bounded requested action that the
+  verifier allows.
+- The wrapper reads the card from stdin via `--card -`, copies the verified card
+  into the runtime spool, writes queue/status state, and returns only compact
+  redacted refs.
+
+## Runtime Queue Concurrency Model
+
+The bootstrap queue is intentionally lease-based instead of tmux-first:
+
+- `WINDBURN_RUNTIME_MAX_PARALLEL` sets the runtime slot count. Default: `10`.
+- Slot leases are acquired with `flock` over numbered slot lockfiles.
+- If no slot is available, the runtime returns
+  `FLAG windburn_captain_runtime: runtime_queue_full`.
+- `runtime_queue_full` is queue pressure, not repo failure. Upstream should
+  retry, back off, or leave the card queued.
+- The runtime writes status JSON for each queued/leased/running/final state so
+  future Superruntime/Fusion Bridge surfaces can show live progress without
+  scraping tmux or raw stdout.
+
+Why this matters for 10-way autoresearch:
+
+- bounded leases prevent untracked fan-out;
+- the status spool creates one stream-safe source of truth;
+- compact refs are safer to poll than live shell streams;
+- raw tmux chaos does not provide queue fairness, retry semantics, or clean
+  browser-safe status.
+
+## Status JSON Contract
+
+Each `run-card` attempt writes one redacted status JSON record in the runtime
+spool. Current schema:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `schema_version` | number | Current value `1`. |
+| `run_id` | string | Runtime-generated queue/run id. |
+| `card_id` | string | Verified runtime-card id. |
+| `runtime_id` | string | Verified runtime label. |
+| `repo` | string | Allowed repo label. |
+| `requested_action` | string | Card action actually being executed inside the wrapper. |
+| `phase` | string | Current phase: `queued`, `leased`, `running`, `done`, `flag`, or `block`. |
+| `level` | string | Redacted severity: `info`, `pass`, `flag`, or `block`. |
+| `verdict` | string | Final or current wrapper verdict: `PASS`, `FLAG`, or `BLOCK`. |
+| `slot` | string | `pending`, `none`, or lease label such as `slot-##`. |
+| `git_status` | string/null | Populated when the bounded handler returns repo status. |
+| `superruntime_fixture` | string/null | Populated when the bounded handler returns a fixture verdict. |
+| `secret_values_recorded` | boolean | Must remain `false` for stream safety. |
+| `provider_rate_limited` | boolean | Reserved for future provider-backed lanes; currently `false`. |
+| `artifact_refs` | string[] | Redacted refs only, for example `local:status-json`. |
+| `generated_at_utc` | string | RFC3339 UTC timestamp. |
+
+Minimal shape:
+
+```json
+{
+  "schema_version": 1,
+  "run_id": "run_...",
+  "card_id": "mrc_...",
+  "runtime_id": "rt_...",
+  "repo": "Fearvox/project-windburn",
+  "requested_action": "status",
+  "phase": "leased",
+  "level": "info",
+  "verdict": "PASS",
+  "slot": "slot-01",
+  "git_status": "clean",
+  "superruntime_fixture": "PASS",
+  "secret_values_recorded": false,
+  "provider_rate_limited": false,
+  "artifact_refs": [
+    "local:status-json",
+    "local:card-copy",
+    "local:run-output",
+    "local:superruntime-fixture"
+  ],
+  "generated_at_utc": "timestamp"
+}
+```
+
+Stream-safety rules for status JSON:
+
+- no raw hostnames, IPs, SSH targets, credential paths, local absolute paths, or
+  provider account internals;
+- no provider API keys, OAuth payloads, or copied session material;
+- artifact refs stay abstract and redacted;
+- status JSON is the future live-status input for Superruntime/Fusion Bridge, not
+  a dump of private runtime logs.
+
+## Runtime Card Contract
+
+The v1 bootstrap queue still uses the same bounded runtime-card shape. The card
+remains the minimal assignment contract for a private SSH/tmux entry lane before
+signed envelopes exist.
+
+Required fields in the current card contract:
 
 The ingress consumes one bounded runtime card. The card is the minimal
 assignment contract for a private SSH/tmux entry lane before signed envelopes
@@ -63,8 +178,10 @@ Provider/auth boundary for the card:
 
 - Runtime card must not contain provider API keys, OAuth tokens, credential
   paths, or provider account details.
-- v0 ingress is status/card verification only. It does not invoke
-  Codex/provider calls.
+- The card does not carry provider auth. Future provider execution must use
+  runtime-host operator-owned OAuth/session/provider profiles outside the repo.
+- The current bootstrap queue only runs bounded runtime actions. It does not
+  embed provider credentials or browser-visible provider account details.
 - Future harness dispatch should use operator-owned auth profiles outside the
   repo: prefer OAuth/session login where available; otherwise use an
   operator-provided provider profile such as OpenRouter/xAI injected by
@@ -112,15 +229,22 @@ Minimal shape:
 }
 ```
 
-## Allowed Actions
+## Allowed Runtime-Card Actions
 
-Only these v0 actions are allowed:
+Only these runtime-card actions are currently allowed:
 
 | Action | Behavior |
 | --- | --- |
 | `status` | Return compact runtime status and verifier-derived verdict. |
 | `verify-card` | Validate the runtime card and print a redacted wrapper summary. |
 | `superruntime-status` | Return a compact summary from the local Superruntime fixture. |
+
+Wrapper action note:
+
+- The forced command may invoke `--action run-card` as the transport wrapper.
+- `run-card` is not an allowed runtime-card `requested_action`.
+- The wrapper validates the card, acquires a lease, records spool state, and
+  then dispatches only the bounded card action above.
 
 ## Forbidden Actions
 
@@ -143,7 +267,7 @@ Example shape:
 
 ```text
 Match User <runtime-user>
-  ForceCommand "<windburn-captain-runtime> --card <runtime-card-json>"
+  ForceCommand "<windburn-captain-runtime> --card - --action run-card"
   PermitTTY yes
   AllowTcpForwarding no
   X11Forwarding no
@@ -152,8 +276,8 @@ Match User <runtime-user>
 Possible wrapper chain shapes:
 
 ```text
-SSH forced command -> windburn-captain-runtime.sh --card <runtime-card-json>
-SSH forced command -> tmux wrapper -> windburn-captain-runtime.sh --card <runtime-card-json>
+Multica/gstack -> SSH stdin -> windburn-captain-runtime.sh --card - --action run-card
+Multica/gstack -> SSH stdin -> tmux wrapper -> windburn-captain-runtime.sh --card - --action run-card
 ```
 
 The runtime card is input data, not a command source. The wrapper never executes
@@ -168,6 +292,7 @@ payload-provided shell fragments.
 | stream-safety violation | `BLOCK` |
 | unknown action | `BLOCK` |
 | action outside `allowed_actions` | `BLOCK` |
+| queue full at lease acquisition | `FLAG runtime_queue_full`, not repo failure |
 | provider credential, OAuth token, credential path, or provider account detail present in card | `BLOCK` |
 | provider returns `429` / `rate_limit` in a future harness lane | `FLAG provider_rate_limited`, not repo failure |
 | dirty repo during status | at most `FLAG` |
@@ -187,6 +312,71 @@ payload-provided shell fragments.
 The v0 wrapper is a private runtime channel sketch for Multica to inspect
 Windburn state safely before any signed mutation lane exists.
 
+## Hermes Autoresearch Card Sketch
+
+This is forward-looking only. The current verifier/runtime does not yet accept a
+`requested_action` of `hermes-autoresearch`, and this doc does not claim that
+handler is live on the current branch.
+
+Use route labels and bounded scope only:
+
+```json
+{
+  "schema_version": 1,
+  "card_id": "mrc_...",
+  "source": "multica",
+  "runtime_id": "rt_...",
+  "repo": "Fearvox/project-windburn",
+  "branch": "stacked-runtime-queue-branch-label",
+  "intent": "Run bounded autoresearch on the remote-workhorse route.",
+  "requested_action": "hermes-autoresearch",
+  "allowed_actions": ["hermes-autoresearch"],
+  "privacy_scope": "team",
+  "route_label": "remote-workhorse",
+  "provider_mode": "runtime-host-operator-owned-session-or-profile",
+  "research_scope": {
+    "topics": [
+      "topic-a",
+      "topic-b"
+    ],
+    "max_topics": 2,
+    "max_parallel": 10,
+    "max_turns_per_topic": 4,
+    "evidence_budget": "redacted-summary-only"
+  },
+  "permissions": {
+    "shell": "forced-command",
+    "remote_mutation": false,
+    "secret_access": false,
+    "provider_writeback": false,
+    "network": "operator-approved-provider-only"
+  },
+  "evidence_requirements": [
+    "bounded-topic-plan",
+    "redacted-status-json",
+    "artifact-refs",
+    "compact-summary"
+  ],
+  "operator_call_conditions": [
+    "runtime-queue-full",
+    "provider-rate-limit",
+    "scope-expansion-request",
+    "stream-safety-failure"
+  ],
+  "expected_output": "PASS/FLAG/BLOCK plus redacted evidence refs.",
+  "stream_policy": "redacted",
+  "expires_at": "timestamp",
+  "signature_stub": "placeholder-until-signed-cards"
+}
+```
+
+Future behavior expectations for that lane:
+
+- provider auth remains runtime-host-owned and out of card payloads;
+- `429` / `rate_limit` returns `FLAG provider_rate_limited`, not repo failure;
+- autoresearch fan-out still runs behind leases/status JSON, not ad hoc tmux
+  spawning.
+
 ## Follow-Up Notes
 
 Later layers can add:
@@ -195,5 +385,6 @@ Later layers can add:
 2. tmux transcript tails with stream-safety filtering;
 3. replacement of the local fixture with a real Superruntime registry source;
 4. bounded Multica status writeback after policy and audit contracts exist;
-5. concurrency/backoff or explicit manual gate for future provider/CI-triggered
-   harness calls.
+5. richer queue/backoff policy or explicit manual gate for future
+   provider/CI-triggered harness calls;
+6. live Superruntime/Fusion Bridge views backed by the runtime status spool.
