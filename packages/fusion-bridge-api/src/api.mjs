@@ -29,9 +29,14 @@ function methodNotAllowed(method) {
 }
 
 export function createFusionBridgeApi(options = {}) {
-  const startedAt = new Date().toISOString();
   const serviceVersion = options.serviceVersion ?? "0.1.0";
   const now = options.now ?? (() => new Date().toISOString());
+  let startedAt = null;
+
+  function startedAtUtc() {
+    startedAt ??= now();
+    return startedAt;
+  }
 
   async function loadFixture() {
     if (options.superruntimeFixture) return options.superruntimeFixture;
@@ -67,7 +72,7 @@ export function createFusionBridgeApi(options = {}) {
       version: serviceVersion,
       mode: "read-only",
       deployment_target: options.deploymentTarget ?? "cloudflare-worker-compatible",
-      started_at_utc: startedAt,
+      started_at_utc: startedAtUtc(),
       mutation_bridge_enabled: false,
       provider_webhooks_enabled: false,
       runtime_channel_enabled: false,
