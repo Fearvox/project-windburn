@@ -45,6 +45,15 @@ Path: `apps/fusion-chat-terminal/`
 - `upstream.json`: provenance and later fork contract.
 - Sticky setup assistant: frontend contract for the `xAI setup lane`, including
   CommitMono readiness, correct-window links, and raw prompt polishing.
+- Codex-style command reference: visible `/` slash commands, `$` skill
+  instruction contracts, and MCP connection cards. These are browser-safe
+  display surfaces only; the local agent runtime still owns actual tool
+  execution and evidence.
+- `scripts/xai-setup-agent.sh`: local xAI setup lane smoke gate that reads
+  operator-owned credentials and writes redacted proof only.
+- `preflight/XAI_SETUP_AGENT_SMOKE.md`: current xAI API proof. Latest verdict
+  is `PASS` using the actual OpenClaw Windburn xAI credential; chat and models
+  probes both returned HTTP `200`, with no secret values recorded.
 
 Preview:
 

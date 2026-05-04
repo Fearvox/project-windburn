@@ -71,9 +71,111 @@ const actions = [
   ["/broadcast preflight", "Broadcast"],
   ["/attach tmux", "Attach"],
   ["/explain flags", "Flags"],
+  ["/mcp", "MCP"],
+  ["$goal", "$ Goal"],
+];
+
+const slashCommands = [
+  {
+    command: "/status",
+    label: "Route status",
+    instruction: "Print the PASS/FLAG/BLOCK ledger for every remote route.",
+  },
+  {
+    command: "/route hermes",
+    label: "Switch route",
+    instruction: "Focus the transcript and inspector on a specific route id.",
+  },
+  {
+    command: "/attach tmux",
+    label: "Attach handoff",
+    instruction: "Show the next human-approved tmux attach target without running it.",
+  },
+  {
+    command: "/broadcast preflight",
+    label: "Broadcast intent",
+    instruction: "Stage a read-only broadcast plan across routes; no mutation bridge.",
+  },
+  {
+    command: "/setup xai",
+    label: "Setup lane",
+    instruction: "Open the setup assistant and convert vague prerequisite work into a bounded operator task.",
+  },
+  {
+    command: "/mcp",
+    label: "MCP connections",
+    instruction: "List browser-safe MCP connection contracts and their policy boundaries.",
+  },
+];
+
+const skillCommands = [
+  {
+    command: "$goal",
+    label: "Goal Mode",
+    instruction: "Lock the objective, keep working until verified completion or a real BLOCK.",
+  },
+  {
+    command: "$review",
+    label: "Evidence review",
+    instruction: "Find bugs, missing proof, unsafe claims, and residual risk before closeout.",
+  },
+  {
+    command: "$playwright",
+    label: "Browser proofshot",
+    instruction: "Use a local browser to inspect UI state, interactions, screenshots, and accessibility snapshots.",
+  },
+  {
+    command: "$ship",
+    label: "Ship lane",
+    instruction: "Commit, push, open PR, and report exact validation without hiding dirty state.",
+  },
+  {
+    command: "$setup",
+    label: "Setup assistant",
+    instruction: "Turn dull prerequisite configuration into a narrow operator checklist.",
+  },
+  {
+    command: "$mcp",
+    label: "MCP audit",
+    instruction: "Read available tool connections and separate local-only tools from cloud-safe surfaces.",
+  },
+];
+
+const mcpConnections = [
+  {
+    command: "mcp:filesystem",
+    label: "Filesystem local",
+    status: "local-only",
+    instruction: "Repo read/write stays in the local Windburn worktree; browser sees summaries only.",
+  },
+  {
+    command: "mcp:playwright",
+    label: "Playwright",
+    status: "browser",
+    instruction: "Local UI verification, snapshots, and screenshots. Do not inherit into cloud-safe agents.",
+  },
+  {
+    command: "mcp:github",
+    label: "GitHub",
+    status: "repo",
+    instruction: "PR, issue, and branch truth via GitHub/gh; no tokens or raw private payloads in UI.",
+  },
+  {
+    command: "mcp:research-vault",
+    label: "Research Vault",
+    status: "read-only",
+    instruction: "Grounding/search only by default. Writes require explicit operator approval.",
+  },
+  {
+    command: "mcp:superconductor",
+    label: "Superconductor",
+    status: "control room",
+    instruction: "Workspace routing and observation surface. Repo and CI evidence remain source of truth.",
+  },
 ];
 
 let activeRemote = remotes[0];
+let activeInstructionKind = "slash";
 const transcript = [];
 
 const routeList = document.querySelector("#routeList");
@@ -83,10 +185,13 @@ const activeLatency = document.querySelector("#activeLatency");
 const contractBadge = document.querySelector("#contractBadge");
 const routeFacts = document.querySelector("#routeFacts");
 const quickActions = document.querySelector("#quickActions");
+const instructionTabs = document.querySelector("#instructionTabs");
+const instructionList = document.querySelector("#instructionList");
 const preflightList = document.querySelector("#preflightList");
 const transcriptEl = document.querySelector("#transcript");
 const form = document.querySelector("#chatForm");
 const input = document.querySelector("#promptInput");
+const commandHints = document.querySelector("#commandHints");
 const poolCapacity = document.querySelector("#poolCapacity");
 const poolMeter = document.querySelector("#poolMeter");
 const poolActive = document.querySelector("#poolActive");
@@ -106,11 +211,14 @@ const setupWindows = {
   dash: "https://docs.zonicdesign.art/pages/getting-started.html",
   agentPipeline: "https://docs.zonicdesign.art/pages/guides/agent-pipeline.html",
   configuration: "https://docs.zonicdesign.art/pages/reference/config.html",
+  xai: "scripts/xai-setup-agent.sh --call --confirm-xai-setup-agent",
 };
 
 function boot() {
   renderRoutes();
   renderQuickActions();
+  renderInstructionTabs();
+  renderInstructionList("slash");
   renderPreflight();
   renderOperationalSummary();
   renderRunLedger();
@@ -152,6 +260,71 @@ function renderQuickActions() {
     button.addEventListener("click", () => runCommand(command));
     quickActions.appendChild(button);
   });
+}
+
+function renderInstructionTabs() {
+  instructionTabs.innerHTML = "";
+  [
+    ["slash", "/ slash"],
+    ["skills", "$ skills"],
+    ["mcp", "MCP"],
+  ].forEach(([kind, label]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.role = "tab";
+    button.textContent = label;
+    button.setAttribute("aria-selected", String(kind === activeInstructionKind));
+    button.addEventListener("click", () => {
+      activeInstructionKind = kind;
+      renderInstructionTabs();
+      renderInstructionList(kind);
+    });
+    instructionTabs.appendChild(button);
+  });
+}
+
+function renderInstructionList(kind, query = "") {
+  const rows = getInstructionRows(kind, query);
+  instructionList.innerHTML = "";
+  rows.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "instruction-item";
+    button.innerHTML = `
+      <span class="instruction-command"></span>
+      <span class="instruction-meta"></span>
+      <span class="instruction-copy"></span>
+    `;
+    button.querySelector(".instruction-command").textContent = item.command;
+    button.querySelector(".instruction-meta").textContent = `${item.label}${item.status ? ` / ${item.status}` : ""}`;
+    button.querySelector(".instruction-copy").textContent = item.instruction;
+    button.addEventListener("click", () => applyInstruction(item));
+    instructionList.appendChild(button);
+  });
+}
+
+function getInstructionRows(kind, query = "") {
+  const source =
+    kind === "skills" ? skillCommands : kind === "mcp" ? mcpConnections : slashCommands;
+  const needle = query.trim().toLowerCase();
+  if (!needle) return source;
+  return source.filter((item) =>
+    [item.command, item.label, item.status, item.instruction]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(needle),
+  );
+}
+
+function applyInstruction(item) {
+  const value = item.command.startsWith("mcp:")
+    ? `/mcp ${item.command.slice(4)}`
+    : item.command;
+  input.value = value;
+  resizeInput();
+  updateCommandHints();
+  input.focus();
 }
 
 function renderPreflight() {
@@ -296,6 +469,16 @@ function dispatch(raw) {
     return;
   }
 
+  if (text.startsWith("/mcp")) {
+    handleMcpCommand(text);
+    return;
+  }
+
+  if (text.startsWith("$")) {
+    handleSkillCommand(text);
+    return;
+  }
+
   addMessage("remote", `${activeRemote.name} queued: ${text}\nBridge mode is local mock until the signed SSH/websocket adapter is enabled.`);
 }
 
@@ -372,7 +555,57 @@ function handleSetupCommand(text) {
   const prompt = buildPolishedSetupPrompt(text);
   polishedSetupPrompt.textContent = prompt;
   setSetupAssistantOpen(true);
-  addMessage("system", `Setup agent staged ${topic}. Correct window: ${route}`);
+  addMessage("system", `Setup agent staged ${topic}. Correct target: ${route}`);
+}
+
+function handleSkillCommand(text) {
+  const [command] = text.split(/\s+/);
+  const skill = skillCommands.find((item) => item.command === command);
+  if (!skill) {
+    addMessage("alert", `Unknown skill command: ${command}. Available: ${skillCommands.map((item) => item.command).join(", ")}.`);
+    return;
+  }
+  activeInstructionKind = "skills";
+  renderInstructionTabs();
+  renderInstructionList("skills", command);
+  addMessage(
+    "system",
+    [
+      `Skill instruction loaded: ${skill.command} — ${skill.label}`,
+      skill.instruction,
+      "Runtime note: this browser surface displays the contract only. The local agent runtime still owns tool execution and evidence.",
+    ].join("\n"),
+  );
+}
+
+function handleMcpCommand(text) {
+  const [, rawId = ""] = text.split(/\s+/);
+  activeInstructionKind = "mcp";
+  renderInstructionTabs();
+  renderInstructionList("mcp", rawId);
+
+  if (!rawId) {
+    const summary = mcpConnections
+      .map((item) => `${item.status.padEnd(12)} ${item.command.padEnd(20)} ${item.label}`)
+      .join("\n");
+    addMessage("remote", `MCP connection contracts:\n${summary}`);
+    return;
+  }
+
+  const id = rawId.startsWith("mcp:") ? rawId : `mcp:${rawId}`;
+  const mcp = mcpConnections.find((item) => item.command === id);
+  if (!mcp) {
+    addMessage("alert", `Unknown MCP connection: ${rawId}. Try /mcp.`);
+    return;
+  }
+  addMessage(
+    "remote",
+    [
+      `${mcp.command} / ${mcp.status}`,
+      mcp.instruction,
+      "Policy: no secrets, OAuth material, stdio handles, or raw payloads are exposed to the browser.",
+    ].join("\n"),
+  );
 }
 
 function buildPolishedSetupPrompt(raw) {
@@ -381,7 +614,7 @@ function buildPolishedSetupPrompt(raw) {
     "SETUP_AGENT_TASK",
     `raw_request: ${source}`,
     "objective: finish the dull prerequisite without widening scope",
-    "correct_window: docs.zonicdesign.art / CommitMono / local Windburn preview",
+    "correct_window: docs.zonicdesign.art / CommitMono / local Windburn preview / scripts/xai-setup-agent.sh",
     "steps: detect current state -> open exact target -> apply smallest change -> verify -> report PASS/FLAG/BLOCK",
     "guardrails: no secrets in browser, no remote mutation without explicit operator gate",
   ].join("\n");
@@ -392,6 +625,7 @@ form.addEventListener("submit", (event) => {
   const value = input.value;
   input.value = "";
   resizeInput();
+  hideCommandHints();
   dispatch(value);
 });
 
@@ -400,9 +634,68 @@ function resizeInput() {
   input.style.height = `${Math.min(input.scrollHeight, 128)}px`;
 }
 
-input.addEventListener("input", resizeInput);
+function updateCommandHints() {
+  const value = input.value.trimStart();
+  let kind = "";
+  let query = "";
+  if (value.startsWith("/")) {
+    kind = value.startsWith("/mcp") ? "mcp" : "slash";
+    query = value.replace(/^\/mcp\s*/, "").replace(/^\//, "");
+  } else if (value.startsWith("$")) {
+    kind = "skills";
+    query = value.slice(1);
+  } else if (value.toLowerCase().startsWith("mcp")) {
+    kind = "mcp";
+    query = value.replace(/^mcp:?\s*/i, "");
+  }
+
+  if (!kind) {
+    hideCommandHints();
+    return;
+  }
+
+  const rows = getInstructionRows(kind, query).slice(0, 6);
+  if (rows.length === 0) {
+    hideCommandHints();
+    return;
+  }
+
+  commandHints.hidden = false;
+  commandHints.innerHTML = "";
+  rows.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.role = "option";
+    button.className = "hint-item";
+    button.innerHTML = `
+      <span class="hint-command"></span>
+      <span class="hint-label"></span>
+    `;
+    button.querySelector(".hint-command").textContent = item.command;
+    button.querySelector(".hint-label").textContent = item.label;
+    button.addEventListener("click", () => {
+      applyInstruction(item);
+      hideCommandHints();
+    });
+    commandHints.appendChild(button);
+  });
+}
+
+function hideCommandHints() {
+  commandHints.hidden = true;
+  commandHints.innerHTML = "";
+}
+
+input.addEventListener("input", () => {
+  resizeInput();
+  updateCommandHints();
+});
 
 input.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    hideCommandHints();
+    return;
+  }
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
     form.requestSubmit();

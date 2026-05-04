@@ -81,8 +81,15 @@
             rows="1"
             autocomplete="off"
             spellcheck="false"
-            placeholder="/status, /route hermes, /broadcast preflight summary"
+            placeholder="/status, $goal, /mcp playwright, /broadcast preflight summary"
           ></textarea>
+          <div
+            id="commandHints"
+            class="command-hints"
+            role="listbox"
+            aria-label="Command and skill suggestions"
+            hidden
+          ></div>
           <button class="icon-button" type="submit" aria-label="Send message">
             <span aria-hidden="true">&gt;</span>
           </button>
@@ -112,6 +119,15 @@
             <span class="dot-loader" aria-hidden="true"></span>
           </div>
           <div id="quickActions" class="quick-actions"></div>
+        </section>
+
+        <section class="pane command-reference-pane" aria-label="Codex-style command reference">
+          <div class="pane-title">
+            <span>Codex Controls</span>
+            <span class="mini-badge">slash / $ / MCP</span>
+          </div>
+          <div id="instructionTabs" class="instruction-tabs" role="tablist"></div>
+          <div id="instructionList" class="instruction-list"></div>
         </section>
 
         <section class="pane timeline-pane">

@@ -40,8 +40,17 @@
   },
   "setup_agent_lane": {
     "name": "xAI setup lane",
-    "status": "frontend_contract_only",
+    "status": "local_script_smoke_gate_pass",
+    "latest_smoke": "docs/remote-workhorse/preflight/XAI_SETUP_AGENT_SMOKE.md",
+    "latest_verdict": "PASS",
+    "latest_reason": "XAI_SETUP_AGENT_SMOKE_OK",
     "purpose": "Help users complete dull-but-required setup by detecting missing pieces, opening the correct docs/window, and polishing raw prompts into bounded operator tasks.",
+    "local_script": "scripts/xai-setup-agent.sh",
+    "credential_candidates": [
+      "/Users/0xvox/.openclaw/credentials/xai-windburn_actual.rtf",
+      "/Users/0xvox/Windburn/_local-cred/xai-windburn_local.rtf",
+      "/Users/0xvox/.openclaw/credentials/xai-windburn.rtf"
+    ],
     "correct_windows": {
       "font": "https://commitmono.com/",
       "dash": "https://docs.zonicdesign.art/pages/getting-started.html",

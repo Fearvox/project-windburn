@@ -51,8 +51,9 @@ Initial topics:
 
 ## Setup Agent Lane
 
-The current `xAI setup lane` is a frontend contract. It should help users finish
-dull prerequisite work by:
+The current `xAI setup lane` has a local smoke gate at
+`scripts/xai-setup-agent.sh`. It should help users finish dull prerequisite work
+by:
 
 - detecting missing local pieces such as fonts or docs access
 - opening the correct public setup window
@@ -61,6 +62,29 @@ dull prerequisite work by:
 
 The bridge must preserve the current rule: browser surfaces receive no secrets
 and perform no remote mutation.
+
+Credential candidates are operator-owned and must stay out of git:
+
+- `/Users/0xvox/.openclaw/credentials/xai-windburn_actual.rtf`
+- `/Users/0xvox/Windburn/_local-cred/xai-windburn_local.rtf`
+- `/Users/0xvox/.openclaw/credentials/xai-windburn.rtf`
+
+Run:
+
+```sh
+scripts/xai-setup-agent.sh
+scripts/xai-setup-agent.sh --call --confirm-xai-setup-agent --out docs/remote-workhorse/preflight/XAI_SETUP_AGENT_SMOKE.md
+```
+
+Latest observed API state:
+
+- `scripts/xai-setup-agent.sh` inspect: `PASS`
+- canonical credential selected:
+  `/Users/0xvox/.openclaw/credentials/xai-windburn_actual.rtf`
+- API smoke: `PASS`, chat endpoint HTTP `200`, models endpoint HTTP `200`
+- previous wrong-team candidates reproduced HTTP `403` and are no longer
+  canonical
+- secret values recorded in repo: `false`
 
 ## Current Repo Facts
 

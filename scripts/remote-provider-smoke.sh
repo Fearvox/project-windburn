@@ -106,7 +106,7 @@ present_names=""
 if [ -f "$secret_path" ]; then
   # shellcheck disable=SC1090
   . "$secret_path"
-  for name in OPENAI_API_KEY OPENAI_BASE_URL HERMES_API_KEY HERMES_PROVIDER_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL; do
+  for name in OPENAI_API_KEY OPENAI_BASE_URL HERMES_API_KEY HERMES_PROVIDER_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL XAI_API_KEY XAI_BASE_URL XAI_MODEL; do
     eval "value=\${$name:-}"
     if [ -n "$value" ]; then
       present_names="$present_names$name "
@@ -126,6 +126,10 @@ if [ -z "${verdict:-}" ]; then
     provider_type="openai"
     provider_base_url="${OPENAI_BASE_URL:-https://api.openai.com}"
     provider_api_key="$OPENAI_API_KEY"
+  elif [ -n "${XAI_API_KEY:-}" ]; then
+    provider_type="xai"
+    provider_base_url="${XAI_BASE_URL:-https://api.x.ai}"
+    provider_api_key="$XAI_API_KEY"
   elif [ -n "${HERMES_API_KEY:-}" ]; then
     if [ -z "${HERMES_PROVIDER_BASE_URL:-}" ]; then
       verdict=FLAG

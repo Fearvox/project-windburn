@@ -61,6 +61,7 @@ button {
 .shell {
   display: grid;
   grid-template-columns: minmax(240px, 280px) minmax(460px, 1fr) minmax(280px, 340px);
+  height: 100dvh;
   min-height: 100dvh;
   gap: 1px;
   background: var(--line);
@@ -70,11 +71,13 @@ button {
 .console,
 .inspector {
   min-width: 0;
+  min-height: 0;
   background: rgba(8, 10, 9, 0.96);
 }
 
 .rail,
 .inspector {
+  overflow: auto;
   padding: 18px;
 }
 
@@ -426,6 +429,7 @@ h2 {
 }
 
 .command-bar {
+  position: relative;
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr) 38px;
   align-items: end;
@@ -434,6 +438,61 @@ h2 {
   padding: 12px 16px;
   border-top: 1px solid var(--line);
   background: #0c100f;
+}
+
+.command-hints {
+  position: absolute;
+  left: 48px;
+  right: 62px;
+  bottom: calc(100% + 8px);
+  z-index: 12;
+  display: grid;
+  gap: 5px;
+  max-height: min(280px, 42vh);
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 1px 1px, rgba(137, 183, 255, 0.12) 1px, transparent 1.4px),
+    rgba(8, 10, 9, 0.98);
+  background-size: 10px 10px, auto;
+  box-shadow: 0 -14px 42px rgba(0, 0, 0, 0.45);
+}
+
+.command-hints[hidden] {
+  display: none;
+}
+
+.hint-item {
+  display: grid;
+  grid-template-columns: minmax(84px, auto) minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  min-height: 32px;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  background: rgba(16, 20, 19, 0.9);
+  color: var(--ink);
+  text-align: left;
+}
+
+.hint-item:hover {
+  border-color: var(--green);
+}
+
+.hint-command {
+  color: var(--green);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.hint-label {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .prompt-sigil {
@@ -543,6 +602,86 @@ textarea::placeholder {
 .route-button:hover,
 .icon-button:hover {
   border-color: var(--green);
+}
+
+.command-reference-pane {
+  min-width: 0;
+}
+
+.instruction-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.instruction-tabs button {
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.instruction-tabs button[aria-selected="true"] {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(143, 240, 164, 0.06);
+}
+
+.instruction-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.instruction-item {
+  display: grid;
+  grid-template-columns: minmax(74px, 0.8fr) minmax(0, 1fr);
+  grid-template-areas:
+    "command meta"
+    "copy copy";
+  gap: 5px 10px;
+  width: 100%;
+  min-height: 58px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: rgba(16, 20, 19, 0.72);
+  color: var(--ink);
+  text-align: left;
+}
+
+.instruction-item:hover {
+  border-color: var(--green);
+}
+
+.instruction-command {
+  grid-area: command;
+  color: var(--green);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.instruction-meta {
+  grid-area: meta;
+  justify-self: end;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: right;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.instruction-copy {
+  grid-area: copy;
+  color: var(--ink);
+  font-size: 10px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .timeline {

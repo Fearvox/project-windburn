@@ -24,6 +24,7 @@ scripts/hermes-health-gate.sh
 scripts/hermes-maintenance.sh
 scripts/hermes-yolo-loop.sh
 scripts/fusion-chat-preview.sh
+scripts/xai-setup-agent.sh
 scripts/multica-codex-cache-janitor.sh
 ```
 
@@ -51,6 +52,8 @@ just hermes-health
 just hermes-maintenance-inspect
 just hermes-yolo-inspect
 just fusion-chat-preview
+just xai-setup-inspect
+just xai-setup-smoke
 ```
 
 ## Repo Map
@@ -85,6 +88,8 @@ just fusion-chat-preview
   chat entrance.
 - `scripts/fusion-chat-preview.sh` - static preview server for the fusion chat
   terminal.
+- `scripts/xai-setup-agent.sh` - local xAI setup lane smoke gate using
+  operator-owned credentials with redacted evidence.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary

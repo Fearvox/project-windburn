@@ -84,6 +84,12 @@ hermes-yolo-apply:
 fusion-chat-preview:
     scripts/fusion-chat-preview.sh
 
+xai-setup-inspect:
+    scripts/xai-setup-agent.sh
+
+xai-setup-smoke:
+    scripts/xai-setup-agent.sh --call --confirm-xai-setup-agent --out docs/remote-workhorse/preflight/XAI_SETUP_AGENT_SMOKE.md
+
 multica-cache-dry-run:
     scripts/multica-codex-cache-janitor.sh
 

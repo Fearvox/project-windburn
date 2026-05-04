@@ -23,14 +23,17 @@ Then open `http://127.0.0.1:5178`.
   and Superconductor.
 - Command parser for `/status`, `/route`, `/attach tmux`, `/broadcast`, and
   `/explain flags`.
+- Codex-style command reference for slash commands, `$` skill instructions, and
+  browser-safe MCP connection contracts.
 - No secret loading and no remote mutation from the browser.
 
 ## Setup Assistant Lane
 
-The `xAI setup lane` is a frontend contract only in this slice. It does not call
-an external model yet. When a bridge is added, it should own boring prerequisite
-work: detect missing tools, open the correct docs page, rewrite vague setup
-requests into executable prompts, and return `PASS`, `FLAG`, or `BLOCK`.
+The `xAI setup lane` has a local smoke gate at
+`scripts/xai-setup-agent.sh`. The browser still never receives secrets. The
+script reads the operator-owned credential file, calls xAI only when explicitly
+confirmed, and records redacted proof in
+`docs/remote-workhorse/preflight/XAI_SETUP_AGENT_SMOKE.md`.
 
 ## Ownership
 
