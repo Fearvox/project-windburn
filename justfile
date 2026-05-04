@@ -90,11 +90,17 @@ fusion-chat-bridge:
 multica-runtime-card-verify:
     scripts/multica-runtime-card-verify.sh
 
+multica-runtime-card-verify-hermes:
+    scripts/multica-runtime-card-verify.sh docs/remote-workhorse/fixtures/multica-hermes-autoresearch-card-v0.json
+
 windburn-captain-runtime-status:
     scripts/windburn-captain-runtime.sh --card docs/remote-workhorse/fixtures/multica-runtime-card-v0.json --action status
 
 windburn-captain-runtime-run-card:
     scripts/windburn-captain-runtime.sh --card docs/remote-workhorse/fixtures/multica-runtime-card-v0.json --action run-card
+
+windburn-captain-runtime-hermes-run-card:
+    scripts/windburn-captain-runtime.sh --card docs/remote-workhorse/fixtures/multica-hermes-autoresearch-card-v0.json --action run-card
 
 xai-setup-inspect:
     scripts/xai-setup-agent.sh

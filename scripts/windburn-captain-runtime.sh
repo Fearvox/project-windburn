@@ -36,6 +36,7 @@ Usage:
   scripts/windburn-captain-runtime.sh --card <path> --action status
   scripts/windburn-captain-runtime.sh --card <path> --action verify-card
   scripts/windburn-captain-runtime.sh --card <path> --action superruntime-status
+  scripts/windburn-captain-runtime.sh --card <path> --action hermes-autoresearch
   scripts/windburn-captain-runtime.sh --card <path> --action run-card
 EOF
 }
@@ -157,7 +158,7 @@ NODE
 }
 
 dispatch_safe_action() {
-  ROOT_DIR="$ROOT_DIR" CARD_PATH="$CARD_PATH" ACTION_OVERRIDE="$1" VERIFY_OUTPUT="$VERIFY_OUTPUT" node - <<'NODE'
+  ROOT_DIR="$ROOT_DIR" CARD_PATH="$CARD_PATH" ACTION_OVERRIDE="$1" VERIFY_OUTPUT="$VERIFY_OUTPUT" WINDBURN_RUNTIME_MAX_PARALLEL="$MAX_PARALLEL" node - <<'NODE'
 const fs = require("fs");
 const { execFileSync, spawnSync } = require("child_process");
 const path = require("path");
@@ -166,7 +167,7 @@ const rootDir = process.env.ROOT_DIR;
 const cardPath = process.env.CARD_PATH;
 const actionOverride = process.env.ACTION_OVERRIDE;
 const verifyOutput = process.env.VERIFY_OUTPUT;
-const allowedActions = new Set(["status", "verify-card", "superruntime-status"]);
+const allowedActions = new Set(["status", "verify-card", "superruntime-status", "hermes-autoresearch"]);
 
 function loadJson(filePath, label) {
   try {
@@ -175,6 +176,10 @@ function loadJson(filePath, label) {
     console.log(`BLOCK windburn_captain_runtime: invalid ${label} (${error.message})`);
     process.exit(1);
   }
+}
+
+function isObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function git(args, fallback) {
@@ -201,6 +206,33 @@ function runScript(scriptPath, args = []) {
     output,
     level: output.match(/\b(PASS|FLAG|BLOCK)\b/)?.[1] ?? "BLOCK",
   };
+}
+
+function parsePositiveInt(value, fallback) {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function boolEnv(name) {
+  return ["1", "true", "yes", "on"].includes(String(process.env[name] || "").toLowerCase());
+}
+
+function extractVerdict(output, fallback = "BLOCK") {
+  const matches = String(output || "").match(/\b(PASS|FLAG|BLOCK)\b/g);
+  return matches?.at(-1) ?? fallback;
+}
+
+function isRateLimited(output) {
+  return /\b429\b|rate[_ -]?limit(?:ed)?\b/i.test(String(output || ""));
+}
+
+function computeEffectiveParallel(topicCount, requestedMaxParallel) {
+  const runtimeCap = parsePositiveInt(
+    process.env.WINDBURN_HERMES_AUTORESEARCH_MAX_PARALLEL,
+    parsePositiveInt(process.env.WINDBURN_RUNTIME_MAX_PARALLEL, 10),
+  );
+  const requestedCap = Number.isInteger(requestedMaxParallel) ? requestedMaxParallel : topicCount || 1;
+  return Math.max(1, Math.min(10, runtimeCap, requestedCap, topicCount || 1));
 }
 
 function latestStatusByTask(events) {
@@ -292,6 +324,109 @@ if (action === "status") {
   process.exit(verdict === "BLOCK" ? 1 : 0);
 }
 
+if (action === "hermes-autoresearch") {
+  const actionPayload = isObject(card.action_payload) ? card.action_payload : {};
+  const topics = Array.isArray(actionPayload.topics)
+    ? actionPayload.topics.filter((topic) => typeof topic === "string" && topic.trim().length > 0)
+    : [];
+  const topicCount = topics.length;
+  const maxParallelEffective = computeEffectiveParallel(topicCount, actionPayload.max_parallel);
+  const configured = boolEnv("WINDBURN_HERMES_AUTORESEARCH_ENABLED");
+  const healthPreflightEnabled = boolEnv("WINDBURN_HERMES_AUTORESEARCH_HEALTH_PREFLIGHT");
+  const executeEnabled = boolEnv("WINDBURN_HERMES_AUTORESEARCH_EXECUTE");
+  const artifactRefs = ["local:hermes-autoresearch"];
+  let verdict = "PASS";
+  let phase = "ready";
+  let reason = "hermes_autoresearch_ready_safe_default";
+  let providerRateLimited = false;
+  let healthPreflight = "SKIP";
+
+  if (!configured) {
+    verdict = "FLAG";
+    phase = "not-configured";
+    reason = "hermes_autoresearch_not_configured";
+  } else {
+    if (healthPreflightEnabled) {
+      const healthResult = runScript(path.join(rootDir, "scripts/hermes-health-gate.sh"));
+      healthPreflight = healthResult.level;
+      artifactRefs.push("local:hermes-health-gate");
+      if (healthResult.level === "BLOCK") {
+        verdict = "BLOCK";
+        phase = "health-preflight";
+        reason = "hermes_health_gate_blocked";
+      } else if (healthResult.level === "FLAG") {
+        verdict = "FLAG";
+        phase = "health-preflight";
+        reason = "hermes_health_gate_flagged";
+      }
+    }
+
+    if (executeEnabled && verdict !== "BLOCK") {
+      const runnerPath = String(process.env.WINDBURN_HERMES_AUTORESEARCH_RUNNER || "");
+      if (!runnerPath) {
+        verdict = "FLAG";
+        phase = "execution-gate";
+        reason = "hermes_autoresearch_runner_missing";
+      } else {
+        const runnerPayload = {
+          schema_version: 1,
+          action: "hermes-autoresearch",
+          card_id: card.card_id,
+          runtime_id: card.runtime_id,
+          repo: card.repo,
+          topic_count: topicCount,
+          topics,
+          scope: actionPayload.scope ?? null,
+          max_parallel_effective: maxParallelEffective,
+          evidence_target: actionPayload.evidence_target ?? null,
+          stream_policy: "redacted",
+        };
+        const runnerResult = spawnSync(runnerPath, [], {
+          cwd: rootDir,
+          encoding: "utf8",
+          input: `${JSON.stringify(runnerPayload)}\n`,
+          stdio: ["pipe", "pipe", "pipe"],
+        });
+        const runnerOutput = `${runnerResult.stdout ?? ""}${runnerResult.stderr ?? ""}`.trim();
+        artifactRefs.push("local:hermes-autoresearch-runner");
+        providerRateLimited = isRateLimited(runnerOutput);
+        phase = "provider-call";
+        if (providerRateLimited) {
+          verdict = "FLAG";
+          reason = "provider_rate_limited";
+        } else {
+          verdict = extractVerdict(runnerOutput, runnerResult.status === 0 ? "PASS" : "BLOCK");
+          reason =
+            verdict === "PASS"
+              ? "hermes_autoresearch_runner_pass"
+              : verdict === "FLAG"
+                ? "hermes_autoresearch_runner_flagged"
+                : "hermes_autoresearch_runner_blocked";
+        }
+      }
+    }
+  }
+
+  console.log("WINDBURN_HERMES_AUTORESEARCH");
+  console.log(`generated_utc=${new Date().toISOString()}`);
+  console.log(`card_id=${card.card_id}`);
+  console.log(`runtime_id=${card.runtime_id}`);
+  console.log(`repo=${card.repo}`);
+  console.log("action=hermes-autoresearch");
+  console.log(`requested_action=${action}`);
+  console.log(`topic_count=${topicCount}`);
+  console.log(`max_parallel_effective=${maxParallelEffective}`);
+  console.log(`phase=${phase}`);
+  console.log(`level=${verdict.toLowerCase()}`);
+  console.log(`health_preflight=${healthPreflight}`);
+  console.log(`provider_rate_limited=${String(providerRateLimited)}`);
+  console.log("secret_values_recorded=false");
+  console.log(`artifact_refs=${artifactRefs.join(",")}`);
+  console.log(`reason=${reason}`);
+  console.log(`verdict=${verdict}`);
+  process.exit(verdict === "BLOCK" ? 1 : 0);
+}
+
 if (action === "superruntime-status") {
   const fixturePath = path.join(rootDir, "docs/remote-workhorse/fixtures/superruntime-v0.json");
   const fixture = loadJson(fixturePath, "superruntime fixture");
@@ -363,6 +498,20 @@ extract_field() {
   printf '%s\n' "$1" | sed -n "s/^$2=//p" | tail -n 1
 }
 
+append_artifact_refs() {
+  base_refs="${1:-}"
+  extra_refs="${2:-}"
+  if [ -z "$extra_refs" ]; then
+    printf '%s' "$base_refs"
+    return
+  fi
+  if [ -z "$base_refs" ]; then
+    printf '%s' "$extra_refs"
+    return
+  fi
+  printf '%s,%s' "$base_refs" "$extra_refs"
+}
+
 write_status_json() {
   STATUS_PHASE="$1"
   STATUS_LEVEL="$2"
@@ -371,14 +520,21 @@ write_status_json() {
   STATUS_GIT_STATUS="${5:-}"
   STATUS_SUPERRUNTIME_FIXTURE="${6:-}"
   STATUS_ARTIFACT_REFS="${7:-local:status-json}"
+  STATUS_PROVIDER_RATE_LIMITED="${8:-false}"
+  STATUS_TOPIC_COUNT="${9:-}"
+  STATUS_MAX_PARALLEL_EFFECTIVE="${10:-}"
   STATUS_PATH="$STATUS_PATH" RUN_ID="$RUN_ID" CARD_ID="$CARD_ID" RUNTIME_ID="$RUNTIME_ID" REPO_NAME="$REPO_NAME" REQUESTED_ACTION="$REQUESTED_ACTION" \
   STATUS_PHASE="$STATUS_PHASE" STATUS_LEVEL="$STATUS_LEVEL" STATUS_VERDICT="$STATUS_VERDICT" STATUS_SLOT="$STATUS_SLOT" STATUS_GIT_STATUS="$STATUS_GIT_STATUS" \
-  STATUS_SUPERRUNTIME_FIXTURE="$STATUS_SUPERRUNTIME_FIXTURE" STATUS_ARTIFACT_REFS="$STATUS_ARTIFACT_REFS" node - <<'NODE'
+  STATUS_SUPERRUNTIME_FIXTURE="$STATUS_SUPERRUNTIME_FIXTURE" STATUS_ARTIFACT_REFS="$STATUS_ARTIFACT_REFS" STATUS_PROVIDER_RATE_LIMITED="$STATUS_PROVIDER_RATE_LIMITED" \
+  STATUS_TOPIC_COUNT="$STATUS_TOPIC_COUNT" STATUS_MAX_PARALLEL_EFFECTIVE="$STATUS_MAX_PARALLEL_EFFECTIVE" node - <<'NODE'
 const fs = require("fs");
 const artifactRefs = String(process.env.STATUS_ARTIFACT_REFS || "")
   .split(",")
   .map((value) => value.trim())
   .filter(Boolean);
+const requestedAction = process.env.REQUESTED_ACTION;
+const topicCountRaw = process.env.STATUS_TOPIC_COUNT || "";
+const maxParallelRaw = process.env.STATUS_MAX_PARALLEL_EFFECTIVE || "";
 const status = {
   schema_version: 1,
   run_id: process.env.RUN_ID,
@@ -393,10 +549,15 @@ const status = {
   git_status: process.env.STATUS_GIT_STATUS || null,
   superruntime_fixture: process.env.STATUS_SUPERRUNTIME_FIXTURE || null,
   secret_values_recorded: false,
-  provider_rate_limited: false,
+  provider_rate_limited: String(process.env.STATUS_PROVIDER_RATE_LIMITED || "false") === "true",
   artifact_refs: artifactRefs,
   generated_at_utc: new Date().toISOString(),
 };
+if (requestedAction === "hermes-autoresearch") {
+  status.action = "hermes-autoresearch";
+  status.topic_count = topicCountRaw === "" ? null : Number.parseInt(topicCountRaw, 10);
+  status.max_parallel_effective = maxParallelRaw === "" ? null : Number.parseInt(maxParallelRaw, 10);
+}
 fs.writeFileSync(process.env.STATUS_PATH, `${JSON.stringify(status)}\n`);
 NODE
 }
@@ -447,7 +608,7 @@ run_card_action() {
   fi
 
   case "$REQUESTED_ACTION" in
-    status|verify-card|superruntime-status) ;;
+    status|verify-card|superruntime-status|hermes-autoresearch) ;;
     *)
       prepare_run_artifacts
       write_status_json "block" "block" "BLOCK" "none" "" "" "$STATUS_REF,$CARD_REF"
@@ -495,10 +656,15 @@ run_card_action() {
   HANDLER_LEVEL="$(level_from_verdict "$HANDLER_VERDICT")"
   HANDLER_GIT_STATUS="$(extract_field "$HANDLER_OUTPUT" git_status)"
   HANDLER_SUPERRUNTIME_FIXTURE="$(extract_field "$HANDLER_OUTPUT" superruntime_fixture)"
+  HANDLER_PROVIDER_RATE_LIMITED="$(extract_field "$HANDLER_OUTPUT" provider_rate_limited)"
+  HANDLER_TOPIC_COUNT="$(extract_field "$HANDLER_OUTPUT" topic_count)"
+  HANDLER_MAX_PARALLEL_EFFECTIVE="$(extract_field "$HANDLER_OUTPUT" max_parallel_effective)"
+  HANDLER_ARTIFACT_REFS="$(extract_field "$HANDLER_OUTPUT" artifact_refs)"
   artifact_refs="$STATUS_REF,$CARD_REF,$RUN_OUTPUT_REF"
   if [ "$REQUESTED_ACTION" = "status" ] || [ "$REQUESTED_ACTION" = "superruntime-status" ]; then
     artifact_refs="$artifact_refs,local:superruntime-fixture"
   fi
+  artifact_refs="$(append_artifact_refs "$artifact_refs" "$HANDLER_ARTIFACT_REFS")"
   final_phase="done"
   if [ "$HANDLER_VERDICT" = "FLAG" ]; then
     final_phase="flag"
@@ -506,7 +672,7 @@ run_card_action() {
   if [ "$HANDLER_VERDICT" = "BLOCK" ]; then
     final_phase="block"
   fi
-  write_status_json "$final_phase" "$HANDLER_LEVEL" "$HANDLER_VERDICT" "$SLOT_LABEL" "$HANDLER_GIT_STATUS" "$HANDLER_SUPERRUNTIME_FIXTURE" "$artifact_refs"
+  write_status_json "$final_phase" "$HANDLER_LEVEL" "$HANDLER_VERDICT" "$SLOT_LABEL" "$HANDLER_GIT_STATUS" "$HANDLER_SUPERRUNTIME_FIXTURE" "$artifact_refs" "${HANDLER_PROVIDER_RATE_LIMITED:-false}" "${HANDLER_TOPIC_COUNT:-}" "${HANDLER_MAX_PARALLEL_EFFECTIVE:-}"
 
   echo "$HANDLER_VERDICT windburn_captain_runtime: run-card"
   echo "run_id=$RUN_ID"

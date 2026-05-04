@@ -30,7 +30,7 @@ node - "$CARD_PATH" <<'NODE'
 const fs = require("fs");
 
 const cardPath = process.argv[2];
-const ALLOWED_ACTIONS = new Set(["status", "verify-card", "superruntime-status"]);
+const ALLOWED_ACTIONS = new Set(["status", "verify-card", "superruntime-status", "hermes-autoresearch"]);
 const ALLOWED_PRIVACY_SCOPES = new Set(["private", "team"]);
 const ALLOWED_NETWORK = new Set(["none", "local-only"]);
 const ALLOWED_SIGNATURE = "stub:v0-ssh-runtime-card-not-cryptographic";
@@ -77,9 +77,45 @@ function requireBoolean(value, label) {
   return true;
 }
 
+function requireInteger(value, label, { min, max } = {}) {
+  if (!Number.isInteger(value)) {
+    fail(`${label} must be an integer`);
+    return false;
+  }
+  if (typeof min === "number" && value < min) {
+    fail(`${label} must be >= ${min}`);
+    return false;
+  }
+  if (typeof max === "number" && value > max) {
+    fail(`${label} must be <= ${max}`);
+    return false;
+  }
+  return true;
+}
+
 function requireArray(value, label) {
   if (!Array.isArray(value) || value.length === 0) {
     fail(`${label} must be a non-empty array`);
+    return false;
+  }
+  return true;
+}
+
+function requireStreamSafeText(value, label, { maxLength = 120 } = {}) {
+  if (!requireString(value, label)) {
+    return false;
+  }
+  const trimmed = value.trim();
+  if (trimmed.length > maxLength) {
+    fail(`${label} must be <= ${maxLength} chars`);
+    return false;
+  }
+  if (/[\r\n\t]/.test(trimmed)) {
+    fail(`${label} must not contain control whitespace`);
+    return false;
+  }
+  if (!/^[A-Za-z0-9][A-Za-z0-9 .,:;_()+-]*$/.test(trimmed)) {
+    fail(`${label} must use stream-safe label text`);
     return false;
   }
   return true;
@@ -125,12 +161,12 @@ if (requireObject(card, "card")) {
   }
   requireString(card.branch, "card.branch");
   if (!ALLOWED_ACTIONS.has(card.requested_action)) {
-    fail("card.requested_action must be one of status, verify-card, superruntime-status");
+    fail("card.requested_action must be one of status, verify-card, superruntime-status, hermes-autoresearch");
   }
   if (requireArray(card.allowed_actions, "card.allowed_actions")) {
     for (const [index, action] of card.allowed_actions.entries()) {
       if (typeof action !== "string" || !ALLOWED_ACTIONS.has(action)) {
-        fail(`card.allowed_actions[${index}] must be one of status, verify-card, superruntime-status`);
+        fail(`card.allowed_actions[${index}] must be one of status, verify-card, superruntime-status, hermes-autoresearch`);
       }
     }
     if (typeof card.requested_action === "string" && !card.allowed_actions.includes(card.requested_action)) {
@@ -174,6 +210,41 @@ if (requireObject(card, "card")) {
   if (card.signature_stub !== ALLOWED_SIGNATURE) {
     fail(`card.signature_stub must be ${ALLOWED_SIGNATURE}`);
   }
+  const hermesActionRequested =
+    card.requested_action === "hermes-autoresearch" ||
+    (Array.isArray(card.allowed_actions) && card.allowed_actions.includes("hermes-autoresearch"));
+  if (card.action_payload !== undefined) {
+    requireObject(card.action_payload, "card.action_payload");
+  }
+  if (card.action_payload !== undefined && !hermesActionRequested) {
+    fail("card.action_payload is only allowed for hermes-autoresearch");
+  }
+  if (hermesActionRequested) {
+    if (requireObject(card.action_payload, "card.action_payload")) {
+      for (const key of Object.keys(card.action_payload)) {
+        if (!["topics", "scope", "max_parallel", "evidence_target"].includes(key)) {
+          fail(`card.action_payload.${key} is not allowed for hermes-autoresearch`);
+        }
+      }
+      if (requireArray(card.action_payload.topics, "card.action_payload.topics")) {
+        if (card.action_payload.topics.length > 10) {
+          fail("card.action_payload.topics must contain at most 10 items");
+        }
+        for (const [index, topic] of card.action_payload.topics.entries()) {
+          requireStreamSafeText(topic, `card.action_payload.topics[${index}]`, { maxLength: 120 });
+        }
+      }
+      if (card.action_payload.scope !== undefined) {
+        requireStreamSafeText(card.action_payload.scope, "card.action_payload.scope", { maxLength: 64 });
+      }
+      if (card.action_payload.max_parallel !== undefined) {
+        requireInteger(card.action_payload.max_parallel, "card.action_payload.max_parallel", { min: 1, max: 10 });
+      }
+      if (card.action_payload.evidence_target !== undefined) {
+        requireStreamSafeText(card.action_payload.evidence_target, "card.action_payload.evidence_target", { maxLength: 64 });
+      }
+    }
+  }
 }
 
 const sensitivePatterns = [
@@ -195,7 +266,7 @@ const sensitivePatterns = [
 for (const { path, value } of collectStrings(card)) {
   if (path.endsWith("#key")) {
     const keyName = value.toLowerCase();
-    const isSensitiveKey = /(?:password|passwd|token|credential|credential[_-]?path|oauth|private[_-]?key|api[_-]?key|provider[_-]?(?:account|profile|id))/i.test(value);
+    const isSensitiveKey = /(?:password|passwd|token|credential|credential[_-]?path|oauth|private[_-]?key|api[_-]?key|provider[_-]?(?:account|profile|id)|account[_-]?id|profile[_-]?id)/i.test(value);
     if (isSensitiveKey && !allowedSensitiveKeys.has(keyName)) {
       fail(`sensitive-looking key at ${path}: ${value}`);
     }

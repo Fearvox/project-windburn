@@ -98,6 +98,9 @@ spool. Current schema:
 | `slot` | string | `pending`, `none`, or lease label such as `slot-##`. |
 | `git_status` | string/null | Populated when the bounded handler returns repo status. |
 | `superruntime_fixture` | string/null | Populated when the bounded handler returns a fixture verdict. |
+| `action` | string/null | Present for action-specific handlers such as `hermes-autoresearch`. |
+| `topic_count` | number/null | Redacted topic count for Hermes autoresearch cards. |
+| `max_parallel_effective` | number/null | Effective bounded parallelism after runtime cap. |
 | `secret_values_recorded` | boolean | Must remain `false` for stream safety. |
 | `provider_rate_limited` | boolean | Reserved for future provider-backed lanes; currently `false`. |
 | `artifact_refs` | string[] | Redacted refs only, for example `local:status-json`. |
@@ -136,6 +139,8 @@ Stream-safety rules for status JSON:
 - no raw hostnames, IPs, SSH targets, credential paths, local absolute paths, or
   provider account internals;
 - no provider API keys, OAuth payloads, or copied session material;
+- no raw topic text when the topic could carry private context; prefer counts or
+  sanitized labels only;
 - artifact refs stay abstract and redacted;
 - status JSON is the future live-status input for Superruntime/Fusion Bridge, not
   a dump of private runtime logs.
@@ -169,6 +174,7 @@ Required fields in v0:
 | `permissions` | Forced-command security posture for shell, mutation, secrets, writeback, and network. |
 | `evidence_requirements` | Minimal proof outputs the runtime must return. |
 | `operator_call_conditions` | Conditions that stop automation and require a human operator. |
+| `action_payload` | Action-specific bounded payload. Required for `hermes-autoresearch`; absent for the status-only actions. |
 | `expected_output` | Compact report contract. |
 | `stream_policy` | v0 requires `redacted`. |
 | `expires_at` | Lease-like expiry timestamp. |
@@ -238,6 +244,7 @@ Only these runtime-card actions are currently allowed:
 | `status` | Return compact runtime status and verifier-derived verdict. |
 | `verify-card` | Validate the runtime card and print a redacted wrapper summary. |
 | `superruntime-status` | Return a compact summary from the local Superruntime fixture. |
+| `hermes-autoresearch` | v1 safe-default queue/spool handler. Validates bounded research topics, returns redacted status JSON, and stops at `FLAG hermes_autoresearch_not_configured` unless an operator-confirmed execution env is explicitly enabled. |
 
 Wrapper action note:
 
@@ -312,11 +319,18 @@ payload-provided shell fragments.
 The v0 wrapper is a private runtime channel sketch for Multica to inspect
 Windburn state safely before any signed mutation lane exists.
 
-## Hermes Autoresearch Card Sketch
+## Hermes Autoresearch Card v1 Safe-Default
 
-This is forward-looking only. The current verifier/runtime does not yet accept a
-`requested_action` of `hermes-autoresearch`, and this doc does not claim that
-handler is live on the current branch.
+The current branch now accepts a bounded `requested_action` of
+`hermes-autoresearch` behind the same lease-based `run-card` wrapper. The v1
+handler is safe-default:
+
+- no raw shell from card payloads;
+- no provider API call by default;
+- no remote mutation;
+- no raw host/IP/path/tmux/provider credential/provider account output;
+- if no operator-confirmed Hermes execution env is enabled, return
+  `FLAG hermes_autoresearch_not_configured` and write redacted status JSON.
 
 Use route labels and bounded scope only:
 
@@ -332,24 +346,21 @@ Use route labels and bounded scope only:
   "requested_action": "hermes-autoresearch",
   "allowed_actions": ["hermes-autoresearch"],
   "privacy_scope": "team",
-  "route_label": "remote-workhorse",
-  "provider_mode": "runtime-host-operator-owned-session-or-profile",
-  "research_scope": {
+  "action_payload": {
     "topics": [
       "topic-a",
       "topic-b"
     ],
-    "max_topics": 2,
     "max_parallel": 10,
-    "max_turns_per_topic": 4,
-    "evidence_budget": "redacted-summary-only"
+    "scope": "remote-workhorse",
+    "evidence_target": "redacted-team-bundle"
   },
   "permissions": {
     "shell": "forced-command",
     "remote_mutation": false,
     "secret_access": false,
     "provider_writeback": false,
-    "network": "operator-approved-provider-only"
+    "network": "local-only"
   },
   "evidence_requirements": [
     "bounded-topic-plan",
@@ -373,6 +384,16 @@ Use route labels and bounded scope only:
 Future behavior expectations for that lane:
 
 - provider auth remains runtime-host-owned and out of card payloads;
+- `action_payload.topics` must be a non-empty array with at most 10 stream-safe
+  strings;
+- optional `action_payload.scope` and `action_payload.evidence_target` are
+  short redacted labels, not file paths;
+- optional `action_payload.max_parallel` is `1..10`, but the runtime env cap
+  still wins;
+- status JSON for this action includes `action`, `topic_count`,
+  `max_parallel_effective`, `phase`, `level`, `verdict`,
+  `provider_rate_limited`, `secret_values_recorded=false`, and redacted
+  `artifact_refs`;
 - `429` / `rate_limit` returns `FLAG provider_rate_limited`, not repo failure;
 - autoresearch fan-out still runs behind leases/status JSON, not ad hoc tmux
   spawning.

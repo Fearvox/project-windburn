@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "card_id": "mrc_windburn_hermes_autoresearch_001",
+  "source": "multica",
+  "runtime_id": "rt_windburn_ssh_captain_001",
+  "repo": "Fearvox/project-windburn",
+  "branch": "main",
+  "intent": "Run bounded Hermes autoresearch with synthetic safe topics through the private runtime queue.",
+  "requested_action": "hermes-autoresearch",
+  "allowed_actions": [
+    "hermes-autoresearch",
+    "verify-card"
+  ],
+  "action_payload": {
+    "topics": [
+      "Queue lease fairness notes",
+      "Redacted status spool contract",
+      "Synthetic evidence routing labels"
+    ],
+    "scope": "remote-workhorse",
+    "max_parallel": 3,
+    "evidence_target": "team-evidence-bundle"
+  },
+  "privacy_scope": "team",
+  "permissions": {
+    "shell": "forced-command",
+    "remote_mutation": false,
+    "secret_access": false,
+    "provider_writeback": false,
+    "network": "local-only"
+  },
+  "evidence_requirements": [
+    "topic-count",
+    "redacted-status-json",
+    "runtime-card-verdict",
+    "artifact-refs"
+  ],
+  "operator_call_conditions": [
+    "runtime-queue-full",
+    "provider-rate-limit",
+    "stream-safety-failure",
+    "scope-expansion-request"
+  ],
+  "expected_output": "PASS/FLAG/BLOCK plus redacted evidence refs.",
+  "stream_policy": "redacted",
+  "expires_at": "2026-12-31T23:59:59Z",
+  "signature_stub": "stub:v0-ssh-runtime-card-not-cryptographic"
+}
