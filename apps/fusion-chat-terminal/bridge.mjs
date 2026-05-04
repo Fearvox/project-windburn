@@ -10,7 +10,9 @@ const appDir = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(appDir, "../..");
 const host = process.env.WINDBURN_FUSION_CHAT_HOST ?? "127.0.0.1";
 const port = Number(process.env.WINDBURN_FUSION_CHAT_PORT ?? "5178");
-const superconductorBinding = "/Users/0xvox/superconductor/projects/Windburn";
+const superconductorBinding =
+  process.env.WINDBURN_SUPERCONDUCTOR_BINDING ??
+  path.resolve(root, "../superconductor/projects/Windburn");
 
 const contentTypes = new Map([
   [".html", "text/html; charset=utf-8"],
@@ -26,20 +28,20 @@ const routeBlueprints = [
   {
     id: "hermes",
     name: "Hermes Yolo",
-    host: "137.184.104.26",
+    host: "public host hidden",
     kind: "tmux",
-    transport: "ssh -> tmux windburn-hermes-runtime:hermes-yolo",
-    command: "scripts/hermes-yolo-loop.sh --out docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md",
+    transport: "tmux attach target hidden",
+    command: "operator command hidden",
     taste: "primary high-context chat lane",
     proof: "docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md",
   },
   {
     id: "workhorse",
     name: "NixOS Workhorse",
-    host: "24.144.113.25",
+    host: "public host hidden",
     kind: "nixos",
-    transport: "ssh -> scripts/nixos-remote-rebuild.sh",
-    command: "scripts/nixos-remote-rebuild.sh",
+    transport: "NixOS rebuild target hidden",
+    command: "operator command hidden",
     taste: "remote build and runner cell",
     proof: "docs/remote-workhorse/preflight/NIXOS_FOUNDATION_PROOF.md",
     forceFlag: "foundation proof exists; live runner bridge still pending",
@@ -47,30 +49,30 @@ const routeBlueprints = [
   {
     id: "ccr",
     name: "CCR Embed",
-    host: "165.232.146.188",
+    host: "internal host hidden",
     kind: "internal",
-    transport: "ssh -> 100.65.234.77:8080/v1",
-    command: "scripts/droplet-engagement-review.sh",
+    transport: "embedding route hidden",
+    command: "operator command hidden",
     taste: "embedding and review substrate",
     proof: "docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md",
   },
   {
     id: "codex",
     name: "Local Codex",
-    host: root,
+    host: "local workspace hidden",
     kind: "local",
-    transport: "workspace shell -> scripts/check.sh",
-    command: "scripts/superconductor-codex-intake.sh && scripts/check.sh",
+    transport: "workspace shell hidden",
+    command: "operator command hidden",
     taste: "operator control plane",
     proof: "docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md",
   },
   {
     id: "superconductor",
     name: "Superconductor",
-    host: superconductorBinding,
+    host: "workspace binding hidden",
     kind: "shell",
-    transport: "linked repo anchor; future CLI pipeline",
-    command: "scripts/superconductor-codex-intake.sh",
+    transport: "repo anchor hidden",
+    command: "operator command hidden",
     taste: "multi-workspace dispatch surface",
     proof: null,
   },
@@ -87,9 +89,41 @@ const preflightProofs = [
 
 function redact(text) {
   return String(text)
+    .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, "[redacted:host]")
+    .replace(/\/Users\/[^\s"'`),]+/g, "[redacted:local-path]")
+    .replace(/\/srv\/[^\s"'`),]+/g, "[redacted:remote-path]")
+    .replace(/\bssh\s+[^\n]+/gi, "ssh [redacted:target]")
     .replace(/Bearer\s+[A-Za-z0-9._-]+/g, "Bearer [redacted]")
     .replace(/(xai-[A-Za-z0-9_-]{8})[A-Za-z0-9_-]{32,}/g, "$1[redacted]")
     .replace(/(sk-[A-Za-z0-9_-]{8})[A-Za-z0-9_-]{32,}/g, "$1[redacted]");
+}
+
+function streamSafeRoute(route) {
+  const hostLabel =
+    route.kind === "local"
+      ? "local workspace hidden"
+      : route.kind === "shell"
+        ? "workspace binding hidden"
+        : route.kind === "internal"
+          ? "internal host hidden"
+          : "public host hidden";
+  const transportLabel =
+    route.kind === "tmux"
+      ? "tmux attach target hidden"
+      : route.kind === "nixos"
+        ? "NixOS rebuild target hidden"
+        : route.kind === "internal"
+          ? "embedding route hidden"
+          : route.kind === "local"
+            ? "workspace shell hidden"
+            : "repo anchor hidden";
+
+  return {
+    host: hostLabel,
+    transport: transportLabel,
+    command: "operator command hidden",
+    redacted_fields: ["host", "transport", "command"],
+  };
 }
 
 function run(command, args, options = {}) {
@@ -158,7 +192,7 @@ async function repoStatus() {
   const untrackedCount = worktreeLines.filter((line) => line.startsWith("?? ")).length;
   const trackedDirty = worktreeLines.some((line) => !line.startsWith("?? "));
   return {
-    root,
+    root: "local workspace hidden",
     branch,
     head,
     origin,
@@ -166,9 +200,9 @@ async function repoStatus() {
     dirty: trackedDirty,
     tracked_dirty: trackedDirty,
     untracked_count: untrackedCount,
-    status_short: statusShort,
+    status_short: `tracked_dirty=${String(trackedDirty)} untracked_count=${untrackedCount}`,
     superconductor_binding: binding.status,
-    superconductor_binding_path: binding.path,
+    superconductor_binding_path: binding.path ? "workspace binding hidden" : null,
   };
 }
 
@@ -219,7 +253,7 @@ async function readProof(relativePath) {
 
   return {
     status: verdict.toUpperCase(),
-    reason,
+    reason: redact(reason),
     source: relativePath,
     modified_at: fileStat.mtime.toISOString(),
   };
@@ -247,20 +281,18 @@ async function buildRemotes() {
           : route.forceFlag ?? proof?.reason ?? "live proof";
 
       return {
+        ...streamSafeRoute(route),
         id: route.id,
         name: route.name,
-        host: route.host,
         kind: route.kind,
         status,
         latency,
-        transport: route.transport,
-        command: route.command,
         taste: route.taste,
         bridge: "read-only-live",
         proof: proof ?? (superconductorRoute ? {
           status,
           reason: latency,
-          source: superconductorBinding,
+          source: "workspace binding hidden",
           modified_at: null,
         } : null),
       };
@@ -319,12 +351,12 @@ async function inspectXaiSetup() {
     exit_code: result.code,
     verdict: fields.verdict ?? (result.ok ? "PASS" : "FLAG"),
     reason: fields.reason ?? (result.ok ? "XAI_CREDENTIAL_SHAPE_OK" : "XAI_SETUP_INSPECT_FAILED"),
-    credential_file: fields.credential_file ?? null,
+    credential_file: fields.credential_file ? "operator credential path hidden" : null,
     base_url_kind: fields.base_url_kind ?? null,
     model: fields.model ?? null,
     secret_values_recorded: false,
-    stdout: result.stdout,
-    stderr: result.stderr,
+    stdout: result.stdout ? "redacted inspect transcript" : "",
+    stderr: result.stderr ? "redacted inspect errors" : "",
   };
 }
 
@@ -341,7 +373,7 @@ async function sendStatic(requestUrl, response) {
   const decodedPath = decodeURIComponent(rawPath);
   const absolutePath = path.resolve(appDir, `.${decodedPath}`);
 
-  if (!absolutePath.startsWith(appDir)) {
+  if (!absolutePath.startsWith(appDir) || path.basename(absolutePath) === "bridge.mjs") {
     response.writeHead(403, { "content-type": "text/plain; charset=utf-8" });
     response.end("forbidden");
     return;
@@ -376,7 +408,7 @@ const server = createServer(async (request, response) => {
           pid: process.pid,
           host,
           port,
-          app_dir: appDir,
+          app_dir: "local app path hidden",
         },
         pipeline: {
           superconductor_cli: "pending",

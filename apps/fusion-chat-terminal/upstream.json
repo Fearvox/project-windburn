@@ -32,7 +32,7 @@
     ]
   },
   "font_reference": {
-    "source_path": "/Users/0xvox/Downloads/CommitMonovoxV143",
+    "source_path": "operator-local font pack path hidden",
     "embedded_file": "assets/fonts/CommitMonoVariable.woff2",
     "license_file": "assets/fonts/LICENSE-CommitMono.txt",
     "license": "SIL Open Font License 1.1",
@@ -45,11 +45,9 @@
     "latest_verdict": "PASS",
     "latest_reason": "XAI_SETUP_AGENT_SMOKE_OK",
     "purpose": "Help users complete dull-but-required setup by detecting missing pieces, opening the correct docs/window, and polishing raw prompts into bounded operator tasks.",
-    "local_script": "scripts/xai-setup-agent.sh",
+    "local_script": "local setup script hidden",
     "credential_candidates": [
-      "/Users/0xvox/.openclaw/credentials/xai-windburn_actual.rtf",
-      "/Users/0xvox/Windburn/_local-cred/xai-windburn_local.rtf",
-      "/Users/0xvox/.openclaw/credentials/xai-windburn.rtf"
+      "operator-owned credential path hidden"
     ],
     "correct_windows": {
       "font": "https://commitmono.com/",

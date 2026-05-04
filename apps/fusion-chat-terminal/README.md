@@ -27,8 +27,7 @@ WINDBURN_FUSION_CHAT_PORT=5179 scripts/fusion-chat-bridge.sh
 - Dot-matrix web terminal UI.
 - Nous Psyche-inspired run board density: global status first, route details
   second, few operator moves.
-- Local CommitMono variable font embedded from
-  `/Users/0xvox/Downloads/CommitMonovoxV143`.
+- Local CommitMono variable font embedded from an operator-owned font pack.
 - Sticky setup assistant that detects CommitMono loading, links users to the
   right setup windows, and rewrites raw setup asks into bounded operator tasks.
 - Remote route registry for Hermes, Windburn NixOS workhorse, CCR, local Codex,
@@ -43,6 +42,10 @@ WINDBURN_FUSION_CHAT_PORT=5179 scripts/fusion-chat-bridge.sh
 - Read-only local bridge endpoints for route state, repo status, preflight
   proofs, and xAI setup inspect. The UI falls back to local mock data when the
   bridge is not running.
+- Stream-safe privacy by default: remote hosts, local paths, attach targets,
+  operator commands, and credential paths render as spoiler blocks or redacted
+  labels. This protects screenshots and Discord livestreams before account
+  controls exist.
 - No secret loading and no remote mutation from the browser.
 
 ## Setup Assistant Lane

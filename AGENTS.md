@@ -43,6 +43,10 @@ slice passes its local checks.
 - Preserve existing routes unless the design explicitly replaces them.
 - Never store secrets in this repository. Use examples and operator-owned env
   files for provider credentials.
+- Treat screenshots, browser previews, and livestream surfaces as public by
+  default. Do not render raw public IPs, local absolute paths, credential paths,
+  SSH/tmux targets, or operator commands in shared UI; use redacted/spoiler
+  labels unless the operator explicitly requests a private diagnostic view.
 
 ## Default Verification
 

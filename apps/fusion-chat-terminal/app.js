@@ -2,56 +2,56 @@ const fallbackRemotes = [
   {
     id: "hermes",
     name: "Hermes Yolo",
-    host: "137.184.104.26",
+    host: "public host hidden",
     kind: "tmux",
     status: "PASS",
     latency: "tmux live",
-    transport: "ssh -> tmux windburn-hermes-runtime:hermes-yolo",
-    command: "scripts/hermes-yolo-loop.sh --out docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md",
+    transport: "tmux attach target hidden",
+    command: "operator script hidden",
     taste: "primary high-context chat lane",
   },
   {
     id: "workhorse",
     name: "NixOS Workhorse",
-    host: "24.144.113.25",
+    host: "public host hidden",
     kind: "nixos",
     status: "FLAG",
     latency: "foundation",
-    transport: "ssh -> scripts/nixos-remote-rebuild.sh",
-    command: "scripts/nixos-remote-rebuild.sh",
+    transport: "NixOS rebuild target hidden",
+    command: "operator script hidden",
     taste: "remote build and runner cell",
   },
   {
     id: "ccr",
     name: "CCR Embed",
-    host: "165.232.146.188",
+    host: "internal host hidden",
     kind: "internal",
     status: "FLAG",
     latency: "tailnet ok",
-    transport: "ssh -> 100.65.234.77:8080/v1",
-    command: "scripts/droplet-engagement-review.sh",
+    transport: "embedding route hidden",
+    command: "operator script hidden",
     taste: "embedding and review substrate",
   },
   {
     id: "codex",
     name: "Local Codex",
-    host: "/Users/0xvox/Windburn",
+    host: "local workspace hidden",
     kind: "local",
     status: "PASS",
     latency: "local",
-    transport: "workspace shell -> scripts/check.sh",
-    command: "scripts/superconductor-codex-intake.sh && scripts/check.sh",
+    transport: "workspace shell hidden",
+    command: "local check script hidden",
     taste: "operator control plane",
   },
   {
     id: "superconductor",
     name: "Superconductor",
-    host: "/Users/0xvox/superconductor/projects/Windburn",
+    host: "workspace binding hidden",
     kind: "shell",
     status: "PASS",
     latency: "linked",
     transport: "linked repo anchor",
-    command: "scripts/superconductor-codex-intake.sh",
+    command: "intake script hidden",
     taste: "multi-workspace dispatch surface",
   },
 ];
@@ -73,6 +73,35 @@ const bridgeState = {
   mode: "local mock",
   status: null,
 };
+
+const sensitiveFactKeys = new Set(["host", "transport", "command"]);
+
+const sensitivityPatterns = [
+  {
+    pattern: /\b(?:\d{1,3}\.){3}\d{1,3}\b/g,
+    replacement: "[redacted:host]",
+  },
+  {
+    pattern: /(?:^|[\s"'`(])\/Users\/[^\s"'`),]+/g,
+    replacement: (match) => `${match[0] === "/" ? "" : match[0]}[redacted:local-path]`,
+  },
+  {
+    pattern: /(?:^|[\s"'`(])\/srv\/[^\s"'`),]+/g,
+    replacement: (match) => `${match[0] === "/" ? "" : match[0]}[redacted:remote-path]`,
+  },
+  {
+    pattern: /\bssh\s+[^\n]+/gi,
+    replacement: "ssh [redacted:target]",
+  },
+  {
+    pattern: /\b(?:sk|xai)-[A-Za-z0-9_-]{12,}\b/g,
+    replacement: "[redacted:key]",
+  },
+  {
+    pattern: /\b(?:prj|dpl)_[A-Za-z0-9]+\b/g,
+    replacement: "[redacted:id]",
+  },
+];
 
 const actions = [
   ["/status", "Status"],
@@ -239,7 +268,7 @@ const setupWindows = {
   dash: "https://docs.zonicdesign.art/pages/getting-started.html",
   agentPipeline: "https://docs.zonicdesign.art/pages/guides/agent-pipeline.html",
   configuration: "https://docs.zonicdesign.art/pages/reference/config.html",
-  xai: "scripts/xai-setup-agent.sh --call --confirm-xai-setup-agent",
+  xai: "local setup script hidden",
 };
 
 function boot() {
@@ -254,7 +283,7 @@ function boot() {
   wireSetupAssistant();
   checkOnboardingReadiness();
   selectRemote("hermes");
-  addMessage("system", "Fusion router online. Active lane: Hermes yolo. No secrets are loaded in this browser surface.");
+  addMessage("system", "Fusion router online. Active lane: Hermes yolo. Stream-safe privacy is locked for this browser surface.");
   addMessage("remote", "Jcode direction imported: multi-session harness, side panels, swarm-minded route control. Windburn ownership layer active.");
   addMessage("alert", "Remaining global flags are intentionally visible: DO observability, CCR public route, and workhorse runner engagement.");
   void hydrateBridgeState();
@@ -263,6 +292,60 @@ function boot() {
 function setBridgeLabels() {
   modeLabel.textContent = bridgeState.connected ? "read-only" : "read-only";
   bridgeLabel.textContent = bridgeState.connected ? "live bridge" : "local mock";
+}
+
+function redactText(value) {
+  return sensitivityPatterns.reduce(
+    (text, { pattern, replacement }) => text.replace(pattern, replacement),
+    String(value ?? ""),
+  );
+}
+
+function isSensitiveValue(key, value) {
+  const text = String(value ?? "");
+  return (
+    sensitiveFactKeys.has(key) ||
+    /\b(?:\d{1,3}\.){3}\d{1,3}\b/.test(text) ||
+    /\/Users\/|\/srv\/|ssh\s+|root@|tmux\s+attach/i.test(text)
+  );
+}
+
+function sensitivityLabel(key, value) {
+  const text = String(value ?? "").toLowerCase();
+  if (key === "host" || /\b(?:\d{1,3}\.){3}\d{1,3}\b/.test(text)) return "host";
+  if (/\/users\/|\/srv\//i.test(text)) return "path";
+  if (/ssh\s+|tmux\s+attach|scripts\//i.test(text)) return "command";
+  return key;
+}
+
+function makeSpoiler(label) {
+  const span = document.createElement("span");
+  span.className = "spoiler";
+  span.textContent = `spoiler:${label}`;
+  return span;
+}
+
+function appendSafeValue(parent, key, value) {
+  if (isSensitiveValue(key, value)) {
+    parent.appendChild(makeSpoiler(sensitivityLabel(key, value)));
+    return;
+  }
+  parent.textContent = redactText(value);
+}
+
+function safeRemote(remote) {
+  return {
+    ...remote,
+    host: isSensitiveValue("host", remote.host)
+      ? `${remote.kind ?? "remote"} host hidden`
+      : redactText(remote.host),
+    transport: isSensitiveValue("transport", remote.transport)
+      ? `${remote.kind ?? "remote"} transport hidden`
+      : redactText(remote.transport),
+    command: isSensitiveValue("command", remote.command)
+      ? "operator command hidden"
+      : redactText(remote.command),
+  };
 }
 
 async function hydrateBridgeState() {
@@ -287,7 +370,7 @@ async function hydrateBridgeState() {
     bridgeState.mode = statusPayload.mode ?? "read-only";
     bridgeState.status = statusPayload;
     remotes = Array.isArray(remotesPayload.remotes) && remotesPayload.remotes.length
-      ? remotesPayload.remotes
+      ? remotesPayload.remotes.map(safeRemote)
       : remotes;
     preflight = Array.isArray(preflightPayload.preflight) && preflightPayload.preflight.length
       ? preflightPayload.preflight
@@ -303,13 +386,13 @@ async function hydrateBridgeState() {
     const repo = statusPayload.repo ?? {};
     addMessage(
       "system",
-      `Fusion Bridge v0 connected. Read-only API: ${repo.branch ?? "unknown"} @ ${repo.head ?? "unknown"}; dirty=${String(repo.dirty ?? "unknown")}.`,
+      `Fusion Bridge v0 connected. Read-only API: repo proof available; dirty=${String(repo.dirty ?? "unknown")}.`,
     );
   } catch {
     bridgeState.connected = false;
     bridgeState.status = null;
     setBridgeLabels();
-    addMessage("system", "Bridge API unavailable; static fallback remains active. Use scripts/fusion-chat-bridge.sh for live read-only state.");
+    addMessage("system", "Bridge API unavailable; static fallback remains active. Start the local read-only bridge for live state.");
   }
 }
 
@@ -320,14 +403,25 @@ function renderRoutes() {
     button.className = "route-button";
     button.type = "button";
     button.dataset.route = remote.id;
-    button.innerHTML = `
-      <span class="route-dot" style="color: ${statusColor(remote.status)}"></span>
-      <span>
-        <span class="route-name">${remote.name}</span>
-        <span class="route-host">${remote.host}</span>
-      </span>
-      <span class="route-kind">${remote.kind}</span>
-    `;
+    const dot = document.createElement("span");
+    dot.className = "route-dot";
+    dot.style.color = statusColor(remote.status);
+    dot.setAttribute("aria-hidden", "true");
+
+    const body = document.createElement("span");
+    const name = document.createElement("span");
+    name.className = "route-name";
+    name.textContent = remote.name;
+    const host = document.createElement("span");
+    host.className = "route-host";
+    appendSafeValue(host, "host", remote.host);
+    body.append(name, host);
+
+    const kind = document.createElement("span");
+    kind.className = "route-kind";
+    kind.textContent = remote.kind;
+
+    button.append(dot, body, kind);
     button.addEventListener("click", () => selectRemote(remote.id));
     routeList.appendChild(button);
   });
@@ -496,7 +590,11 @@ function renderFacts() {
   routeFacts.innerHTML = "";
   Object.entries(facts).forEach(([key, value]) => {
     const row = document.createElement("div");
-    row.innerHTML = `<dt>${key}</dt><dd>${value}</dd>`;
+    const term = document.createElement("dt");
+    term.textContent = key;
+    const description = document.createElement("dd");
+    appendSafeValue(description, key, value);
+    row.append(term, description);
     routeFacts.appendChild(row);
   });
 }
@@ -519,7 +617,7 @@ async function dispatch(raw) {
     const next = remotes.find((remote) => remote.id === id);
     if (next) {
       selectRemote(next.id);
-      addMessage("system", `Route switched to ${next.name}. Transport: ${next.transport}.`);
+      addMessage("system", `Route switched to ${next.name}. Transport is spoiler-protected in Route Contract.`);
     } else {
       addMessage("alert", `Unknown route: ${id}. Available: ${remotes.map((remote) => remote.id).join(", ")}.`);
     }
@@ -530,14 +628,14 @@ async function dispatch(raw) {
     const lines = remotes.map((remote) => `${remote.status.padEnd(5)} ${remote.id.padEnd(14)} ${remote.latency}`);
     const repo = bridgeState.status?.repo;
     const bridgeLine = bridgeState.connected
-      ? `BRIDGE read-only-live ${repo?.branch ?? "unknown"}@${repo?.head ?? "unknown"} dirty=${String(repo?.dirty ?? "unknown")}`
+      ? `BRIDGE read-only-live repo-proof dirty=${String(repo?.dirty ?? "unknown")}`
       : "BRIDGE local-mock static fallback";
     addMessage("remote", [bridgeLine, ...lines].join("\n"));
     return;
   }
 
   if (text === "/attach tmux") {
-    addMessage("remote", "Next backend bridge target: ssh root@137.184.104.26 -t 'tmux attach -t windburn-hermes-runtime'.");
+    addMessage("remote", "Next backend bridge target is staged, but host and attach command stay spoiler-protected in the browser.");
     return;
   }
 
@@ -581,17 +679,19 @@ function addMessage(role, body) {
     return;
   }
 
-  transcript.push({ role, body });
+  const safeBody = redactText(body);
+  transcript.push({ role, body: safeBody });
   const li = document.createElement("li");
   li.className = `message ${role}`;
   li.innerHTML = `<span class="message-role">${role}</span><span class="message-body"></span>`;
-  li.querySelector(".message-body").textContent = body;
+  li.querySelector(".message-body").textContent = safeBody;
   transcriptEl.appendChild(li);
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
 }
 
 function addStreamLine(raw) {
-  const event = classifyStreamLine(raw);
+  const safeRaw = redactText(raw);
+  const event = classifyStreamLine(safeRaw);
   const previous = transcript[transcript.length - 1];
   const previousEl = transcriptEl.lastElementChild;
 
@@ -601,16 +701,16 @@ function addStreamLine(raw) {
     previousEl?.dataset.fingerprint === event.fingerprint
   ) {
     previous.count += 1;
-    previous.body = raw;
+    previous.body = safeRaw;
     previousEl.querySelector(".stream-count").textContent = `×${previous.count}`;
-    previousEl.querySelector(".stream-raw").textContent = raw;
+    previousEl.querySelector(".stream-raw").textContent = safeRaw;
     transcriptEl.scrollTop = transcriptEl.scrollHeight;
     return;
   }
 
   transcript.push({
     role: "stream",
-    body: raw,
+    body: safeRaw,
     count: 1,
     fingerprint: event.fingerprint,
   });
@@ -632,7 +732,7 @@ function addStreamLine(raw) {
   li.querySelector(".message-role").textContent = event.label;
   li.querySelector(".stream-title").textContent = event.title;
   li.querySelector(".stream-human").textContent = event.human;
-  li.querySelector(".stream-raw").textContent = raw;
+  li.querySelector(".stream-raw").textContent = safeRaw;
   transcriptEl.appendChild(li);
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
 }
@@ -754,10 +854,11 @@ function setSetupAssistantOpen(isOpen) {
 async function handleSetupCommand(text) {
   const [, topic = "status"] = text.split(/\s+/);
   const route = setupWindows[topic] ?? setupWindows.dash;
+  const routeLabel = route.startsWith("scripts/") ? "local setup script hidden" : route;
   const prompt = buildPolishedSetupPrompt(text);
   polishedSetupPrompt.textContent = prompt;
   setSetupAssistantOpen(true);
-  addMessage("system", `Setup agent staged ${topic}. Correct target: ${route}`);
+  addMessage("system", `Setup agent staged ${topic}. Correct target: ${routeLabel}`);
 
   if (topic === "xai" && bridgeState.connected) {
     await inspectXaiSetupViaBridge();
@@ -845,7 +946,7 @@ function buildPolishedSetupPrompt(raw) {
     "SETUP_AGENT_TASK",
     `raw_request: ${source}`,
     "objective: finish the dull prerequisite without widening scope",
-    "correct_window: docs.zonicdesign.art / CommitMono / local Windburn preview / scripts/xai-setup-agent.sh",
+    "correct_window: docs.zonicdesign.art / CommitMono / local Windburn preview / local setup script",
     "steps: detect current state -> open exact target -> apply smallest change -> verify -> report PASS/FLAG/BLOCK",
     "guardrails: no secrets in browser, no remote mutation without explicit operator gate",
   ].join("\n");

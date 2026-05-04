@@ -27,7 +27,7 @@ without package installation or another provider credential step.
 - Nous Psyche runs board: `https://psyche.network/runs`
   - Useful ideas: global run counters first, thin-line panels, capacity meter,
     status-filtered cards, and minimal operator moves.
-- CommitMono pack: `/Users/0xvox/Downloads/CommitMonovoxV143`
+- CommitMono pack: operator-owned local font pack path hidden
   - Embedded file: `apps/fusion-chat-terminal/assets/fonts/CommitMonoVariable.woff2`
   - License copy: `apps/fusion-chat-terminal/assets/fonts/LICENSE-CommitMono.txt`
 - DASH Docs personalization/settings: `https://docs.zonicdesign.art`
@@ -62,6 +62,10 @@ Path: `apps/fusion-chat-terminal/`
 - `preflight/XAI_SETUP_AGENT_SMOKE.md`: current xAI API proof. Latest verdict
   is `PASS` using the actual OpenClaw Windburn xAI credential; chat and models
   probes both returned HTTP `200`, with no secret values recorded.
+- Livestream privacy: the browser surface is stream-safe by default. Public IPs,
+  local absolute paths, SSH/tmux attach targets, operator script commands, and
+  credential file paths render as spoiler or redacted labels instead of raw
+  values.
 
 Preview:
 
@@ -92,6 +96,11 @@ The next bridge should add Hermes transcript streaming before any mutating
 action. Every mutating route must stay behind an explicit operator gate. Secret
 values, emails, webhook URLs, and bearer tokens must never be returned to the
 browser.
+
+The bridge also keeps stream-sensitive infrastructure details out of API
+payloads. It may use raw host/path values server-side for read-only probes, but
+`/api/status`, `/api/remotes`, and setup inspect responses must return
+browser-safe labels.
 
 ## Current Route Model
 
