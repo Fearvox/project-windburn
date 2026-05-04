@@ -2,8 +2,32 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CARD_PATH=""
+CARD_INPUT=""
 ACTION_OVERRIDE=""
+SPOOL_DIR="${WINDBURN_RUNTIME_SPOOL_DIR:-"$ROOT_DIR/.windburn/runtime-spool"}"
+MAX_PARALLEL="${WINDBURN_RUNTIME_MAX_PARALLEL:-10}"
+SPOOL_CARD_DIR=""
+SPOOL_RUN_DIR=""
+SPOOL_STATUS_DIR=""
+SPOOL_LOCK_DIR=""
+SPOOL_TMP_DIR=""
+TMP_CARD_PATH=""
+CARD_PATH=""
+VERIFY_OUTPUT=""
+CARD_ID=""
+RUNTIME_ID=""
+REPO_NAME=""
+TARGET_ACTION=""
+REQUESTED_ACTION=""
+RUN_ID=""
+CARD_COPY_PATH=""
+RUN_OUTPUT_PATH=""
+STATUS_PATH=""
+STATUS_REF=""
+CARD_REF=""
+RUN_OUTPUT_REF=""
+SLOT_LABEL="none"
+SLOT_LOCK_FD=""
 
 usage() {
   cat <<'EOF'
@@ -12,8 +36,21 @@ Usage:
   scripts/windburn-captain-runtime.sh --card <path> --action status
   scripts/windburn-captain-runtime.sh --card <path> --action verify-card
   scripts/windburn-captain-runtime.sh --card <path> --action superruntime-status
+  scripts/windburn-captain-runtime.sh --card <path> --action run-card
 EOF
 }
+
+cleanup() {
+  if [ -n "$SLOT_LOCK_FD" ]; then
+    eval "exec ${SLOT_LOCK_FD}>&-"
+    SLOT_LOCK_FD=""
+  fi
+  if [ -n "$TMP_CARD_PATH" ] && [ -f "$TMP_CARD_PATH" ]; then
+    rm -f "$TMP_CARD_PATH"
+  fi
+}
+
+trap cleanup EXIT INT TERM
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -22,7 +59,7 @@ while [ "$#" -gt 0 ]; do
         echo "BLOCK windburn_captain_runtime: missing value for --card"
         exit 1
       }
-      CARD_PATH="$2"
+      CARD_INPUT="$2"
       shift 2
       ;;
     --action)
@@ -44,22 +81,83 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-[ -n "$CARD_PATH" ] || {
+[ -n "$CARD_INPUT" ] || {
   echo "BLOCK windburn_captain_runtime: missing --card"
   exit 1
 }
 
-case "$CARD_PATH" in
-  /*) ;;
-  *) CARD_PATH="$ROOT_DIR/$CARD_PATH" ;;
+case "$MAX_PARALLEL" in
+  ''|*[!0-9]*)
+    echo "BLOCK windburn_captain_runtime: invalid WINDBURN_RUNTIME_MAX_PARALLEL"
+    exit 1
+    ;;
 esac
 
-VERIFY_OUTPUT="$("$ROOT_DIR/scripts/multica-runtime-card-verify.sh" "$CARD_PATH" 2>&1)" || {
-  printf '%s\n' "$VERIFY_OUTPUT"
+[ "$MAX_PARALLEL" -gt 0 ] || {
+  echo "BLOCK windburn_captain_runtime: invalid WINDBURN_RUNTIME_MAX_PARALLEL"
   exit 1
 }
 
-ROOT_DIR="$ROOT_DIR" CARD_PATH="$CARD_PATH" ACTION_OVERRIDE="$ACTION_OVERRIDE" VERIFY_OUTPUT="$VERIFY_OUTPUT" node - <<'NODE'
+init_spool() {
+  SPOOL_CARD_DIR="$SPOOL_DIR/cards"
+  SPOOL_RUN_DIR="$SPOOL_DIR/runs"
+  SPOOL_STATUS_DIR="$SPOOL_DIR/status"
+  SPOOL_LOCK_DIR="$SPOOL_DIR/locks"
+  SPOOL_TMP_DIR="$SPOOL_DIR/tmp"
+  mkdir -p "$SPOOL_CARD_DIR" "$SPOOL_RUN_DIR" "$SPOOL_STATUS_DIR" "$SPOOL_LOCK_DIR" "$SPOOL_TMP_DIR" || {
+    echo "BLOCK windburn_captain_runtime: runtime_spool_unavailable"
+    exit 1
+  }
+}
+
+resolve_card_path() {
+  if [ "$CARD_INPUT" = "-" ]; then
+    umask 077
+    TMP_CARD_PATH="$(mktemp "$SPOOL_TMP_DIR/stdin-card.XXXXXX.json")" || {
+      echo "BLOCK windburn_captain_runtime: runtime_spool_temp_unavailable"
+      exit 1
+    }
+    cat >"$TMP_CARD_PATH"
+    CARD_PATH="$TMP_CARD_PATH"
+    return
+  fi
+
+  CARD_PATH="$CARD_INPUT"
+  case "$CARD_PATH" in
+    /*) ;;
+    *) CARD_PATH="$ROOT_DIR/$CARD_PATH" ;;
+  esac
+}
+
+verify_card() {
+  VERIFY_OUTPUT="$("$ROOT_DIR/scripts/multica-runtime-card-verify.sh" "$CARD_PATH" 2>&1)" || {
+    printf '%s\n' "$VERIFY_OUTPUT"
+    exit 1
+  }
+}
+
+load_card_meta() {
+  mapfile -t _meta < <(
+    CARD_PATH="$CARD_PATH" ACTION_OVERRIDE="$ACTION_OVERRIDE" node - <<'NODE'
+const fs = require("fs");
+const card = JSON.parse(fs.readFileSync(process.env.CARD_PATH, "utf8"));
+const targetAction = process.env.ACTION_OVERRIDE || card.requested_action;
+console.log(card.card_id);
+console.log(card.runtime_id);
+console.log(card.repo);
+console.log(targetAction);
+console.log(card.requested_action);
+NODE
+  )
+  CARD_ID="${_meta[0]:-}"
+  RUNTIME_ID="${_meta[1]:-}"
+  REPO_NAME="${_meta[2]:-}"
+  TARGET_ACTION="${_meta[3]:-}"
+  REQUESTED_ACTION="${_meta[4]:-}"
+}
+
+dispatch_safe_action() {
+  ROOT_DIR="$ROOT_DIR" CARD_PATH="$CARD_PATH" ACTION_OVERRIDE="$1" VERIFY_OUTPUT="$VERIFY_OUTPUT" node - <<'NODE'
 const fs = require("fs");
 const { execFileSync, spawnSync } = require("child_process");
 const path = require("path");
@@ -250,3 +348,188 @@ if (action === "superruntime-status") {
 console.log("BLOCK windburn_captain_runtime: unknown action");
 process.exit(1);
 NODE
+}
+
+level_from_verdict() {
+  case "$1" in
+    PASS) printf '%s' "pass" ;;
+    FLAG) printf '%s' "flag" ;;
+    BLOCK) printf '%s' "block" ;;
+    *) printf '%s' "block" ;;
+  esac
+}
+
+extract_field() {
+  printf '%s\n' "$1" | sed -n "s/^$2=//p" | tail -n 1
+}
+
+write_status_json() {
+  STATUS_PHASE="$1"
+  STATUS_LEVEL="$2"
+  STATUS_VERDICT="$3"
+  STATUS_SLOT="$4"
+  STATUS_GIT_STATUS="${5:-}"
+  STATUS_SUPERRUNTIME_FIXTURE="${6:-}"
+  STATUS_ARTIFACT_REFS="${7:-local:status-json}"
+  STATUS_PATH="$STATUS_PATH" RUN_ID="$RUN_ID" CARD_ID="$CARD_ID" RUNTIME_ID="$RUNTIME_ID" REPO_NAME="$REPO_NAME" REQUESTED_ACTION="$REQUESTED_ACTION" \
+  STATUS_PHASE="$STATUS_PHASE" STATUS_LEVEL="$STATUS_LEVEL" STATUS_VERDICT="$STATUS_VERDICT" STATUS_SLOT="$STATUS_SLOT" STATUS_GIT_STATUS="$STATUS_GIT_STATUS" \
+  STATUS_SUPERRUNTIME_FIXTURE="$STATUS_SUPERRUNTIME_FIXTURE" STATUS_ARTIFACT_REFS="$STATUS_ARTIFACT_REFS" node - <<'NODE'
+const fs = require("fs");
+const artifactRefs = String(process.env.STATUS_ARTIFACT_REFS || "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+const status = {
+  schema_version: 1,
+  run_id: process.env.RUN_ID,
+  card_id: process.env.CARD_ID,
+  runtime_id: process.env.RUNTIME_ID,
+  repo: process.env.REPO_NAME,
+  requested_action: process.env.REQUESTED_ACTION,
+  phase: process.env.STATUS_PHASE,
+  level: process.env.STATUS_LEVEL,
+  verdict: process.env.STATUS_VERDICT,
+  slot: process.env.STATUS_SLOT,
+  git_status: process.env.STATUS_GIT_STATUS || null,
+  superruntime_fixture: process.env.STATUS_SUPERRUNTIME_FIXTURE || null,
+  secret_values_recorded: false,
+  provider_rate_limited: false,
+  artifact_refs: artifactRefs,
+  generated_at_utc: new Date().toISOString(),
+};
+fs.writeFileSync(process.env.STATUS_PATH, `${JSON.stringify(status)}\n`);
+NODE
+}
+
+persist_verified_card() {
+  CARD_COPY_PATH="$SPOOL_CARD_DIR/${RUN_ID}-${CARD_ID}.json"
+  cp "$CARD_PATH" "$CARD_COPY_PATH" || {
+    echo "BLOCK windburn_captain_runtime: runtime_card_copy_failed"
+    exit 1
+  }
+  CARD_REF="local:card-copy"
+}
+
+prepare_run_artifacts() {
+  RUN_ID="run_$(date -u +%Y%m%dT%H%M%SZ)_$$"
+  STATUS_PATH="$SPOOL_STATUS_DIR/${RUN_ID}.json"
+  RUN_OUTPUT_PATH="$SPOOL_RUN_DIR/${RUN_ID}.txt"
+  STATUS_REF="local:status-json"
+  RUN_OUTPUT_REF="local:run-output"
+  persist_verified_card
+}
+
+acquire_slot() {
+  slot_index=1
+  while [ "$slot_index" -le "$MAX_PARALLEL" ]; do
+    candidate_slot="$(printf 'slot-%02d' "$slot_index")"
+    candidate_fd=$((200 + slot_index))
+    candidate_lock_file="$SPOOL_LOCK_DIR/${candidate_slot}.lock"
+    eval "exec ${candidate_fd}>\"${candidate_lock_file}\"" || {
+      echo "BLOCK windburn_captain_runtime: runtime_lock_setup_failed"
+      exit 1
+    }
+    if flock -n "$candidate_fd"; then
+      SLOT_LABEL="$candidate_slot"
+      SLOT_LOCK_FD="$candidate_fd"
+      return 0
+    fi
+    eval "exec ${candidate_fd}>&-"
+    slot_index=$((slot_index + 1))
+  done
+  return 1
+}
+
+run_card_action() {
+  if [ "$TARGET_ACTION" != "run-card" ]; then
+    echo "BLOCK windburn_captain_runtime: unknown action"
+    exit 1
+  fi
+
+  case "$REQUESTED_ACTION" in
+    status|verify-card|superruntime-status) ;;
+    *)
+      prepare_run_artifacts
+      write_status_json "block" "block" "BLOCK" "none" "" "" "$STATUS_REF,$CARD_REF"
+      echo "BLOCK windburn_captain_runtime: unsafe_requested_action"
+      echo "run_id=$RUN_ID"
+      echo "card_id=$CARD_ID"
+      echo "runtime_id=$RUNTIME_ID"
+      echo "requested_action=$REQUESTED_ACTION"
+      echo "verdict=BLOCK"
+      exit 1
+      ;;
+  esac
+
+  prepare_run_artifacts
+  write_status_json "queued" "info" "PASS" "pending" "" "" "$STATUS_REF,$CARD_REF"
+
+  if ! acquire_slot; then
+    write_status_json "flag" "flag" "FLAG" "none" "" "" "$STATUS_REF,$CARD_REF"
+    echo "FLAG windburn_captain_runtime: runtime_queue_full"
+    echo "run_id=$RUN_ID"
+    echo "card_id=$CARD_ID"
+    echo "runtime_id=$RUNTIME_ID"
+    echo "requested_action=$REQUESTED_ACTION"
+    echo "status_ref=$STATUS_REF"
+    echo "card_ref=$CARD_REF"
+    echo "verdict=FLAG"
+    exit 0
+  fi
+
+  write_status_json "leased" "info" "PASS" "$SLOT_LABEL" "" "" "$STATUS_REF,$CARD_REF"
+  write_status_json "running" "info" "PASS" "$SLOT_LABEL" "" "" "$STATUS_REF,$CARD_REF,$RUN_OUTPUT_REF"
+
+  handler_rc=0
+  HANDLER_OUTPUT="$(dispatch_safe_action "$REQUESTED_ACTION" 2>&1)" || handler_rc=$?
+  printf '%s\n' "$HANDLER_OUTPUT" >"$RUN_OUTPUT_PATH"
+
+  HANDLER_VERDICT="$(printf '%s\n' "$HANDLER_OUTPUT" | grep -Eo '\b(PASS|FLAG|BLOCK)\b' | tail -n 1 || true)"
+  if [ -z "$HANDLER_VERDICT" ]; then
+    if [ "$handler_rc" -eq 0 ]; then
+      HANDLER_VERDICT="PASS"
+    else
+      HANDLER_VERDICT="BLOCK"
+    fi
+  fi
+  HANDLER_LEVEL="$(level_from_verdict "$HANDLER_VERDICT")"
+  HANDLER_GIT_STATUS="$(extract_field "$HANDLER_OUTPUT" git_status)"
+  HANDLER_SUPERRUNTIME_FIXTURE="$(extract_field "$HANDLER_OUTPUT" superruntime_fixture)"
+  artifact_refs="$STATUS_REF,$CARD_REF,$RUN_OUTPUT_REF"
+  if [ "$REQUESTED_ACTION" = "status" ] || [ "$REQUESTED_ACTION" = "superruntime-status" ]; then
+    artifact_refs="$artifact_refs,local:superruntime-fixture"
+  fi
+  final_phase="done"
+  if [ "$HANDLER_VERDICT" = "FLAG" ]; then
+    final_phase="flag"
+  fi
+  if [ "$HANDLER_VERDICT" = "BLOCK" ]; then
+    final_phase="block"
+  fi
+  write_status_json "$final_phase" "$HANDLER_LEVEL" "$HANDLER_VERDICT" "$SLOT_LABEL" "$HANDLER_GIT_STATUS" "$HANDLER_SUPERRUNTIME_FIXTURE" "$artifact_refs"
+
+  echo "$HANDLER_VERDICT windburn_captain_runtime: run-card"
+  echo "run_id=$RUN_ID"
+  echo "card_id=$CARD_ID"
+  echo "runtime_id=$RUNTIME_ID"
+  echo "requested_action=$REQUESTED_ACTION"
+  echo "slot=$SLOT_LABEL"
+  [ -n "$HANDLER_GIT_STATUS" ] && echo "git_status=$HANDLER_GIT_STATUS"
+  [ -n "$HANDLER_SUPERRUNTIME_FIXTURE" ] && echo "superruntime_fixture=$HANDLER_SUPERRUNTIME_FIXTURE"
+  echo "status_ref=$STATUS_REF"
+  echo "card_ref=$CARD_REF"
+  echo "output_ref=$RUN_OUTPUT_REF"
+  echo "verdict=$HANDLER_VERDICT"
+  exit "$handler_rc"
+}
+
+init_spool
+resolve_card_path
+verify_card
+load_card_meta
+
+if [ "$TARGET_ACTION" = "run-card" ]; then
+  run_card_action
+fi
+
+dispatch_safe_action "$TARGET_ACTION"

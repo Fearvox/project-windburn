@@ -1,6 +1,7 @@
 .DS_Store
 .Codex/verify/
 .playwright-mcp/
+.windburn/
 .worktrees/
 _local-cred/
 target/
