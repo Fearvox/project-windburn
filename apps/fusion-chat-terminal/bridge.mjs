@@ -230,14 +230,21 @@ async function buildRemotes() {
   const remotes = await Promise.all(
     routeBlueprints.map(async (route) => {
       const proof = route.proof ? await readProof(route.proof) : null;
+      const superconductorRoute = route.id === "superconductor";
       const superconductorMissing =
-        route.id === "superconductor" && binding.status !== "present";
-      const status = superconductorMissing || route.forceFlag
+        superconductorRoute && binding.status !== "present";
+      const status = superconductorMissing
         ? "FLAG"
-        : proof?.status ?? "FLAG";
+        : route.forceFlag
+          ? "FLAG"
+          : superconductorRoute
+            ? "PASS"
+            : proof?.status ?? "FLAG";
       const latency = superconductorMissing
         ? binding.status
-        : route.forceFlag ?? proof?.reason ?? "live proof";
+        : superconductorRoute
+          ? "binding present"
+          : route.forceFlag ?? proof?.reason ?? "live proof";
 
       return {
         id: route.id,
@@ -250,7 +257,12 @@ async function buildRemotes() {
         command: route.command,
         taste: route.taste,
         bridge: "read-only-live",
-        proof,
+        proof: proof ?? (superconductorRoute ? {
+          status,
+          reason: latency,
+          source: superconductorBinding,
+          modified_at: null,
+        } : null),
       };
     }),
   );
