@@ -68,6 +68,16 @@ const fallbackPreflight = [
 
 let preflight = fallbackPreflight.map((item) => ({ ...item }));
 
+const fallbackSuperruntimeStatus = {
+  source: "fixture",
+  registeredRuntimeCount: 1,
+  queuedTaskCount: 0,
+  currentLease: "leased",
+  harnessDispatchState: "dispatches recorded 1",
+};
+
+let superruntimeStatus = { ...fallbackSuperruntimeStatus };
+
 const bridgeState = {
   connected: false,
   mode: "local mock",
@@ -96,6 +106,10 @@ const sensitivityPatterns = [
   {
     pattern: /\b(?:sk|xai)-[A-Za-z0-9_-]{12,}\b/g,
     replacement: "[redacted:key]",
+  },
+  {
+    pattern: /\b(?:bearer|token|secret|password|api[_-]?key)\s*[:=]\s*[^\s,;]+/gi,
+    replacement: "[redacted:secret]",
   },
   {
     pattern: /\b(?:prj|dpl)_[A-Za-z0-9]+\b/g,
@@ -252,6 +266,8 @@ const poolMeter = document.querySelector("#poolMeter");
 const poolActive = document.querySelector("#poolActive");
 const globalStats = document.querySelector("#globalStats");
 const runLedger = document.querySelector("#runLedger");
+const superruntimeStatusEl = document.querySelector("#superruntimeStatus");
+const superruntimeBadge = document.querySelector("#superruntimeBadge");
 const setupAssistant = document.querySelector("#setupAssistant");
 const setupAssistantToggle = document.querySelector("#setupAssistantToggle");
 const setupAssistantBody = document.querySelector("#setupAssistantBody");
@@ -280,6 +296,7 @@ function boot() {
   renderPreflight();
   renderOperationalSummary();
   renderRunLedger();
+  renderSuperruntimeStatus();
   wireSetupAssistant();
   checkOnboardingReadiness();
   selectRemote("hermes");
@@ -381,6 +398,7 @@ async function hydrateBridgeState() {
     renderPreflight();
     renderOperationalSummary();
     renderRunLedger();
+    await hydrateSuperruntimeState();
     selectRemote(activeRemote.id);
 
     const repo = statusPayload.repo ?? {};
@@ -394,6 +412,97 @@ async function hydrateBridgeState() {
     setBridgeLabels();
     addMessage("system", "Bridge API unavailable; static fallback remains active. Start the local read-only bridge for live state.");
   }
+}
+
+async function hydrateSuperruntimeState() {
+  try {
+    const response = await fetch("/api/superruntime", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("superruntime endpoint unavailable");
+    }
+    const payload = await response.json();
+    superruntimeStatus = normalizeSuperruntimeStatus(payload, "bridge");
+  } catch {
+    superruntimeStatus = { ...fallbackSuperruntimeStatus };
+  }
+  renderSuperruntimeStatus();
+}
+
+function normalizeSuperruntimeStatus(payload, source) {
+  const runtimes = Array.isArray(payload?.runtimes) ? payload.runtimes : [];
+  const queuedTasks = Array.isArray(payload?.queued_tasks)
+    ? payload.queued_tasks
+    : Array.isArray(payload?.queuedTasks)
+      ? payload.queuedTasks
+      : [];
+  const registeredRuntimeCount =
+    numberOrFallback(payload?.registered_runtime_count, payload?.registeredRuntimeCount, runtimes.length);
+  const queuedTaskCount =
+    numberOrFallback(payload?.queued_task_count, payload?.queuedTaskCount, queuedTasks.length);
+  const leasePayload = payload?.current_lease ?? payload?.currentLease ?? payload?.lease;
+  const harnessPayload = payload?.harness ?? payload?.harness_dispatch ?? payload?.harnessDispatch;
+
+  return {
+    source,
+    registeredRuntimeCount,
+    queuedTaskCount,
+    currentLease: safeSuperruntimeLabel(
+      leasePayload?.state ??
+        leasePayload?.status ??
+        leasePayload?.label ??
+        leasePayload ??
+        "none",
+    ),
+    harnessDispatchState: safeSuperruntimeLabel(
+      harnessPayload?.dispatch_state ??
+        harnessPayload?.dispatchState ??
+        harnessPayload?.state ??
+        harnessPayload?.status ??
+        payload?.harness_dispatch_state ??
+        payload?.harnessDispatchState ??
+        "unknown",
+    ),
+  };
+}
+
+function numberOrFallback(...values) {
+  const value = values.find((candidate) => Number.isFinite(Number(candidate)));
+  return Math.max(0, Number(value ?? 0));
+}
+
+function safeSuperruntimeLabel(value) {
+  const text = redactText(value)
+    .replace(/\b[a-z]{2,}_[A-Za-z0-9_-]{10,}\b/g, "[redacted:id]")
+    .trim();
+  if (!text || isSensitiveValue("superruntime", text) || /\[redacted:/.test(text)) {
+    return "redacted";
+  }
+  return text
+    .toLowerCase()
+    .replace(/[_:]+/g, " ")
+    .replace(/[^a-z0-9 .:_/-]+/g, "")
+    .slice(0, 34) || "unknown";
+}
+
+function renderSuperruntimeStatus() {
+  superruntimeBadge.textContent = bridgeState.connected && superruntimeStatus.source === "bridge"
+    ? "live"
+    : "fixture";
+  superruntimeStatusEl.innerHTML = "";
+  [
+    ["registered", superruntimeStatus.registeredRuntimeCount],
+    ["queued", superruntimeStatus.queuedTaskCount],
+    ["lease", superruntimeStatus.currentLease],
+    ["harness", superruntimeStatus.harnessDispatchState],
+  ].forEach(([label, value]) => {
+    const row = document.createElement("div");
+    const term = document.createElement("span");
+    const data = document.createElement("strong");
+    term.textContent = label;
+    data.textContent = String(value);
+    row.append(term, data);
+    superruntimeStatusEl.appendChild(row);
+  });
 }
 
 function renderRoutes() {

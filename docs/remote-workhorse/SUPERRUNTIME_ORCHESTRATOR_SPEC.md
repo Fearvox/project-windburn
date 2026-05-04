@@ -354,6 +354,13 @@ The first slice should be local-first and mostly fake the public cloud edge:
 5. Keep actual provider webhook handling out of scope until the local contract
    is proven.
 
+Current v0 implementation artifacts:
+
+- `docs/remote-workhorse/fixtures/superruntime-v0.json`
+- `scripts/superruntime-fixture-verify.sh`
+- `GET /api/superruntime` in `apps/fusion-chat-terminal/bridge.mjs`
+- `Superruntime` read-only pane in `apps/fusion-chat-terminal/`
+
 ## Open Questions
 
 - Which provider is first: Linear, GitHub, Slack, Discord, or Manual API?

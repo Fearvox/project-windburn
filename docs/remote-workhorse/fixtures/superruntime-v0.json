@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "fixture_id": "superruntime_v0_fixture",
+  "description": "Local-only Superruntime contract fixture with redacted browser-safe fields.",
+  "signature_stub": "stub:v0-fixture-not-cryptographic",
+  "work_intents": [
+    {
+      "schema_version": 1,
+      "intent_id": "wi_windburn_fixture_001",
+      "provider": "manual",
+      "provider_event_id": "manual-fixture-event-001",
+      "project_hint": "windburn",
+      "repo_hint": "Fearvox/project-windburn",
+      "requested_action": "implement",
+      "human_text": "Implement the first local Superruntime fixture and verifier slice.",
+      "source_visibility": "team",
+      "created_at": "2026-05-04T07:00:00Z"
+    }
+  ],
+  "runtime_registrations": [
+    {
+      "schema_version": 1,
+      "runtime_id": "rt_windburn_local_superconductor_001",
+      "runtime_kind": "superconductor",
+      "display_name": "Windburn local runtime",
+      "capabilities": [
+        "git-worktree",
+        "codex",
+        "browser-proof",
+        "redacted-status-stream"
+      ],
+      "workspace_roots": [
+        "redacted:windburn-worktree-root"
+      ],
+      "stream_safe": true,
+      "mutation_policy": "operator-gated",
+      "heartbeat_at": "2026-05-04T07:01:00Z"
+    }
+  ],
+  "task_envelopes": [
+    {
+      "schema_version": 1,
+      "task_id": "task_windburn_fixture_001",
+      "intent_id": "wi_windburn_fixture_001",
+      "runtime_id": "rt_windburn_local_superconductor_001",
+      "lease_id": "lease_windburn_fixture_001",
+      "allowed_repo": "Fearvox/project-windburn",
+      "worktree_policy": "create-isolated-worktree",
+      "requested_harness": "codex",
+      "task_prompt": "Create the local Superruntime contract fixture and verifier. Keep all public status stream fields redacted.",
+      "permissions": {
+        "network": "none",
+        "remote_mutation": false,
+        "secret_access": false,
+        "provider_writeback": "orchestrator-only"
+      },
+      "evidence_requirements": [
+        "fixture-shape",
+        "relation-consistency",
+        "stream-safety-scan",
+        "git-status"
+      ],
+      "expires_at": "2026-05-04T08:00:00Z",
+      "signature": "stub:v0-fixture-not-cryptographic"
+    }
+  ],
+  "harness_dispatches": [
+    {
+      "schema_version": 1,
+      "dispatch_id": "dispatch_windburn_fixture_001",
+      "task_id": "task_windburn_fixture_001",
+      "harness": "codex",
+      "workdir": "redacted:isolated-superruntime-fixture-worktree",
+      "prompt": "Run the fixture verifier locally and return PASS/FLAG/BLOCK plus evidence.",
+      "expected_output": "PASS/FLAG/BLOCK plus evidence",
+      "stream_policy": "redacted",
+      "signature": "stub:v0-fixture-not-cryptographic"
+    }
+  ],
+  "status_events": [
+    {
+      "schema_version": 1,
+      "task_id": "task_windburn_fixture_001",
+      "runtime_id": "rt_windburn_local_superconductor_001",
+      "phase": "queued",
+      "level": "info",
+      "message": "Manual fixture work intent accepted by orchestrator.",
+      "artifact_refs": [
+        "redacted_public_ref:work-intent"
+      ],
+      "secret_values_recorded": false,
+      "emitted_at": "2026-05-04T07:02:00Z"
+    },
+    {
+      "schema_version": 1,
+      "task_id": "task_windburn_fixture_001",
+      "runtime_id": "rt_windburn_local_superconductor_001",
+      "phase": "leased",
+      "level": "info",
+      "message": "Registered runtime accepted a redacted lease.",
+      "artifact_refs": [
+        "redacted_public_ref:lease"
+      ],
+      "secret_values_recorded": false,
+      "emitted_at": "2026-05-04T07:03:00Z"
+    },
+    {
+      "schema_version": 1,
+      "task_id": "task_windburn_fixture_001",
+      "runtime_id": "rt_windburn_local_superconductor_001",
+      "phase": "worktree-prep",
+      "level": "info",
+      "message": "Runtime prepared an isolated worktree with private path omitted.",
+      "artifact_refs": [
+        "redacted_public_ref:worktree"
+      ],
+      "secret_values_recorded": false,
+      "emitted_at": "2026-05-04T07:04:00Z"
+    },
+    {
+      "schema_version": 1,
+      "task_id": "task_windburn_fixture_001",
+      "runtime_id": "rt_windburn_local_superconductor_001",
+      "phase": "running",
+      "level": "info",
+      "message": "Codex harness is executing the bounded fixture task.",
+      "artifact_refs": [
+        "redacted_public_ref:harness"
+      ],
+      "secret_values_recorded": false,
+      "emitted_at": "2026-05-04T07:05:00Z"
+    },
+    {
+      "schema_version": 1,
+      "task_id": "task_windburn_fixture_001",
+      "runtime_id": "rt_windburn_local_superconductor_001",
+      "phase": "verifying",
+      "level": "info",
+      "message": "Local verifier is checking shape, signatures, relations, and stream safety.",
+      "artifact_refs": [
+        "redacted_public_ref:verify"
+      ],
+      "secret_values_recorded": false,
+      "emitted_at": "2026-05-04T07:06:00Z"
+    },
+    {
+      "schema_version": 1,
+      "task_id": "task_windburn_fixture_001",
+      "runtime_id": "rt_windburn_local_superconductor_001",
+      "phase": "done",
+      "level": "pass",
+      "message": "Fixture contract is ready for local read-only browser cards.",
+      "artifact_refs": [
+        "redacted_public_ref:summary"
+      ],
+      "secret_values_recorded": false,
+      "emitted_at": "2026-05-04T07:07:00Z"
+    }
+  ]
+}
