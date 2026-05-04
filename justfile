@@ -93,6 +93,9 @@ multica-runtime-card-verify:
 windburn-captain-runtime-status:
     scripts/windburn-captain-runtime.sh --card docs/remote-workhorse/fixtures/multica-runtime-card-v0.json --action status
 
+windburn-captain-runtime-run-card:
+    scripts/windburn-captain-runtime.sh --card docs/remote-workhorse/fixtures/multica-runtime-card-v0.json --action run-card
+
 xai-setup-inspect:
     scripts/xai-setup-agent.sh
 

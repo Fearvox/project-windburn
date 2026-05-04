@@ -2,12 +2,29 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CARD_PATH="${1:-"$ROOT_DIR/docs/remote-workhorse/fixtures/multica-runtime-card-v0.json"}"
+CARD_PATH_INPUT="${1:-"$ROOT_DIR/docs/remote-workhorse/fixtures/multica-runtime-card-v0.json"}"
+CARD_PATH="$CARD_PATH_INPUT"
+TMP_CARD_PATH=""
 
-case "$CARD_PATH" in
-  /*) ;;
-  *) CARD_PATH="$ROOT_DIR/$CARD_PATH" ;;
-esac
+cleanup() {
+  if [ -n "$TMP_CARD_PATH" ] && [ -f "$TMP_CARD_PATH" ]; then
+    rm -f "$TMP_CARD_PATH"
+  fi
+}
+
+trap cleanup EXIT INT TERM
+
+if [ "$CARD_PATH_INPUT" = "-" ]; then
+  umask 077
+  TMP_CARD_PATH="$(mktemp "${TMPDIR:-/tmp}/multica-runtime-card.XXXXXX.json")"
+  cat >"$TMP_CARD_PATH"
+  CARD_PATH="$TMP_CARD_PATH"
+else
+  case "$CARD_PATH" in
+    /*) ;;
+    *) CARD_PATH="$ROOT_DIR/$CARD_PATH" ;;
+  esac
+fi
 
 node - "$CARD_PATH" <<'NODE'
 const fs = require("fs");
