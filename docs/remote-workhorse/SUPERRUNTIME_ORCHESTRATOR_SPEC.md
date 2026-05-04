@@ -189,6 +189,23 @@ Fusion Chat, docs, and Discord streaming surfaces should only consume
 `redacted_public` unless the operator explicitly opens a private diagnostic
 view.
 
+## Current API Package
+
+`packages/fusion-bridge-api/` is the first reusable API packaging surface for
+this spec. It exposes a read-only, stream-safe subset of the Superruntime
+contract over local Node HTTP and a Cloudflare Worker-compatible module.
+
+Current routes:
+
+- `GET /healthz`
+- `GET /api/status`
+- `GET /api/superruntime`
+- `GET /openapi.json`
+
+All non-`GET`/`HEAD` methods return `405` with
+`mutation_bridge_enabled=false`. Provider webhooks, account auth, signed task
+envelopes, and runtime mutation remain explicit future layers.
+
 ## Core Data Contracts
 
 ### WorkIntent

@@ -1,0 +1,6 @@
+name = "windburn-fusion-bridge-api"
+main = "worker.mjs"
+compatibility_date = "2026-05-04"
+
+[observability]
+enabled = true

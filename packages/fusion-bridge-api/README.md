@@ -1,0 +1,52 @@
+# Windburn Fusion Bridge API
+
+Read-only API package for the Windburn Superruntime bridge.
+
+It is designed to run in two places:
+
+- local Node HTTP, for Fusion Chat and operator smoke tests;
+- Cloudflare Workers, for the public edge API shell.
+
+The package intentionally exposes only stream-safe data. It does not accept
+provider webhooks yet, does not dispatch runtime work, and does not mutate
+Superconductor.
+
+## Endpoints
+
+- `GET /healthz`
+- `GET /api/status`
+- `GET /api/superruntime`
+- `GET /openapi.json`
+
+## Local Run
+
+```sh
+scripts/fusion-bridge-api.sh
+```
+
+## Smoke
+
+```sh
+scripts/fusion-bridge-api-smoke.sh
+```
+
+Optional Cloudflare Worker bundle dry-run:
+
+```sh
+scripts/fusion-bridge-worker-dry-run.sh
+```
+
+## Cloudflare Worker
+
+```sh
+cp packages/fusion-bridge-api/wrangler.toml.example packages/fusion-bridge-api/wrangler.toml
+cd packages/fusion-bridge-api
+wrangler deploy
+```
+
+Cloudflare MCP is expected to be configured locally as `cloudflare-api` with
+the remote endpoint `https://mcp.cloudflare.com/mcp`. The package itself does
+not require Cloudflare credentials for local smoke tests.
+
+Deployment remains read-only until provider webhook verification and signed
+runtime envelopes are implemented.
