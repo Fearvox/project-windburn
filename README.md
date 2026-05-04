@@ -25,6 +25,8 @@ scripts/hermes-maintenance.sh
 scripts/hermes-yolo-loop.sh
 scripts/fusion-chat-preview.sh
 scripts/fusion-chat-bridge.sh
+scripts/multica-runtime-card-verify.sh
+scripts/windburn-captain-runtime.sh
 scripts/xai-setup-agent.sh
 scripts/multica-codex-cache-janitor.sh
 ```
@@ -54,6 +56,8 @@ just hermes-maintenance-inspect
 just hermes-yolo-inspect
 just fusion-chat-preview
 just fusion-chat-bridge
+just multica-runtime-card-verify
+just windburn-captain-runtime-status
 just xai-setup-inspect
 just xai-setup-smoke
 ```
@@ -92,6 +96,10 @@ just xai-setup-smoke
   terminal.
 - `scripts/fusion-chat-bridge.sh` - local read-only bridge server for live
   repo/proof hydration in the fusion chat terminal.
+- `scripts/multica-runtime-card-verify.sh` - local verifier for the redacted
+  Multica runtime-card contract.
+- `scripts/windburn-captain-runtime.sh` - forced-command-friendly read-only
+  Captain runtime wrapper for status and Superruntime summaries.
 - `scripts/xai-setup-agent.sh` - local xAI setup lane smoke gate using
   operator-owned credentials with redacted evidence.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.

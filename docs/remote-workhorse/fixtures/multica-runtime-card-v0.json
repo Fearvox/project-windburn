@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "card_id": "mrc_windburn_readonly_001",
+  "source": "multica",
+  "runtime_id": "rt_windburn_ssh_captain_001",
+  "repo": "Fearvox/project-windburn",
+  "branch": "main",
+  "intent": "Inspect Windburn runtime status through a private read-only SSH ingress.",
+  "requested_action": "status",
+  "allowed_actions": [
+    "status",
+    "verify-card",
+    "superruntime-status"
+  ],
+  "privacy_scope": "team",
+  "permissions": {
+    "shell": "forced-command",
+    "remote_mutation": false,
+    "secret_access": false,
+    "provider_writeback": false,
+    "network": "local-only"
+  },
+  "evidence_requirements": [
+    "repo-anchor",
+    "git-status",
+    "runtime-card-verdict",
+    "superruntime-status",
+    "redacted-summary"
+  ],
+  "operator_call_conditions": [
+    "remote-mutation",
+    "secret-access",
+    "provider-writeback",
+    "unknown-action",
+    "stream-safety-failure"
+  ],
+  "expected_output": "PASS/FLAG/BLOCK plus redacted evidence.",
+  "stream_policy": "redacted",
+  "expires_at": "2026-12-31T23:59:59Z",
+  "signature_stub": "stub:v0-ssh-runtime-card-not-cryptographic"
+}

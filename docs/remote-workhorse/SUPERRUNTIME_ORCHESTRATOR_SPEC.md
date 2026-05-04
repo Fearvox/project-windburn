@@ -124,6 +124,10 @@ Allowed first implementations:
 - message queue consumer;
 - tunnel with runtime-initiated session only.
 
+An SSH forced-command or tmux-wrapped private ingress is also acceptable as a
+bootstrap runtime channel when it stays read-only, validates a bounded runtime
+card/envelope, and does not become a public webhook receiver or a shell escape.
+
 Required properties:
 
 - Runtime authenticates orchestrator messages.
@@ -338,6 +342,8 @@ Hard requirements:
 
 - No arbitrary shell from provider payloads.
 - No provider token in runtime-visible browser payloads.
+- No runtime card, envelope, or browser-safe status carrying provider API keys,
+  OAuth tokens, credential paths, or provider account details.
 - No raw local paths or host IPs in public status.
 - No runtime accepting unsigned task envelopes.
 - No public inbound route into Superconductor.
@@ -350,6 +356,7 @@ Hard requirements:
 | Provider signature invalid | Drop event and record private audit |
 | Runtime offline | Queue or mark `FLAG`, do not fall back to public SSH |
 | Runtime refuses envelope | Preserve task, surface `FLAG` with reason |
+| Provider auth missing or provider returns `429` / `rate_limit` | `FLAG provider_rate_limited`, not repo failure |
 | Worktree dirty/conflicting | Create repair card or `BLOCK` |
 | Harness crashes | Return `FLAG` with logs private and summary redacted |
 | Evidence missing | Do not mark PASS |
