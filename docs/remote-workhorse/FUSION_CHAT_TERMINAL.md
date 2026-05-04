@@ -49,6 +49,14 @@ Path: `apps/fusion-chat-terminal/`
   instruction contracts, and MCP connection cards. These are browser-safe
   display surfaces only; the local agent runtime still owns actual tool
   execution and evidence.
+- Streaming display classifier: noisy hook and thinking lines render as
+  human-readable status cards. `PostToolUse:* hook error` is explicit error
+  state, `Async hook ... completed` is low-risk completion noise, and model
+  thinking/tool-call lines are marked as progress only, not proof. A future
+  bridge can call `addMessage("stream", line)` or
+  `window.FusionChatStream.addLine(line)` to reuse the same classifier.
+- `bridge.mjs`: local read-only bridge that serves the app and exposes live
+  repo/proof endpoints under `/api/*`.
 - `scripts/xai-setup-agent.sh`: local xAI setup lane smoke gate that reads
   operator-owned credentials and writes redacted proof only.
 - `preflight/XAI_SETUP_AGENT_SMOKE.md`: current xAI API proof. Latest verdict
@@ -61,20 +69,29 @@ Preview:
 scripts/fusion-chat-preview.sh
 ```
 
-## Bridge Contract
+Read-only bridge preview:
 
-The UI deliberately starts in local mock mode. A later bridge should expose a
-small, auditable API:
-
-```text
-GET  /api/remotes
-POST /api/remotes/:id/messages
-POST /api/remotes/:id/commands/status
-POST /api/remotes/:id/commands/attach
+```sh
+scripts/fusion-chat-bridge.sh
 ```
 
-Every mutating route must stay behind an explicit operator gate. Secret values,
-emails, webhook URLs, and bearer tokens must never be returned to the browser.
+## Bridge Contract
+
+The UI starts with static fallback data, then hydrates from Fusion Bridge v0
+when served by `scripts/fusion-chat-bridge.sh`. The first bridge is read-only
+and exposes:
+
+```text
+GET  /api/status
+GET  /api/remotes
+GET  /api/preflight
+POST /api/setup/xai/inspect
+```
+
+The next bridge should add Hermes transcript streaming before any mutating
+action. Every mutating route must stay behind an explicit operator gate. Secret
+values, emails, webhook URLs, and bearer tokens must never be returned to the
+browser.
 
 ## Current Route Model
 
@@ -88,8 +105,8 @@ emails, webhook URLs, and bearer tokens must never be returned to the browser.
 
 ## Next Hardening
 
-1. Add a tiny local bridge process with read-only status endpoints.
-2. Add a websocket stream for Hermes tmux transcript tailing.
+1. Add websocket or Server-Sent Events for Hermes tmux transcript tailing.
+2. Add Superconductor CLI pipeline intake once that CLI lands.
 3. Add signed command envelopes for gated mutating actions.
 4. Replace CSS-native dot loader with local Dot Matrix registry components once
    package installation is approved.

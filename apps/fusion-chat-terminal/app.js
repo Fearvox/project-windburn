@@ -1,4 +1,4 @@
-const remotes = [
+const fallbackRemotes = [
   {
     id: "hermes",
     name: "Hermes Yolo",
@@ -56,13 +56,23 @@ const remotes = [
   },
 ];
 
-const preflight = [
+let remotes = fallbackRemotes.map((remote) => ({ ...remote }));
+
+const fallbackPreflight = [
   { label: "Hermes yolo tmux loop", status: "pass" },
   { label: "Hermes health gate", status: "pass" },
   { label: "DO uptime and alerts", status: "flag" },
   { label: "Windburn workhorse runner", status: "flag" },
   { label: "CCR public route", status: "flag" },
 ];
+
+let preflight = fallbackPreflight.map((item) => ({ ...item }));
+
+const bridgeState = {
+  connected: false,
+  mode: "local mock",
+  status: null,
+};
 
 const actions = [
   ["/status", "Status"],
@@ -73,6 +83,7 @@ const actions = [
   ["/explain flags", "Flags"],
   ["/mcp", "MCP"],
   ["$goal", "$ Goal"],
+  ["/stream sample", "Stream"],
 ];
 
 const slashCommands = [
@@ -105,6 +116,11 @@ const slashCommands = [
     command: "/mcp",
     label: "MCP connections",
     instruction: "List browser-safe MCP connection contracts and their policy boundaries.",
+  },
+  {
+    command: "/stream sample",
+    label: "Stream display",
+    instruction: "Render noisy hook/thinking/tool lines as human-readable stream cards.",
   },
 ];
 
@@ -174,6 +190,16 @@ const mcpConnections = [
   },
 ];
 
+const streamSample = [
+  "∴ Thinking…",
+  "Let me continue reading the app.js to see the setup assistant, slash commands, and render logic.",
+  "PostToolUse:Read hook error",
+  "PostToolUse:Read hook error",
+  "Async hook PostToolUse completed",
+  "Async hook PostToolUse completed",
+  "✻ Embellishing… (1m 28s · ↓ 1.2k tokens · thinking with high effort)",
+];
+
 let activeRemote = remotes[0];
 let activeInstructionKind = "slash";
 const transcript = [];
@@ -205,6 +231,8 @@ const setupCopy = document.querySelector("#setupCopy");
 const rawSetupPrompt = document.querySelector("#rawSetupPrompt");
 const polishedSetupPrompt = document.querySelector("#polishedSetupPrompt");
 const promptPolishButton = document.querySelector("#promptPolishButton");
+const modeLabel = document.querySelector("#modeLabel");
+const bridgeLabel = document.querySelector("#bridgeLabel");
 
 const setupWindows = {
   font: "https://commitmono.com/",
@@ -215,6 +243,7 @@ const setupWindows = {
 };
 
 function boot() {
+  setBridgeLabels();
   renderRoutes();
   renderQuickActions();
   renderInstructionTabs();
@@ -228,6 +257,60 @@ function boot() {
   addMessage("system", "Fusion router online. Active lane: Hermes yolo. No secrets are loaded in this browser surface.");
   addMessage("remote", "Jcode direction imported: multi-session harness, side panels, swarm-minded route control. Windburn ownership layer active.");
   addMessage("alert", "Remaining global flags are intentionally visible: DO observability, CCR public route, and workhorse runner engagement.");
+  void hydrateBridgeState();
+}
+
+function setBridgeLabels() {
+  modeLabel.textContent = bridgeState.connected ? "read-only" : "read-only";
+  bridgeLabel.textContent = bridgeState.connected ? "live bridge" : "local mock";
+}
+
+async function hydrateBridgeState() {
+  try {
+    const [statusResponse, remotesResponse, preflightResponse] = await Promise.all([
+      fetch("/api/status", { cache: "no-store" }),
+      fetch("/api/remotes", { cache: "no-store" }),
+      fetch("/api/preflight", { cache: "no-store" }),
+    ]);
+
+    if (!statusResponse.ok || !remotesResponse.ok || !preflightResponse.ok) {
+      throw new Error("bridge endpoints unavailable");
+    }
+
+    const [statusPayload, remotesPayload, preflightPayload] = await Promise.all([
+      statusResponse.json(),
+      remotesResponse.json(),
+      preflightResponse.json(),
+    ]);
+
+    bridgeState.connected = true;
+    bridgeState.mode = statusPayload.mode ?? "read-only";
+    bridgeState.status = statusPayload;
+    remotes = Array.isArray(remotesPayload.remotes) && remotesPayload.remotes.length
+      ? remotesPayload.remotes
+      : remotes;
+    preflight = Array.isArray(preflightPayload.preflight) && preflightPayload.preflight.length
+      ? preflightPayload.preflight
+      : preflight;
+
+    setBridgeLabels();
+    renderRoutes();
+    renderPreflight();
+    renderOperationalSummary();
+    renderRunLedger();
+    selectRemote(activeRemote.id);
+
+    const repo = statusPayload.repo ?? {};
+    addMessage(
+      "system",
+      `Fusion Bridge v0 connected. Read-only API: ${repo.branch ?? "unknown"} @ ${repo.head ?? "unknown"}; dirty=${String(repo.dirty ?? "unknown")}.`,
+    );
+  } catch {
+    bridgeState.connected = false;
+    bridgeState.status = null;
+    setBridgeLabels();
+    addMessage("system", "Bridge API unavailable; static fallback remains active. Use scripts/fusion-chat-bridge.sh for live read-only state.");
+  }
 }
 
 function renderRoutes() {
@@ -421,12 +504,12 @@ function renderFacts() {
 function runCommand(command) {
   input.value = command;
   resizeInput();
-  dispatch(command);
+  void dispatch(command);
   input.value = "";
   resizeInput();
 }
 
-function dispatch(raw) {
+async function dispatch(raw) {
   const text = raw.trim();
   if (!text) return;
   addMessage("operator", text);
@@ -445,7 +528,11 @@ function dispatch(raw) {
 
   if (text === "/status") {
     const lines = remotes.map((remote) => `${remote.status.padEnd(5)} ${remote.id.padEnd(14)} ${remote.latency}`);
-    addMessage("remote", lines.join("\n"));
+    const repo = bridgeState.status?.repo;
+    const bridgeLine = bridgeState.connected
+      ? `BRIDGE read-only-live ${repo?.branch ?? "unknown"}@${repo?.head ?? "unknown"} dirty=${String(repo?.dirty ?? "unknown")}`
+      : "BRIDGE local-mock static fallback";
+    addMessage("remote", [bridgeLine, ...lines].join("\n"));
     return;
   }
 
@@ -464,8 +551,14 @@ function dispatch(raw) {
     return;
   }
 
+  if (text === "/stream sample") {
+    addMessage("system", "Rendering a noisy agent stream sample with human-readable status cards.");
+    streamSample.forEach((line) => addStreamLine(line));
+    return;
+  }
+
   if (text.startsWith("/setup")) {
-    handleSetupCommand(text);
+    await handleSetupCommand(text);
     return;
   }
 
@@ -483,6 +576,11 @@ function dispatch(raw) {
 }
 
 function addMessage(role, body) {
+  if (role === "stream") {
+    body.split(/\r?\n/).filter(Boolean).forEach((line) => addStreamLine(line));
+    return;
+  }
+
   transcript.push({ role, body });
   const li = document.createElement("li");
   li.className = `message ${role}`;
@@ -490,6 +588,110 @@ function addMessage(role, body) {
   li.querySelector(".message-body").textContent = body;
   transcriptEl.appendChild(li);
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
+}
+
+function addStreamLine(raw) {
+  const event = classifyStreamLine(raw);
+  const previous = transcript[transcript.length - 1];
+  const previousEl = transcriptEl.lastElementChild;
+
+  if (
+    previous?.role === "stream" &&
+    previous.fingerprint === event.fingerprint &&
+    previousEl?.dataset.fingerprint === event.fingerprint
+  ) {
+    previous.count += 1;
+    previous.body = raw;
+    previousEl.querySelector(".stream-count").textContent = `×${previous.count}`;
+    previousEl.querySelector(".stream-raw").textContent = raw;
+    transcriptEl.scrollTop = transcriptEl.scrollHeight;
+    return;
+  }
+
+  transcript.push({
+    role: "stream",
+    body: raw,
+    count: 1,
+    fingerprint: event.fingerprint,
+  });
+
+  const li = document.createElement("li");
+  li.className = `message stream ${event.kind} ${event.severity}`;
+  li.dataset.fingerprint = event.fingerprint;
+  li.innerHTML = `
+    <span class="message-role"></span>
+    <span class="stream-card">
+      <span class="stream-card-head">
+        <strong class="stream-title"></strong>
+        <span class="stream-count">×1</span>
+      </span>
+      <span class="stream-human"></span>
+      <code class="stream-raw"></code>
+    </span>
+  `;
+  li.querySelector(".message-role").textContent = event.label;
+  li.querySelector(".stream-title").textContent = event.title;
+  li.querySelector(".stream-human").textContent = event.human;
+  li.querySelector(".stream-raw").textContent = raw;
+  transcriptEl.appendChild(li);
+  transcriptEl.scrollTop = transcriptEl.scrollHeight;
+}
+
+function classifyStreamLine(raw) {
+  const text = raw.trim();
+
+  if (/PostToolUse:.*hook error/i.test(text)) {
+    return {
+      kind: "hook-error",
+      severity: "severity-error",
+      label: "hook error",
+      title: "Post-tool hook failed",
+      human: "The tool may have finished, but its after-hook failed. Treat hook side effects as unverified until the hook log is checked.",
+      fingerprint: "hook-error:posttooluse",
+    };
+  }
+
+  if (/Async hook .* completed/i.test(text)) {
+    return {
+      kind: "hook-ok",
+      severity: "severity-ok",
+      label: "hook ok",
+      title: "Async hook completed",
+      human: "Background hook finished. No operator action unless paired with a preceding hook error.",
+      fingerprint: "hook-ok:async",
+    };
+  }
+
+  if (/(Thinking|Cogitated|Embellishing|Beaming|Flambéing)/i.test(text)) {
+    return {
+      kind: "model-state",
+      severity: "severity-thinking",
+      label: "model state",
+      title: "Agent is reasoning",
+      human: "Progress signal only. This is not proof that a file changed or a command passed.",
+      fingerprint: `model-state:${text.replace(/\(.+\)/, "").toLowerCase()}`,
+    };
+  }
+
+  if (/^(Read|Bash|Write|Edit|MultiEdit|Grep|Glob)\(/.test(text)) {
+    return {
+      kind: "tool-call",
+      severity: "severity-info",
+      label: "tool call",
+      title: "Tool call observed",
+      human: "Tool activity entered the stream. Verify command output or file diff before calling it complete.",
+      fingerprint: `tool-call:${text.split("(")[0].toLowerCase()}`,
+    };
+  }
+
+  return {
+    kind: "stream-text",
+    severity: "severity-info",
+    label: "stream",
+    title: "Stream text",
+    human: "Unclassified stream line. Keep it visible, but do not treat it as success evidence by itself.",
+    fingerprint: `stream:${text.slice(0, 48).toLowerCase()}`,
+  };
 }
 
 function statusClass(status) {
@@ -549,13 +751,42 @@ function setSetupAssistantOpen(isOpen) {
   setupAssistantBody.hidden = !isOpen;
 }
 
-function handleSetupCommand(text) {
+async function handleSetupCommand(text) {
   const [, topic = "status"] = text.split(/\s+/);
   const route = setupWindows[topic] ?? setupWindows.dash;
   const prompt = buildPolishedSetupPrompt(text);
   polishedSetupPrompt.textContent = prompt;
   setSetupAssistantOpen(true);
   addMessage("system", `Setup agent staged ${topic}. Correct target: ${route}`);
+
+  if (topic === "xai" && bridgeState.connected) {
+    await inspectXaiSetupViaBridge();
+  }
+}
+
+async function inspectXaiSetupViaBridge() {
+  try {
+    const response = await fetch("/api/setup/xai/inspect", {
+      method: "POST",
+      cache: "no-store",
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.reason ?? "xAI setup inspect failed");
+    }
+    addMessage(
+      "remote",
+      [
+        `xAI setup inspect via bridge: ${payload.verdict ?? "UNKNOWN"}`,
+        `reason: ${payload.reason ?? "not provided"}`,
+        `credential: ${payload.credential_file ?? "not selected"}`,
+        `base_url_kind: ${payload.base_url_kind ?? "unknown"}`,
+        "secret_values_recorded: false",
+      ].join("\n"),
+    );
+  } catch (error) {
+    addMessage("alert", `xAI setup inspect bridge failed: ${error.message}`);
+  }
 }
 
 function handleSkillCommand(text) {
@@ -626,7 +857,7 @@ form.addEventListener("submit", (event) => {
   input.value = "";
   resizeInput();
   hideCommandHints();
-  dispatch(value);
+  void dispatch(value);
 });
 
 function resizeInput() {
@@ -700,6 +931,14 @@ input.addEventListener("keydown", (event) => {
     event.preventDefault();
     form.requestSubmit();
   }
+});
+
+window.FusionChatStream = Object.freeze({
+  addLine: addStreamLine,
+  addLines(lines) {
+    lines.forEach((line) => addStreamLine(line));
+  },
+  classify: classifyStreamLine,
 });
 
 boot();

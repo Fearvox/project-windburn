@@ -84,6 +84,9 @@ hermes-yolo-apply:
 fusion-chat-preview:
     scripts/fusion-chat-preview.sh
 
+fusion-chat-bridge:
+    scripts/fusion-chat-bridge.sh
+
 xai-setup-inspect:
     scripts/xai-setup-agent.sh
 

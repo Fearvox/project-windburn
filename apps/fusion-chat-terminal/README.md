@@ -10,6 +10,18 @@ scripts/fusion-chat-preview.sh
 
 Then open `http://127.0.0.1:5178`.
 
+For live read-only repo/proof state, run:
+
+```sh
+scripts/fusion-chat-bridge.sh
+```
+
+If the static preview is already using `5178`, choose another port:
+
+```sh
+WINDBURN_FUSION_CHAT_PORT=5179 scripts/fusion-chat-bridge.sh
+```
+
 ## Current Slice
 
 - Dot-matrix web terminal UI.
@@ -25,6 +37,12 @@ Then open `http://127.0.0.1:5178`.
   `/explain flags`.
 - Codex-style command reference for slash commands, `$` skill instructions, and
   browser-safe MCP connection contracts.
+- Human-readable stream cards for hook errors, async hook completions, model
+  thinking states, and tool-call lines. Use `/stream sample` to smoke-test the
+  classifier.
+- Read-only local bridge endpoints for route state, repo status, preflight
+  proofs, and xAI setup inspect. The UI falls back to local mock data when the
+  bridge is not running.
 - No secret loading and no remote mutation from the browser.
 
 ## Setup Assistant Lane

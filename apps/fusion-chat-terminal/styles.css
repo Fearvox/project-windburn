@@ -428,6 +428,101 @@ h2 {
   color: var(--amber);
 }
 
+.message.stream {
+  grid-template-columns: 108px minmax(0, 1fr);
+}
+
+.message.stream .message-role {
+  padding-top: 3px;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+.stream-card {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-left-width: 3px;
+  background: rgba(16, 20, 19, 0.82);
+}
+
+.stream-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stream-title {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.stream-count {
+  flex: 0 0 auto;
+  min-width: 28px;
+  padding: 2px 6px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+  text-align: center;
+}
+
+.stream-human {
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.stream-raw {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font: inherit;
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.message.stream.severity-error .message-role,
+.message.stream.severity-error .stream-title {
+  color: var(--rose);
+}
+
+.message.stream.severity-error .stream-card {
+  border-color: rgba(255, 143, 163, 0.62);
+  background: rgba(56, 18, 26, 0.42);
+}
+
+.message.stream.severity-ok .message-role,
+.message.stream.severity-ok .stream-title {
+  color: var(--green);
+}
+
+.message.stream.severity-ok .stream-card {
+  border-color: rgba(143, 240, 164, 0.5);
+}
+
+.message.stream.severity-thinking .message-role,
+.message.stream.severity-thinking .stream-title {
+  color: var(--violet);
+}
+
+.message.stream.severity-thinking .stream-card {
+  border-color: rgba(196, 163, 255, 0.52);
+}
+
+.message.stream.severity-info .message-role,
+.message.stream.severity-info .stream-title {
+  color: var(--blue);
+}
+
 .command-bar {
   position: relative;
   display: grid;

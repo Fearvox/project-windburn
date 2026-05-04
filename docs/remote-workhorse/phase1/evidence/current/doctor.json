@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-04T05:26:07.410019Z",
+  "generated_at_utc": "2026-05-04T05:33:59.063595Z",
   "host": "deMacBook-Pro.local",
   "invocation_cwd": "/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal",
   "target": "/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/.",
@@ -8,8 +8,8 @@
     "is_repo": true,
     "top_level": "/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal",
     "branch": "codex/fusion-chat-terminal",
-    "head": "26af837",
-    "status_short": "## codex/fusion-chat-terminal\n M README.md\n M apps/fusion-chat-terminal/README.md\n M apps/fusion-chat-terminal/app.js\n M apps/fusion-chat-terminal/index.html\n M apps/fusion-chat-terminal/styles.css\n M apps/fusion-chat-terminal/upstream.json\n M docs/remote-workhorse/FUSION_CHAT_PERSONALIZATION_SETTINGS_HANDOFF.md\n M docs/remote-workhorse/FUSION_CHAT_TERMINAL.md\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n M justfile\n M scripts/remote-provider-smoke.sh\n M scripts/remote-secret-sync.sh\n?? .playwright-cli/\n?? docs/remote-workhorse/preflight/XAI_SETUP_AGENT_SMOKE.md\n?? scripts/xai-setup-agent.sh",
+    "head": "aea8e4f",
+    "status_short": "## codex/fusion-chat-terminal\n M apps/fusion-chat-terminal/README.md\n M apps/fusion-chat-terminal/app.js\n M apps/fusion-chat-terminal/styles.css\n M docs/remote-workhorse/FUSION_CHAT_TERMINAL.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n?? .playwright-cli/",
     "error": null
   },
   "probes": [
@@ -169,7 +169,7 @@
       "status": "fail",
       "exit_code": 1,
       "stdout": "",
-      "stderr": "time=\"2026-05-04T01:26:07-04:00\" level=fatal msg=\"colima is not running\""
+      "stderr": "time=\"2026-05-04T01:33:58-04:00\" level=fatal msg=\"colima is not running\""
     },
     {
       "id": "just_version",
