@@ -87,6 +87,12 @@ fusion-chat-preview:
 fusion-chat-bridge:
     scripts/fusion-chat-bridge.sh
 
+multica-runtime-card-verify:
+    scripts/multica-runtime-card-verify.sh
+
+windburn-captain-runtime-status:
+    scripts/windburn-captain-runtime.sh --card docs/remote-workhorse/fixtures/multica-runtime-card-v0.json --action status
+
 xai-setup-inspect:
     scripts/xai-setup-agent.sh
 
