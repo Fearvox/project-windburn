@@ -81,6 +81,9 @@ hermes-yolo-inspect:
 hermes-yolo-apply:
     scripts/hermes-yolo-loop.sh --ensure --restart --smoke --confirm-hermes-yolo-loop --out docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md
 
+fusion-chat-preview:
+    scripts/fusion-chat-preview.sh
+
 multica-cache-dry-run:
     scripts/multica-codex-cache-janitor.sh
 

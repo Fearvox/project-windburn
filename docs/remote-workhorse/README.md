@@ -26,6 +26,7 @@ Read order for a new agent:
 21. `preflight/HERMES_HEALTH_GATE.md`
 22. `preflight/HERMES_MAINTENANCE.md`
 23. `preflight/HERMES_YOLO_LOOP_PROOF.md`
+24. `FUSION_CHAT_TERMINAL.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
 and base snapshot proven. The staged NixOS install has completed its guarded
@@ -48,3 +49,5 @@ update/tmux maintenance path are recorded in
 `preflight/HERMES_HEALTH_GATE.md`, and `preflight/HERMES_MAINTENANCE.md`.
 The fixed tmux `hermes --yolo` runtime window plus an `openai-codex` one-shot
 loop proof are recorded in `preflight/HERMES_YOLO_LOOP_PROOF.md`.
+The first unified remote chat entrance is recorded in
+`FUSION_CHAT_TERMINAL.md` and implemented in `../../apps/fusion-chat-terminal/`.

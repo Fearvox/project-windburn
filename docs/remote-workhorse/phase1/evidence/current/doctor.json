@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-04T04:27:19.981097Z",
+  "generated_at_utc": "2026-05-04T05:07:23.493242Z",
   "host": "deMacBook-Pro.local",
-  "invocation_cwd": "/Users/0xvox/Windburn",
-  "target": "/Users/0xvox/Windburn/.",
+  "invocation_cwd": "/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal",
+  "target": "/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/.",
   "git": {
     "is_repo": true,
-    "top_level": "/Users/0xvox/Windburn",
-    "branch": "main",
-    "head": "2bbf7a4",
-    "status_short": "## main\n M README.md\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n M docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md\n M docs/remote-workhorse/preflight/HERMES_HEALTH_GATE.md\n M docs/remote-workhorse/preflight/HERMES_MAINTENANCE.md\n M justfile\n M scripts/hermes-health-gate.sh\n?? docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md\n?? scripts/hermes-yolo-loop.sh",
+    "top_level": "/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal",
+    "branch": "codex/fusion-chat-terminal",
+    "head": "f30c309",
+    "status_short": "## codex/fusion-chat-terminal\n M README.md\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n M justfile\n?? apps/\n?? docs/remote-workhorse/FUSION_CHAT_TERMINAL.md\n?? scripts/fusion-chat-preview.sh",
     "error": null
   },
   "probes": [
@@ -169,7 +169,7 @@
       "status": "fail",
       "exit_code": 1,
       "stdout": "",
-      "stderr": "time=\"2026-05-04T00:27:19-04:00\" level=fatal msg=\"colima is not running\""
+      "stderr": "time=\"2026-05-04T01:07:23-04:00\" level=fatal msg=\"colima is not running\""
     },
     {
       "id": "just_version",

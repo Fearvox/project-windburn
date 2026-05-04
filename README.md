@@ -23,6 +23,7 @@ scripts/digitalocean-observability.sh
 scripts/hermes-health-gate.sh
 scripts/hermes-maintenance.sh
 scripts/hermes-yolo-loop.sh
+scripts/fusion-chat-preview.sh
 scripts/multica-codex-cache-janitor.sh
 ```
 
@@ -49,6 +50,7 @@ just do-observability
 just hermes-health
 just hermes-maintenance-inspect
 just hermes-yolo-inspect
+just fusion-chat-preview
 ```
 
 ## Repo Map
@@ -79,6 +81,10 @@ just hermes-yolo-inspect
   runtime-entry maintenance path.
 - `scripts/hermes-yolo-loop.sh` - guarded `hermes --yolo` tmux runtime loop
   and `openai-codex` one-shot proof.
+- `apps/fusion-chat-terminal/` - dot-matrix web terminal for the unified remote
+  chat entrance.
+- `scripts/fusion-chat-preview.sh` - static preview server for the fusion chat
+  terminal.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary

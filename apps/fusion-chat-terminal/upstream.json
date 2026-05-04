@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "name": "windburn-fusion-chat-terminal",
+  "jcode_upstream": {
+    "repository": "https://github.com/1jehuang/jcode",
+    "branch": "master",
+    "head": "6f15a8e0586bc30c5b551a17bc4866065095d1cb",
+    "import_mode": "conceptual_fork_scaffold",
+    "notes": [
+      "jcode is treated as the multi-session agent harness reference.",
+      "This slice does not vendor the full upstream tree to avoid immediate disk churn.",
+      "The Windburn-owned app defines the web terminal surface and bridge contracts first."
+    ]
+  },
+  "dotmatrix_reference": {
+    "usage_url": "https://dotmatrix.zzzzshawn.cloud/getting-started/usage",
+    "registry": "https://dotmatrix.zzzzshawn.cloud/r/{name}.json",
+    "component_family": [
+      "@dotmatrix/dotm-square-3",
+      "@dotmatrix/dotm-circular-5",
+      "@dotmatrix/dotm-triangle-2"
+    ],
+    "local_status": "css-native_dot_matrix_treatment_no_package_install"
+  },
+  "design_reference": {
+    "psyche_runs_url": "https://psyche.network/runs",
+    "observed_traits": [
+      "global run status before individual details",
+      "thin-line compact panels",
+      "low-interaction filters and route selection",
+      "capacity/progress indicators close to the relevant work"
+    ]
+  },
+  "font_reference": {
+    "source_path": "/Users/0xvox/Downloads/CommitMonovoxV143",
+    "embedded_file": "assets/fonts/CommitMonoVariable.woff2",
+    "license_file": "assets/fonts/LICENSE-CommitMono.txt",
+    "license": "SIL Open Font License 1.1"
+  }
+}
