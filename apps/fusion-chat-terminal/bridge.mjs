@@ -154,13 +154,18 @@ async function repoStatus() {
   ]);
 
   const statusLines = statusShort.split(/\r?\n/).filter(Boolean);
+  const worktreeLines = statusLines.slice(1);
+  const untrackedCount = worktreeLines.filter((line) => line.startsWith("?? ")).length;
+  const trackedDirty = worktreeLines.some((line) => !line.startsWith("?? "));
   return {
     root,
     branch,
     head,
     origin,
     ahead_of_main: Number.isNaN(Number(aheadMain)) ? aheadMain : Number(aheadMain),
-    dirty: statusLines.slice(1).length > 0,
+    dirty: trackedDirty,
+    tracked_dirty: trackedDirty,
+    untracked_count: untrackedCount,
     status_short: statusShort,
     superconductor_binding: binding.status,
     superconductor_binding_path: binding.path,
