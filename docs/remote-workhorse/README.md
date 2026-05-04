@@ -25,6 +25,7 @@ Read order for a new agent:
 20. `preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md`
 21. `preflight/HERMES_HEALTH_GATE.md`
 22. `preflight/HERMES_MAINTENANCE.md`
+23. `preflight/HERMES_YOLO_LOOP_PROOF.md`
 
 Phase 1 started local and read-only. It now has a fresh DigitalOcean base host
 and base snapshot proven. The staged NixOS install has completed its guarded
@@ -45,3 +46,5 @@ The DigitalOcean observability desired state, Hermes health gate, and Hermes
 update/tmux maintenance path are recorded in
 `preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md`,
 `preflight/HERMES_HEALTH_GATE.md`, and `preflight/HERMES_MAINTENANCE.md`.
+The fixed tmux `hermes --yolo` runtime window plus an `openai-codex` one-shot
+loop proof are recorded in `preflight/HERMES_YOLO_LOOP_PROOF.md`.

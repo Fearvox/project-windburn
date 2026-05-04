@@ -1,6 +1,6 @@
 # Hermes Health Gate
 
-Generated: `2026-05-03T23:41:28Z`
+Generated: `2026-05-04T04:24:02Z`
 
 Target: `137.184.104.26`
 
@@ -16,7 +16,7 @@ VERDICT: `PASS`
 
 ```text
 host=hermes-nyc1
-uptime=up 1 week, 4 days, 17 hours, 23 minutes
+uptime=up 1 week, 4 days, 22 hours, 6 minutes
 hermes_bin=/usr/local/bin/hermes
 hermes_version=Hermes Agent v0.12.0 (2026.4.30)
 hermes_version=Project: /root/.hermes/hermes-agent
@@ -26,17 +26,20 @@ hermes_version=Up to date
 hermes_update_check=→ Fetching from origin...
 hermes_update_check=✓ Already up to date.
 hermes_git_status=## main...origin/main [ahead 1]
-hermes_git_head=aedb51c9272b
-hermes_origin_main=86e64c1d3bc0
+hermes_git_head=f5b8484c0cba
+hermes_origin_main=363cc936746c
 hermes_gateway_service=active
 do_agent_service=active
 droplet_agent_service=active
 tailscaled_service=active
 hermes_chat_count=5
-research_vault_mcp_count=29
+research_vault_mcp_count=32
 multica_daemon_count=1
-recent_gateway_warning_count=1
-recent_gateway_error_count=0
+hermes_gateway_active_since=Mon 2026-05-04 04:21:38 UTC
+recent_gateway_warning_count=5
+recent_gateway_error_count=1
+current_gateway_warning_count=1
+current_gateway_error_count=0
 tmux_version=tmux 3.4
 fixed_tmux_session=present
 tmux_session=12: 1 windows (created Tue Apr 28 12:23:01 2026)
@@ -52,7 +55,7 @@ tmux_session=hermes-harness: 6 windows (created Wed Apr 22 20:41:18 2026)
 tmux_session=hermes-hudui-zonic: 1 windows (created Wed Apr 22 13:36:48 2026)
 tmux_session=hermes-operator: 1 windows (created Wed Apr 22 10:40:28 2026)
 tmux_session=hermes-sixpack-20260429T074445Z: 7 windows (created Wed Apr 29 07:46:00 2026)
-tmux_session=windburn-hermes-runtime: 3 windows (created Sun May  3 23:39:29 2026)
+tmux_session=windburn-hermes-runtime: 4 windows (created Sun May  3 23:39:29 2026)
 listener=LISTEN 0      128                        0.0.0.0:8644       0.0.0.0:*    users:[redacted]
 listener=LISTEN 0      512                        0.0.0.0:18765      0.0.0.0:*    users:[redacted]
 listener=LISTEN 0      512                        0.0.0.0:18766      0.0.0.0:*    users:[redacted]

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-03T23:45:13.996729Z",
+  "generated_at_utc": "2026-05-04T04:27:19.981097Z",
   "host": "deMacBook-Pro.local",
   "invocation_cwd": "/Users/0xvox/Windburn",
   "target": "/Users/0xvox/Windburn/.",
@@ -8,8 +8,8 @@
     "is_repo": true,
     "top_level": "/Users/0xvox/Windburn",
     "branch": "main",
-    "head": "e989fec",
-    "status_short": "## main\n M .gitignore\n M README.md\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n M docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md\n M justfile\n M scripts/droplet-engagement-review.sh\n?? docs/remote-workhorse/preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md\n?? docs/remote-workhorse/preflight/HERMES_HEALTH_GATE.md\n?? docs/remote-workhorse/preflight/HERMES_MAINTENANCE.md\n?? scripts/digitalocean-observability.sh\n?? scripts/hermes-health-gate.sh\n?? scripts/hermes-maintenance.sh",
+    "head": "2bbf7a4",
+    "status_short": "## main\n M README.md\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n M docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md\n M docs/remote-workhorse/preflight/HERMES_HEALTH_GATE.md\n M docs/remote-workhorse/preflight/HERMES_MAINTENANCE.md\n M justfile\n M scripts/hermes-health-gate.sh\n?? docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md\n?? scripts/hermes-yolo-loop.sh",
     "error": null
   },
   "probes": [
@@ -77,7 +77,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "v24.14.1",
+      "stdout": "v25.8.2",
       "stderr": ""
     },
     {
@@ -169,7 +169,7 @@
       "status": "fail",
       "exit_code": 1,
       "stdout": "",
-      "stderr": "time=\"2026-05-03T19:45:13-04:00\" level=fatal msg=\"colima is not running\""
+      "stderr": "time=\"2026-05-04T00:27:19-04:00\" level=fatal msg=\"colima is not running\""
     },
     {
       "id": "just_version",

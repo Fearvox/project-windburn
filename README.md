@@ -22,6 +22,7 @@ scripts/droplet-engagement-review.sh
 scripts/digitalocean-observability.sh
 scripts/hermes-health-gate.sh
 scripts/hermes-maintenance.sh
+scripts/hermes-yolo-loop.sh
 scripts/multica-codex-cache-janitor.sh
 ```
 
@@ -47,6 +48,7 @@ just droplet-engagement-review
 just do-observability
 just hermes-health
 just hermes-maintenance-inspect
+just hermes-yolo-inspect
 ```
 
 ## Repo Map
@@ -75,6 +77,8 @@ just hermes-maintenance-inspect
   tmux runtime-entry health gate.
 - `scripts/hermes-maintenance.sh` - guarded Hermes update and fixed tmux
   runtime-entry maintenance path.
+- `scripts/hermes-yolo-loop.sh` - guarded `hermes --yolo` tmux runtime loop
+  and `openai-codex` one-shot proof.
 - `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
 
 ## Current Boundary

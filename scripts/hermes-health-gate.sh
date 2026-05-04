@@ -90,8 +90,14 @@ done
 echo "hermes_chat_count=$(pgrep -fc 'hermes chat' 2>/dev/null || true)"
 echo "research_vault_mcp_count=$(pgrep -fc 'research-vault-mcp' 2>/dev/null || true)"
 echo "multica_daemon_count=$(pgrep -fc 'multica daemon' 2>/dev/null || true)"
+gateway_active_since="$(systemctl show -p ActiveEnterTimestamp --value hermes-gateway.service 2>/dev/null || true)"
+echo "hermes_gateway_active_since=$gateway_active_since"
 echo "recent_gateway_warning_count=$(journalctl -u hermes-gateway.service --since '60 min ago' --no-pager 2>/dev/null | grep -Eic 'warn|warning' || true)"
 echo "recent_gateway_error_count=$(journalctl -u hermes-gateway.service --since '60 min ago' --no-pager 2>/dev/null | grep -Eic 'error|critical|traceback|exception' || true)"
+if [ -n "$gateway_active_since" ]; then
+  echo "current_gateway_warning_count=$(journalctl -u hermes-gateway.service --since "$gateway_active_since" --no-pager 2>/dev/null | grep -Eic 'warn|warning' || true)"
+  echo "current_gateway_error_count=$(journalctl -u hermes-gateway.service --since "$gateway_active_since" --no-pager 2>/dev/null | grep -Eic 'error|critical|traceback|exception' || true)"
+fi
 if command -v tmux >/dev/null 2>&1; then
   echo "tmux_version=$(tmux -V)"
   if tmux has-session -t "$fixed_session" 2>/dev/null; then
@@ -118,10 +124,10 @@ grep -q '^fixed_tmux_session=present$' <<<"$remote_output" || flags+=("fixed tmu
 if grep -q 'Update available' <<<"$remote_output"; then
   flags+=("Hermes update available")
 fi
-warning_count="$(awk -F= '$1 == "recent_gateway_warning_count" { print $2; exit }' <<<"$remote_output")"
-error_count="$(awk -F= '$1 == "recent_gateway_error_count" { print $2; exit }' <<<"$remote_output")"
+warning_count="$(awk -F= '$1 == "current_gateway_warning_count" { print $2; exit }' <<<"$remote_output")"
+error_count="$(awk -F= '$1 == "current_gateway_error_count" { print $2; exit }' <<<"$remote_output")"
 if [ -n "$error_count" ] && [ "$error_count" != "0" ]; then
-  flags+=("recent gateway error count is $error_count")
+  flags+=("current gateway error count is $error_count")
 fi
 
 overall="PASS"

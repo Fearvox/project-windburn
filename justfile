@@ -75,6 +75,12 @@ hermes-maintenance-inspect:
 hermes-maintenance-apply:
     scripts/hermes-maintenance.sh --apply-update --ensure-tmux --confirm-hermes-maintenance --out docs/remote-workhorse/preflight/HERMES_MAINTENANCE.md
 
+hermes-yolo-inspect:
+    scripts/hermes-yolo-loop.sh --out docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md
+
+hermes-yolo-apply:
+    scripts/hermes-yolo-loop.sh --ensure --restart --smoke --confirm-hermes-yolo-loop --out docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md
+
 multica-cache-dry-run:
     scripts/multica-codex-cache-janitor.sh
 

@@ -1,6 +1,6 @@
 # Droplet Engagement Review
 
-Generated: `2026-05-03T23:43:12Z`
+Generated: `2026-05-04T04:25:45Z`
 
 Target repo: `/Users/0xvox/Windburn`
 
@@ -20,11 +20,11 @@ counts/listeners instead of raw task transcripts.
 | DigitalOcean control plane | `PASS` | account_status=active |
 | DigitalOcean uptime checks | `FLAG` | no uptime checks returned |
 | DigitalOcean monitoring alerts | `FLAG` | no monitoring alerts returned |
-| CCR public route | `FLAG` | curl: (7) Failed to connect to 165.232.146.188 port 8888 after 76 ms: Couldn't connect to server |
+| CCR public route | `FLAG` | curl: (7) Failed to connect to 165.232.146.188 port 8888 after 80 ms: Couldn't connect to server |
 | `ccr-droplet` internal embedding route | `PASS_INTERNAL` | SSH + `http://100.65.234.77:8080/v1/models` + embeddings smoke |
 | `hermes-nyc1` task/MCP engagement | `ENGAGED_HEALTH_GATE_PASS` | Hermes gateway/process/MCP counts over SSH; health_gate=PASS |
 | `windburn-workhorse-nyc1` foundation health | `FOUNDATION_ONLY` | health timer + current health JSON over SSH |
-| code-review-graph freshness | `FLAG` | proof_commit=227a3a66d124; head=e989fecd28e2; dirty_files=12 |
+| code-review-graph freshness | `FLAG` | proof_commit=227a3a66d124; head=2bbf7a4ffa73; dirty_files=10 |
 
 ## Droplets
 
@@ -68,14 +68,14 @@ Public canary:
 ```text
 endpoint=http://165.232.146.188:8888/v1/models
 status=FLAG
-curl: (7) Failed to connect to 165.232.146.188 port 8888 after 76 ms: Couldn't connect to server
+curl: (7) Failed to connect to 165.232.146.188 port 8888 after 80 ms: Couldn't connect to server
 ```
 
 Internal SSH/Tailscale canary:
 
 ```text
 host=ccr-droplet
-uptime=up 1 week, 2 days, 17 hours, 5 minutes
+uptime=up 1 week, 2 days, 21 hours, 47 minutes
 bge_m3_embed_service=active
 llama_server_service=inactive
 llama_server_process_count=1
@@ -90,16 +90,16 @@ embedding_len=1024
 
 ```text
 host=hermes-nyc1
-uptime=up 1 week, 4 days, 17 hours, 25 minutes
+uptime=up 1 week, 4 days, 22 hours, 7 minutes
 hermes_gateway_service=active
 multica_service=inactive
 do_agent_service=active
 droplet_agent_service=active
 tailscaled_service=active
 hermes_chat_count=5
-research_vault_mcp_count=29
+research_vault_mcp_count=32
 multica_daemon_count=1
-recent_gateway_warning_count=1
+recent_gateway_warning_count=6
 listener=LISTEN 0      128                        0.0.0.0:8644       0.0.0.0:*    users:[redacted]
 listener=LISTEN 0      512                        0.0.0.0:18765      0.0.0.0:*    users:[redacted]
 listener=LISTEN 0      512                        0.0.0.0:18766      0.0.0.0:*    users:[redacted]
@@ -115,13 +115,13 @@ listener=LISTEN 0      4096                          [::]:22            [::]:*  
 
 ```text
 host=windburn-workhorse-nyc1
-uptime= 23:43:21  up  12:47,  0 users,  load average: 0.00, 0.00, 0.00
+uptime= 04:25:59  up  17:30,  0 users,  load average: 0.00, 0.00, 0.00
 os=NixOS 25.11 (Xantusia)
 windburn_health_service=inactive
 windburn_health_timer=active
 failed_units=0
-health_file_mtime=2026-05-03 23:39:23.804978784 +0000
-health_generated_at_utc=2026-05-03T23:39:23Z
+health_file_mtime=2026-05-04 04:23:56.800801647 +0000
+health_generated_at_utc=2026-05-04T04:23:56Z
 health_system_state=running
 health_failed_units=0
 hermes_chat_count=0
@@ -133,7 +133,7 @@ listener=LISTEN 0      128             [::]:22           [::]:*    users:[redact
 ## code-review-graph Evidence
 
 ```text
-proof_commit=227a3a66d124; head=e989fecd28e2; dirty_files=12
+proof_commit=227a3a66d124; head=2bbf7a4ffa73; dirty_files=10
 
 Nodes: 41
 Edges: 441
