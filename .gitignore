@@ -2,6 +2,7 @@
 .Codex/verify/
 .playwright-mcp/
 .worktrees/
+_local-cred/
 target/
 node_modules/
 .env
@@ -10,3 +11,5 @@ node_modules/
 tmp/
 var/
 *.log
+psyche-runs-reference.png
+windburn-fusion-chat-*.png
