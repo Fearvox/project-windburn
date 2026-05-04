@@ -137,6 +137,28 @@ Required properties:
 - Runtime can refuse tasks without side effects.
 - Channel carries redacted status events by default.
 
+### Bootstrap gstack / SSH handshake
+
+Before the full outbound runtime channel exists, Windburn can bootstrap through
+an SSH forced-command lane that still obeys the runtime contract:
+
+```text
+Multica/gstack submits runtime card over SSH stdin
+  -> forced command invokes windburn-captain-runtime.sh --card - --action run-card
+  -> runtime verifies card
+  -> runtime acquires lease slot
+  -> runtime writes status JSON to spool
+  -> runtime returns compact PASS/FLAG/BLOCK summary
+  -> Multica polls/collects redacted status/evidence refs
+```
+
+This is acceptable only because the lane is bounded:
+
+- stdin carries a validated runtime card, not shell fragments;
+- `run-card` is the transport wrapper action, not an arbitrary card action;
+- lease acquisition plus status spool create queue semantics even on SSH;
+- the returned payload stays redacted and compact.
+
 ### 5. Superconductor Runtime Adapter
 
 Local agent running next to Superconductor.
@@ -311,6 +333,60 @@ Redacted event returned by runtime.
 }
 ```
 
+### RuntimeQueueStatus
+
+Bootstrap/private queue record written by the runtime spool during `run-card`
+execution. This is the durable queue-local status source for future
+Superruntime/Fusion Bridge live views.
+
+```json
+{
+  "schema_version": 1,
+  "run_id": "run_...",
+  "card_id": "mrc_...",
+  "runtime_id": "rt_...",
+  "repo": "Fearvox/project-windburn",
+  "requested_action": "status",
+  "phase": "queued|leased|running|done|flag|block",
+  "level": "info|pass|flag|block",
+  "verdict": "PASS|FLAG|BLOCK",
+  "slot": "pending|none|slot-##",
+  "git_status": "clean|dirty|null",
+  "superruntime_fixture": "PASS|FLAG|BLOCK|null",
+  "secret_values_recorded": false,
+  "provider_rate_limited": false,
+  "artifact_refs": ["redacted_ref"],
+  "generated_at_utc": "timestamp"
+}
+```
+
+Contract notes:
+
+- stream-safe only: no raw private paths, SSH targets, IPs, hostnames, or
+  provider account internals;
+- `artifact_refs` are indirections to redacted/private evidence classes, not
+  inline logs;
+- `provider_rate_limited=true` is reserved for future provider-backed lanes and
+  still maps to `FLAG provider_rate_limited`;
+- this queue record complements the higher-level `StatusEvent` stream instead of
+  replacing it.
+
+## Bootstrap Runtime Queue Model
+
+The first SSH bootstrap lane uses a local runtime queue instead of freeform tmux
+fan-out.
+
+- `WINDBURN_RUNTIME_MAX_PARALLEL` controls slot count. Default: `10`.
+- Slot leases are acquired with `flock` over numbered slot locks.
+- A full queue returns `FLAG runtime_queue_full`, not repo failure.
+- Status JSON in the spool is the future source for Superruntime/Fusion Bridge
+  live status.
+
+Why this matters: 10-way autoresearch belongs behind leases plus status spool,
+not raw tmux chaos. Leases provide bounded parallelism and fairness; status JSON
+provides retry-visible, stream-safe state that upstream systems can poll without
+reading private shell output.
+
 ## Assignment Flow
 
 1. Provider event enters a Public Bridge.
@@ -320,13 +396,16 @@ Redacted event returned by runtime.
 5. Orchestrator selects registered runtime.
 6. Orchestrator signs `TaskEnvelope`.
 7. Runtime receives envelope over outbound secure channel.
+   - Bootstrap variant: Multica/gstack submits the bounded runtime card over SSH
+     stdin to `windburn-captain-runtime.sh --card - --action run-card`.
 8. Runtime validates signature, lease, repo, and permission boundaries.
-9. Runtime prepares isolated worktree.
-10. Runtime dispatches harness.
-11. Harness executes and verifies.
-12. Runtime returns redacted `StatusEvent` stream and final evidence summary.
-13. Orchestrator writes provider status/comment through the bridge.
-14. Fusion Chat displays redacted task status.
+9. Runtime acquires a lease slot and records redacted queue status.
+10. Runtime prepares isolated worktree.
+11. Runtime dispatches harness.
+12. Harness executes and verifies.
+13. Runtime returns redacted `StatusEvent` stream and final evidence summary.
+14. Orchestrator writes provider status/comment through the bridge.
+15. Fusion Chat displays redacted task status.
 
 ## Security Model
 
@@ -344,6 +423,8 @@ Hard requirements:
 - No provider token in runtime-visible browser payloads.
 - No runtime card, envelope, or browser-safe status carrying provider API keys,
   OAuth tokens, credential paths, or provider account details.
+- No runtime card carrying provider auth; provider execution must use
+  runtime-host operator-owned OAuth/session/provider profiles outside the repo.
 - No raw local paths or host IPs in public status.
 - No runtime accepting unsigned task envelopes.
 - No public inbound route into Superconductor.
@@ -356,6 +437,7 @@ Hard requirements:
 | Provider signature invalid | Drop event and record private audit |
 | Runtime offline | Queue or mark `FLAG`, do not fall back to public SSH |
 | Runtime refuses envelope | Preserve task, surface `FLAG` with reason |
+| Runtime queue full | `FLAG runtime_queue_full`, preserve queue semantics and retry later |
 | Provider auth missing or provider returns `429` / `rate_limit` | `FLAG provider_rate_limited`, not repo failure |
 | Worktree dirty/conflicting | Create repair card or `BLOCK` |
 | Harness crashes | Return `FLAG` with logs private and summary redacted |
