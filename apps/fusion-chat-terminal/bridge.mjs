@@ -2,7 +2,7 @@
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { readFile, stat } from "node:fs/promises";
+import { readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -144,12 +144,13 @@ async function git(args, fallback = "") {
 }
 
 async function repoStatus() {
-  const [branch, head, statusShort, origin, aheadMain] = await Promise.all([
+  const [branch, head, statusShort, origin, aheadMain, binding] = await Promise.all([
     git(["rev-parse", "--abbrev-ref", "HEAD"], "unknown"),
     git(["rev-parse", "--short", "HEAD"], "unknown"),
     git(["status", "--short", "--branch"], ""),
     git(["remote", "get-url", "origin"], "missing"),
     git(["rev-list", "--count", "main..HEAD"], "unknown"),
+    superconductorBindingStatus(),
   ]);
 
   const statusLines = statusShort.split(/\r?\n/).filter(Boolean);
@@ -161,8 +162,28 @@ async function repoStatus() {
     ahead_of_main: Number.isNaN(Number(aheadMain)) ? aheadMain : Number(aheadMain),
     dirty: statusLines.slice(1).length > 0,
     status_short: statusShort,
-    superconductor_binding: existsSync(superconductorBinding) ? "present" : "missing",
+    superconductor_binding: binding.status,
+    superconductor_binding_path: binding.path,
   };
+}
+
+async function superconductorBindingStatus() {
+  if (!existsSync(superconductorBinding)) {
+    return { status: "missing", path: null };
+  }
+
+  try {
+    const [bindingRealpath, rootRealpath] = await Promise.all([
+      realpath(superconductorBinding),
+      realpath(root),
+    ]);
+    return {
+      status: bindingRealpath === rootRealpath ? "present" : "points_elsewhere",
+      path: bindingRealpath,
+    };
+  } catch {
+    return { status: "unreadable", path: null };
+  }
 }
 
 async function readProof(relativePath) {
@@ -200,16 +221,17 @@ async function readProof(relativePath) {
 }
 
 async function buildRemotes() {
+  const binding = await superconductorBindingStatus();
   const remotes = await Promise.all(
     routeBlueprints.map(async (route) => {
       const proof = route.proof ? await readProof(route.proof) : null;
       const superconductorMissing =
-        route.id === "superconductor" && !existsSync(superconductorBinding);
+        route.id === "superconductor" && binding.status !== "present";
       const status = superconductorMissing || route.forceFlag
         ? "FLAG"
         : proof?.status ?? "FLAG";
       const latency = superconductorMissing
-        ? "binding missing"
+        ? binding.status
         : route.forceFlag ?? proof?.reason ?? "live proof";
 
       return {
