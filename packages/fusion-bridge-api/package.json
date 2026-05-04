@@ -8,6 +8,7 @@
   },
   "exports": {
     ".": "./src/api.mjs",
+    "./auth-contract": "./src/auth-contract.mjs",
     "./superruntime": "./src/superruntime.mjs",
     "./node-server": "./src/node-server.mjs",
     "./worker": "./worker.mjs"

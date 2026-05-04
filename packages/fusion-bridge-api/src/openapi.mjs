@@ -4,6 +4,7 @@ export const openapi = {
     title: "Windburn Fusion Bridge API",
     version: "0.1.0",
     summary: "Read-only, stream-safe API for Windburn Superruntime status.",
+    description: "Public responses are viewer-scoped and redacted by default. Operator and admin routes are contract-defined but disabled until authenticated task staging and provider configuration are implemented.",
   },
   servers: [
     { url: "http://127.0.0.1:5188", description: "local API package bridge" },
@@ -21,7 +22,7 @@ export const openapi = {
     "/api/status": {
       get: {
         operationId: "getStatus",
-        summary: "Read-only service status",
+        summary: "Read-only service status with auth contract metadata",
         responses: { "200": { description: "Bridge status" } },
       },
     },

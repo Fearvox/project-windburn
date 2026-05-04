@@ -1,4 +1,5 @@
 import { openapi } from "./openapi.mjs";
+import { authContractSummary, guardRoute, publicAuthContext } from "./auth-contract.mjs";
 import { assertStreamSafe, redact } from "./redaction.mjs";
 import {
   buildEmptySuperruntimePayload,
@@ -65,6 +66,7 @@ export function createFusionBridgeApi(options = {}) {
   }
 
   function status(method) {
+    const authContext = publicAuthContext();
     return jsonResponse({
       schema_version: 1,
       generated_at_utc: now(),
@@ -77,6 +79,7 @@ export function createFusionBridgeApi(options = {}) {
       provider_webhooks_enabled: false,
       runtime_channel_enabled: false,
       secret_values_recorded: false,
+      auth: authContractSummary(authContext.role),
     }, { method });
   }
 
@@ -89,6 +92,21 @@ export function createFusionBridgeApi(options = {}) {
     }
 
     try {
+      const guard = guardRoute({
+        pathname: url.pathname,
+        method,
+        role: publicAuthContext().role,
+      });
+      if (!guard.allowed) {
+        return jsonResponse({
+          error: guard.reason,
+          route_id: guard.route.id,
+          required_role: guard.route.minRole,
+          mutation_bridge_enabled: false,
+          secret_values_recorded: false,
+        }, { status: guard.status ?? 403, method });
+      }
+
       if (url.pathname === "/healthz" || url.pathname === "/api/status") {
         return status(method);
       }

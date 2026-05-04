@@ -11,6 +11,11 @@ The package intentionally exposes only stream-safe data. It does not accept
 provider webhooks yet, does not dispatch runtime work, and does not mutate
 Superconductor.
 
+Auth contract v0 is role-shaped but not SaaS-shaped: public requests are
+`viewer`, future authenticated staging is `operator`, and provider/webhook/auth
+configuration is `admin`. See
+`docs/remote-workhorse/FUSION_BRIDGE_AUTH_CONTRACT.md`.
+
 ## Endpoints
 
 - `GET /healthz`

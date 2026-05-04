@@ -30,6 +30,8 @@ function assert(condition, message) {
 const health = await get("/healthz");
 assert(health.response.status === 200, "healthz must return 200");
 assert(health.body.mutation_bridge_enabled === false, "healthz must be read-only");
+assert(health.body.auth.active_role === "viewer", "public health must be viewer scoped");
+assert(health.body.auth.mutation_routes_enabled === false, "auth contract must keep mutation routes disabled");
 
 const superruntime = await get("/api/superruntime");
 assert(superruntime.response.status === 200, "superruntime must return 200");
@@ -46,5 +48,9 @@ assert(openapi.body.paths["/api/superruntime"], "openapi must include superrunti
 
 const mutation = await get("/api/superruntime", "POST");
 assert(mutation.response.status === 405, "mutating requests must be rejected");
+
+const admin = await get("/api/admin/provider-config");
+assert(admin.response.status === 404, "admin routes must stay disabled before auth wiring");
+assert(admin.body.required_role === "admin", "admin routes must declare admin requirement");
 
 console.log("PASS fusion_bridge_api_smoke");
