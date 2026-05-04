@@ -36,6 +36,11 @@ WINDBURN_FUSION_CHAT_PORT=5179 scripts/fusion-chat-bridge.sh
   `/explain flags`.
 - Codex-style command reference for slash commands, `$` skill instructions, and
   browser-safe MCP connection contracts.
+- Prompt provenance suggestions in the composer: clipboard paths, URLs,
+  commands, and current-route prompts render as non-committed chips with
+  visible source labels, explicit Use/Dismiss controls, and Tab-to-accept.
+  Credential-like local paths are ignored, and suggestion ids never contain the
+  raw clipboard value.
 - Human-readable stream cards for hook errors, async hook completions, model
   thinking states, and tool-call lines. Use `/stream sample` to smoke-test the
   classifier.

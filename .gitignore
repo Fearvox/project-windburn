@@ -1,5 +1,6 @@
 .DS_Store
 .Codex/verify/
+.playwright-mcp/
 .worktrees/
 target/
 node_modules/

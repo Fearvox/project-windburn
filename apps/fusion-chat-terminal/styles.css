@@ -556,7 +556,8 @@ h2 {
   background: #0c100f;
 }
 
-.command-hints {
+.command-hints,
+.provenance-suggestions {
   position: absolute;
   left: 48px;
   right: 62px;
@@ -575,13 +576,101 @@ h2 {
   box-shadow: 0 -14px 42px rgba(0, 0, 0, 0.45);
 }
 
-.command-hints[hidden] {
+.command-hints[hidden],
+.provenance-suggestions[hidden] {
   display: none;
+}
+
+.provenance-suggestions {
+  border-color: rgba(143, 240, 164, 0.34);
+  background:
+    linear-gradient(90deg, rgba(143, 240, 164, 0.08), transparent 42%),
+    rgba(8, 10, 9, 0.985);
+}
+
+.provenance-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(92px, auto) auto 28px;
+  gap: 8px;
+  align-items: center;
+  min-height: 42px;
+  padding: 7px;
+  border: 1px solid rgba(143, 240, 164, 0.18);
+  background: rgba(16, 20, 19, 0.92);
+}
+
+.provenance-card[data-primary="true"] {
+  border-color: rgba(143, 240, 164, 0.38);
+}
+
+.provenance-main {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+}
+
+.provenance-title,
+.provenance-preview,
+.provenance-source {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.provenance-title {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.provenance-preview {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.provenance-source {
+  justify-self: end;
+  max-width: 210px;
+  padding: 4px 6px;
+  border: 1px solid rgba(137, 183, 255, 0.28);
+  color: var(--blue);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.provenance-action,
+.provenance-dismiss {
+  min-height: 28px;
+  border: 1px solid var(--line);
+  background: rgba(21, 26, 24, 0.92);
+  color: var(--green);
+  font-size: 11px;
+}
+
+.provenance-action {
+  padding: 0 8px;
+  text-transform: uppercase;
+}
+
+.provenance-dismiss {
+  width: 28px;
+  color: var(--muted);
+}
+
+.provenance-main:hover .provenance-title,
+.provenance-action:hover,
+.provenance-dismiss:hover {
+  color: var(--ink);
+  border-color: var(--green);
 }
 
 .hint-item {
   display: grid;
-  grid-template-columns: minmax(84px, auto) minmax(0, 1fr);
+  grid-template-columns: minmax(84px, auto) minmax(0, 1fr) auto;
   gap: 10px;
   width: 100%;
   min-height: 32px;
@@ -609,6 +698,13 @@ h2 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.hint-source {
+  align-self: center;
+  color: var(--blue);
+  font-size: 10px;
+  text-transform: uppercase;
 }
 
 .prompt-sigil {
@@ -1138,5 +1234,35 @@ textarea::placeholder {
     right: 12px;
     bottom: 12px;
     width: calc(100vw - 24px);
+  }
+
+  .command-hints,
+  .provenance-suggestions {
+    left: 12px;
+    right: 12px;
+  }
+
+  .provenance-card {
+    grid-template-columns: minmax(0, 1fr) 28px;
+  }
+
+  .provenance-main {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .provenance-dismiss {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .provenance-source,
+  .provenance-action {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .provenance-source {
+    max-width: 100%;
   }
 }

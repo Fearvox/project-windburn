@@ -260,6 +260,7 @@ const preflightList = document.querySelector("#preflightList");
 const transcriptEl = document.querySelector("#transcript");
 const form = document.querySelector("#chatForm");
 const input = document.querySelector("#promptInput");
+const provenanceSuggestions = document.querySelector("#provenanceSuggestions");
 const commandHints = document.querySelector("#commandHints");
 const poolCapacity = document.querySelector("#poolCapacity");
 const poolMeter = document.querySelector("#poolMeter");
@@ -278,6 +279,8 @@ const polishedSetupPrompt = document.querySelector("#polishedSetupPrompt");
 const promptPolishButton = document.querySelector("#promptPolishButton");
 const modeLabel = document.querySelector("#modeLabel");
 const bridgeLabel = document.querySelector("#bridgeLabel");
+const dismissedPromptSuggestionIds = new Set();
+let activePromptSuggestions = [];
 
 const setupWindows = {
   font: "https://commitmono.com/",
@@ -611,6 +614,194 @@ function applyInstruction(item) {
   resizeInput();
   updateCommandHints();
   input.focus();
+}
+
+function normalizeClipboardText(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/^['"]|['"]$/g, "")
+    .trim();
+}
+
+function basenameFromPath(value) {
+  const clean = normalizeClipboardText(value);
+  return clean.split(/[\\/]/).filter(Boolean).pop() || clean;
+}
+
+function shortStableId(value) {
+  const text = String(value ?? "");
+  let hash = 5381;
+  for (let index = 0; index < text.length; index += 1) {
+    hash = (hash * 33) ^ text.charCodeAt(index);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+function suggestionId(kind, value) {
+  return `${kind}:${shortStableId(value)}`;
+}
+
+function looksSecretLike(value) {
+  const text = String(value ?? "");
+  return /(?:sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9_]{16,}|Authorization:\s*Bearer|api[_-]?key\s*[=:]|password\s*[=:]|token\s*[=:]|BEGIN (?:RSA |OPENSSH |PRIVATE )?KEY)/i.test(
+    text,
+  );
+}
+
+function looksSensitivePathLike(value) {
+  const text = normalizeClipboardText(value).toLowerCase();
+  return /(?:^|[\\/])(?:_local-cred|credentials?|secrets?|\.ssh)(?:[\\/]|$)/.test(text)
+    || /(?:^|[\\/])\.env(?:[\\/.\w-]*|$)/.test(text)
+    || /(?:^|[\\/])id_(?:rsa|ed25519|ecdsa|dsa)(?:\.pub)?$/.test(text)
+    || /\.(?:pem|key|p12|pfx)$/i.test(text);
+}
+
+function classifyClipboardSuggestion(raw) {
+  const value = normalizeClipboardText(raw);
+  if (!value || looksSecretLike(value)) return null;
+
+  const isLocalPath = /^(?:~|\/Users\/|\/Volumes\/|\.{0,2}\/)/.test(value);
+  const isImage = /\.(?:png|jpe?g|gif|webp|svg)$/i.test(value);
+  const isMarkdown = /\.(?:md|markdown)$/i.test(value);
+  const isUrl = /^https?:\/\//i.test(value);
+  const isCommand = /^(?:git|pnpm|npm|bun|node|cargo|just|scripts\/|\.\/scripts\/|npx)\b/.test(value);
+
+  if (isLocalPath && looksSensitivePathLike(value)) return null;
+
+  if (isLocalPath && isImage) {
+    return {
+      id: suggestionId("clipboard:image", value),
+      source: "Clipboard",
+      title: "Attach recent screenshot path?",
+      preview: basenameFromPath(value),
+      value,
+      action: "Use path",
+      note: "local only · not sent until accepted",
+    };
+  }
+  if (isLocalPath && isMarkdown) {
+    return {
+      id: suggestionId("clipboard:markdown", value),
+      source: "Clipboard",
+      title: "Use markdown artifact path?",
+      preview: basenameFromPath(value),
+      value,
+      action: "Use path",
+      note: "local artifact · accepted text only",
+    };
+  }
+  if (isUrl) {
+    return {
+      id: suggestionId("clipboard:url", value),
+      source: "Clipboard",
+      title: "Use copied URL?",
+      preview: value.length > 88 ? `${value.slice(0, 85)}...` : value,
+      value,
+      action: "Use URL",
+      note: "clipboard URL",
+    };
+  }
+  if (isCommand) {
+    return {
+      id: suggestionId("clipboard:command", value),
+      source: "Clipboard",
+      title: "Use copied command?",
+      preview: value.length > 88 ? `${value.slice(0, 85)}...` : value,
+      value,
+      action: "Use command",
+      note: "review before send",
+    };
+  }
+
+  return null;
+}
+
+function contextPromptSuggestion() {
+  return {
+    id: `context:${activeRemote.id}`,
+    source: "Context",
+    title: `Ask ${activeRemote.name} for next action`,
+    preview: `${activeRemote.name}: summarize status, blocker, and one safe next step`,
+    value: `Summarize ${activeRemote.name} status, blocker, and one safe next action.`,
+    action: "Use prompt",
+    note: "current route",
+  };
+}
+
+async function refreshPromptSuggestions(reason = "focus") {
+  if (document.hidden || document.activeElement !== input || input.value.trim()) {
+    hidePromptSuggestions();
+    return;
+  }
+
+  const suggestions = [contextPromptSuggestion()];
+  if (navigator.clipboard?.readText && (reason === "focus" || reason === "pointer" || reason === "manual")) {
+    try {
+      const clipboard = await navigator.clipboard.readText();
+      const clipboardSuggestion = classifyClipboardSuggestion(clipboard);
+      if (clipboardSuggestion) suggestions.unshift(clipboardSuggestion);
+    } catch {
+      // Browser permissions differ. Silent fallback keeps the composer usable.
+    }
+  }
+
+  activePromptSuggestions = suggestions.filter((item) => !dismissedPromptSuggestionIds.has(item.id)).slice(0, 3);
+  renderPromptSuggestions();
+}
+
+function renderPromptSuggestions() {
+  if (!activePromptSuggestions.length) {
+    hidePromptSuggestions();
+    return;
+  }
+
+  provenanceSuggestions.hidden = false;
+  provenanceSuggestions.innerHTML = "";
+
+  activePromptSuggestions.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "provenance-card";
+    card.dataset.suggestionId = item.id;
+    card.innerHTML = `
+      <button class="provenance-main" type="button">
+        <span class="provenance-title"></span>
+        <span class="provenance-preview"></span>
+      </button>
+      <span class="provenance-source"></span>
+      <button class="provenance-action" type="button"></button>
+      <button class="provenance-dismiss" type="button" aria-label="Dismiss suggestion">×</button>
+    `;
+    card.querySelector(".provenance-title").textContent = item.title;
+    card.querySelector(".provenance-preview").textContent = item.preview;
+    card.querySelector(".provenance-source").textContent = `${item.source} · ${item.note}`;
+    card.querySelector(".provenance-action").textContent = item.action;
+    card.querySelector(".provenance-main").addEventListener("click", () => acceptPromptSuggestion(item));
+    card.querySelector(".provenance-action").addEventListener("click", () => acceptPromptSuggestion(item));
+    card.querySelector(".provenance-dismiss").addEventListener("click", () => dismissPromptSuggestion(item.id));
+    if (index === 0) card.dataset.primary = "true";
+    provenanceSuggestions.appendChild(card);
+  });
+}
+
+function acceptPromptSuggestion(item) {
+  input.value = item.value;
+  input.dataset.provenance = item.source;
+  resizeInput();
+  hidePromptSuggestions();
+  updateCommandHints();
+  input.focus();
+}
+
+function dismissPromptSuggestion(id) {
+  dismissedPromptSuggestionIds.add(id);
+  activePromptSuggestions = activePromptSuggestions.filter((item) => item.id !== id);
+  renderPromptSuggestions();
+  input.focus();
+}
+
+function hidePromptSuggestions() {
+  provenanceSuggestions.hidden = true;
+  provenanceSuggestions.innerHTML = "";
 }
 
 function renderPreflight() {
@@ -1065,8 +1256,10 @@ form.addEventListener("submit", (event) => {
   event.preventDefault();
   const value = input.value;
   input.value = "";
+  delete input.dataset.provenance;
   resizeInput();
   hideCommandHints();
+  hidePromptSuggestions();
   void dispatch(value);
 });
 
@@ -1092,9 +1285,11 @@ function updateCommandHints() {
 
   if (!kind) {
     hideCommandHints();
+    void refreshPromptSuggestions("input");
     return;
   }
 
+  hidePromptSuggestions();
   const rows = getInstructionRows(kind, query).slice(0, 6);
   if (rows.length === 0) {
     hideCommandHints();
@@ -1111,9 +1306,12 @@ function updateCommandHints() {
     button.innerHTML = `
       <span class="hint-command"></span>
       <span class="hint-label"></span>
+      <span class="hint-source"></span>
     `;
     button.querySelector(".hint-command").textContent = item.command;
     button.querySelector(".hint-label").textContent = item.label;
+    button.querySelector(".hint-source").textContent =
+      kind === "skills" ? "Skill" : kind === "mcp" ? "MCP" : "Template";
     button.addEventListener("click", () => {
       applyInstruction(item);
       hideCommandHints();
@@ -1132,15 +1330,33 @@ input.addEventListener("input", () => {
   updateCommandHints();
 });
 
+input.addEventListener("focus", () => {
+  void refreshPromptSuggestions("focus");
+});
+
+input.addEventListener("pointerdown", () => {
+  void refreshPromptSuggestions("pointer");
+});
+
 input.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     hideCommandHints();
+    hidePromptSuggestions();
+    return;
+  }
+  if (event.key === "Tab" && !provenanceSuggestions.hidden && activePromptSuggestions[0]) {
+    event.preventDefault();
+    acceptPromptSuggestion(activePromptSuggestions[0]);
     return;
   }
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
     form.requestSubmit();
   }
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) hidePromptSuggestions();
 });
 
 window.FusionChatStream = Object.freeze({
