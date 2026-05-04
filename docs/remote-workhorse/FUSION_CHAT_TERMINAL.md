@@ -30,6 +30,9 @@ without package installation or another provider credential step.
 - CommitMono pack: `/Users/0xvox/Downloads/CommitMonovoxV143`
   - Embedded file: `apps/fusion-chat-terminal/assets/fonts/CommitMonoVariable.woff2`
   - License copy: `apps/fusion-chat-terminal/assets/fonts/LICENSE-CommitMono.txt`
+- DASH Docs personalization/settings: `https://docs.zonicdesign.art`
+  - Setup routes are maintained through
+    `FUSION_CHAT_PERSONALIZATION_SETTINGS_HANDOFF.md`.
 
 ## Current Implementation
 
@@ -40,6 +43,8 @@ Path: `apps/fusion-chat-terminal/`
   and local CommitMono font loading.
 - `app.js`: local route model and command parser.
 - `upstream.json`: provenance and later fork contract.
+- Sticky setup assistant: frontend contract for the `xAI setup lane`, including
+  CommitMono readiness, correct-window links, and raw prompt polishing.
 
 Preview:
 

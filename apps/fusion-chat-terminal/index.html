@@ -124,6 +124,49 @@
       </aside>
     </main>
 
+    <aside
+      id="setupAssistant"
+      class="setup-assistant"
+      aria-label="Setup assistant"
+      data-open="true"
+    >
+      <button
+        id="setupAssistantToggle"
+        class="setup-toggle"
+        type="button"
+        aria-expanded="true"
+        aria-controls="setupAssistantBody"
+      >
+        Setup Agent
+      </button>
+      <div id="setupAssistantBody" class="setup-body">
+        <div class="setup-head">
+          <span>xAI setup lane</span>
+          <strong id="setupState">checking</strong>
+        </div>
+        <p id="setupCopy">
+          I keep dull setup work bounded: detect missing pieces, open the right
+          window, and turn messy asks into a clean operator prompt.
+        </p>
+        <div class="setup-actions">
+          <a id="fontDownloadLink" href="https://commitmono.com/" target="_blank" rel="noreferrer">
+            Get CommitMono
+          </a>
+          <a href="https://docs.zonicdesign.art/pages/getting-started.html" target="_blank" rel="noreferrer">
+            DASH setup
+          </a>
+          <button id="promptPolishButton" type="button">Polish prompt</button>
+        </div>
+        <textarea
+          id="rawSetupPrompt"
+          rows="3"
+          spellcheck="false"
+          placeholder="Paste a dull setup task here"
+        ></textarea>
+        <pre id="polishedSetupPrompt" aria-live="polite"></pre>
+      </div>
+    </aside>
+
     <script src="./app.js"></script>
   </body>
 </html>

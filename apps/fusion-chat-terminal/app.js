@@ -92,6 +92,21 @@ const poolMeter = document.querySelector("#poolMeter");
 const poolActive = document.querySelector("#poolActive");
 const globalStats = document.querySelector("#globalStats");
 const runLedger = document.querySelector("#runLedger");
+const setupAssistant = document.querySelector("#setupAssistant");
+const setupAssistantToggle = document.querySelector("#setupAssistantToggle");
+const setupAssistantBody = document.querySelector("#setupAssistantBody");
+const setupState = document.querySelector("#setupState");
+const setupCopy = document.querySelector("#setupCopy");
+const rawSetupPrompt = document.querySelector("#rawSetupPrompt");
+const polishedSetupPrompt = document.querySelector("#polishedSetupPrompt");
+const promptPolishButton = document.querySelector("#promptPolishButton");
+
+const setupWindows = {
+  font: "https://commitmono.com/",
+  dash: "https://docs.zonicdesign.art/pages/getting-started.html",
+  agentPipeline: "https://docs.zonicdesign.art/pages/guides/agent-pipeline.html",
+  configuration: "https://docs.zonicdesign.art/pages/reference/config.html",
+};
 
 function boot() {
   renderRoutes();
@@ -99,6 +114,8 @@ function boot() {
   renderPreflight();
   renderOperationalSummary();
   renderRunLedger();
+  wireSetupAssistant();
+  checkOnboardingReadiness();
   selectRemote("hermes");
   addMessage("system", "Fusion router online. Active lane: Hermes yolo. No secrets are loaded in this browser surface.");
   addMessage("remote", "Jcode direction imported: multi-session harness, side panels, swarm-minded route control. Windburn ownership layer active.");
@@ -274,6 +291,11 @@ function dispatch(raw) {
     return;
   }
 
+  if (text.startsWith("/setup")) {
+    handleSetupCommand(text);
+    return;
+  }
+
   addMessage("remote", `${activeRemote.name} queued: ${text}\nBridge mode is local mock until the signed SSH/websocket adapter is enabled.`);
 }
 
@@ -297,6 +319,72 @@ function statusColor(status) {
   if (status === "PASS") return "var(--green)";
   if (status === "BLOCK") return "var(--rose)";
   return "var(--amber)";
+}
+
+function wireSetupAssistant() {
+  setupAssistantToggle.addEventListener("click", () => {
+    const isOpen = setupAssistant.dataset.open === "true";
+    setSetupAssistantOpen(!isOpen);
+  });
+
+  promptPolishButton.addEventListener("click", () => {
+    const raw = rawSetupPrompt.value.trim();
+    polishedSetupPrompt.textContent = buildPolishedSetupPrompt(raw);
+  });
+}
+
+async function checkOnboardingReadiness() {
+  setSetupAssistantOpen(true);
+  setupState.textContent = "checking";
+  setupState.className = "";
+
+  let fontReady = false;
+  if ("fonts" in document) {
+    try {
+      await document.fonts.load("14px CommitMonoVox");
+      fontReady = document.fonts.check("14px CommitMonoVox");
+    } catch {
+      fontReady = false;
+    }
+  }
+
+  if (fontReady) {
+    setupState.textContent = "ready";
+    setupState.className = "ready";
+    setupCopy.textContent = "CommitMono is loaded. Setup agent stays here for routing dull configuration work without crowding the terminal.";
+    return;
+  }
+
+  setupState.textContent = "needs font";
+  setupState.className = "flag";
+  setupCopy.textContent = "CommitMono did not load. Use Get CommitMono, then keep this card open while the setup agent turns the install steps into a clean task.";
+}
+
+function setSetupAssistantOpen(isOpen) {
+  setupAssistant.dataset.open = String(isOpen);
+  setupAssistantToggle.setAttribute("aria-expanded", String(isOpen));
+  setupAssistantBody.hidden = !isOpen;
+}
+
+function handleSetupCommand(text) {
+  const [, topic = "status"] = text.split(/\s+/);
+  const route = setupWindows[topic] ?? setupWindows.dash;
+  const prompt = buildPolishedSetupPrompt(text);
+  polishedSetupPrompt.textContent = prompt;
+  setSetupAssistantOpen(true);
+  addMessage("system", `Setup agent staged ${topic}. Correct window: ${route}`);
+}
+
+function buildPolishedSetupPrompt(raw) {
+  const source = raw || "Set up the missing Windburn operator prerequisites.";
+  return [
+    "SETUP_AGENT_TASK",
+    `raw_request: ${source}`,
+    "objective: finish the dull prerequisite without widening scope",
+    "correct_window: docs.zonicdesign.art / CommitMono / local Windburn preview",
+    "steps: detect current state -> open exact target -> apply smallest change -> verify -> report PASS/FLAG/BLOCK",
+    "guardrails: no secrets in browser, no remote mutation without explicit operator gate",
+  ].join("\n");
 }
 
 form.addEventListener("submit", (event) => {

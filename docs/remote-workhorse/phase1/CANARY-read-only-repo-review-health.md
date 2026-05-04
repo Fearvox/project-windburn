@@ -1,6 +1,6 @@
 # CANARY-read-only-repo-review-health
 
-Generated: `2026-05-04T05:07:23.493242Z`
+Generated: `2026-05-04T05:11:44.549291Z`
 
 Target: `/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/.`
 
@@ -14,7 +14,7 @@ VERDICT: `PASS`
 
 ## Evidence
 
-- Git repo: `/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal` branch `codex/fusion-chat-terminal` run-time head `f30c309`
+- Git repo: `/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal` branch `codex/fusion-chat-terminal` run-time head `2b885b0`
 - tool inventory: /Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/./docs/remote-workhorse/phase1/TOOL_INVENTORY.json
 - Research Vault proof: /Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/./docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json
 - code-review-graph proof: /Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/./docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json

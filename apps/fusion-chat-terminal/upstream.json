@@ -35,6 +35,18 @@
     "source_path": "/Users/0xvox/Downloads/CommitMonovoxV143",
     "embedded_file": "assets/fonts/CommitMonoVariable.woff2",
     "license_file": "assets/fonts/LICENSE-CommitMono.txt",
-    "license": "SIL Open Font License 1.1"
+    "license": "SIL Open Font License 1.1",
+    "download_url": "https://commitmono.com/"
+  },
+  "setup_agent_lane": {
+    "name": "xAI setup lane",
+    "status": "frontend_contract_only",
+    "purpose": "Help users complete dull-but-required setup by detecting missing pieces, opening the correct docs/window, and polishing raw prompts into bounded operator tasks.",
+    "correct_windows": {
+      "font": "https://commitmono.com/",
+      "dash": "https://docs.zonicdesign.art/pages/getting-started.html",
+      "agent_pipeline": "https://docs.zonicdesign.art/pages/guides/agent-pipeline.html",
+      "configuration": "https://docs.zonicdesign.art/pages/reference/config.html"
+    }
   }
 }
