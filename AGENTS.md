@@ -14,6 +14,14 @@ mutations go through `scripts/nixos-remote-rebuild.sh`, with `test` before
 `switch`. The first foundation layer is proven in
 `docs/remote-workhorse/preflight/NIXOS_FOUNDATION_PROOF.md`.
 
+## Communication Profile
+
+Apply `docs/codex-desktop-communication-profile.md` for Codex Desktop,
+Superconductor, Hermes, and Workbench-facing sessions. Default tone is direct,
+human, concise, bilingual when useful, and pushback-ok. Keep the main line
+visible, avoid service-bot filler, and treat screenshots/browser previews as
+public surfaces.
+
 ## Superconductor Session
 
 When launched from Superconductor, start by proving the repo anchor instead of
