@@ -355,8 +355,15 @@ if command -v tmux >/dev/null 2>&1; then
   fi
 
   if [ "$bootstrap" = "1" ] && [ "$fixed_tmux_session" = "missing" ] && { [ "$repo_state" = "present" ] || [ "$repo_state" = "cloned" ]; }; then
-    tmux new-session -d -s "$session" -n shell -c "$repo"
-    fixed_tmux_session="created"
+    if tmux new-session -d -s "$session" -n shell -c "$repo" >/dev/null 2>&1; then
+      fixed_tmux_session="created"
+    else
+      fixed_tmux_session="missing"
+      if [ "$verdict" != "BLOCK" ]; then
+        verdict="FLAG"
+        reason="tmux session creation failed"
+      fi
+    fi
   fi
 else
   tmux_state="missing"
