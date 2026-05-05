@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-04T05:33:59.063595Z",
+  "generated_at_utc": "2026-05-05T03:11:51.890264Z",
   "host": "deMacBook-Pro.local",
-  "invocation_cwd": "/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal",
-  "target": "/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/.",
+  "invocation_cwd": "/Users/0xvox/Windburn/.worktrees/fusion-websocket",
+  "target": "/Users/0xvox/Windburn/.worktrees/fusion-websocket/.",
   "git": {
     "is_repo": true,
-    "top_level": "/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal",
-    "branch": "codex/fusion-chat-terminal",
-    "head": "aea8e4f",
-    "status_short": "## codex/fusion-chat-terminal\n M apps/fusion-chat-terminal/README.md\n M apps/fusion-chat-terminal/app.js\n M apps/fusion-chat-terminal/styles.css\n M docs/remote-workhorse/FUSION_CHAT_TERMINAL.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n?? .playwright-cli/",
+    "top_level": "/Users/0xvox/Windburn/.worktrees/fusion-websocket",
+    "branch": "codex/fusion-websocket",
+    "head": "2b811e9",
+    "status_short": "## codex/fusion-websocket...origin/codex/fusion-websocket\n M apps/fusion-chat-terminal/app.js\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n M scripts/windburn-captain-runtime.sh",
     "error": null
   },
   "probes": [
@@ -33,7 +33,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "Name               Command                                           Args                                                                                                                                                 Env  Cwd                                                                    Status   Auth       \ncode-review-graph  uvx                                               code-review-graph serve                                                                                                                              -    -                                                                      enabled  Unsupported\ncomputer-use       /Users/0xvox/.codex/bin/computer-use-mcp-wrapper  -                                                                                                                                                    -    /Users/0xvox/.codex/plugins/cache/openai-bundled/computer-use/1.0.770  enabled  Unsupported\ncontext7           npx                                               -y @upstash/context7-mcp                                                                                                                             -    -                                                                      enabled  Unsupported\nfilesystem_local   npx                                               -y @modelcontextprotocol/server-filesystem /Users/0xvox/Documents/Evensong/research-vault /Users/0xvox/Documents/古井贡酒/slock-酒业投资群                    -    -                                                                      enabled  Unsupported\nimessage           bun                                               run --cwd ${CLAUDE_PLUGIN_ROOT} --shell=bun --silent start                                                                                           -    -                                                                      enabled  Unsupported\nplaywright         npx                                               @playwright/mcp@latest                                                                                                                               -    -                                                                      enabled  Unsupported\n\nName                 Url                                 Bearer Token Env Var  Status    Auth         \nSanity               https://mcp.sanity.io               -                     enabled   Bearer token \ncloudflare-api       https://mcp.cloudflare.com/mcp      -                     disabled  Unsupported  \nfigma                https://mcp.figma.com/mcp           -                     disabled  Unsupported  \ngithub               https://api.githubcopilot.com/mcp/  -                     enabled   Unsupported  \ngitlab               https://gitlab.com/api/v4/mcp       -                     enabled   Not logged in\nnotion               https://mcp.notion.com/mcp          -                     disabled  Unsupported  \nopenaiDeveloperDocs  https://developers.openai.com/mcp   -                     enabled   Unsupported  \nresearch-vault       http://localhost:8787/mcp           -                     enabled   Unsupported  \nstripe               https://mcp.stripe.com              -                     enabled   Not logged in\nsupabase             https://mcp.supabase.com/mcp        -                     enabled   Unsupported  \nvercel               https://mcp.vercel.com              -                     enabled   OAuth",
+      "stdout": "Name               Command                                           Args                                                                                                                                                 Env  Cwd                                                                    Status   Auth       \ncode-review-graph  uvx                                               code-review-graph serve                                                                                                                              -    -                                                                      enabled  Unsupported\ncomputer-use       /Users/0xvox/.codex/bin/computer-use-mcp-wrapper  -                                                                                                                                                    -    /Users/0xvox/.codex/plugins/cache/openai-bundled/computer-use/1.0.770  enabled  Unsupported\ncontext7           npx                                               -y @upstash/context7-mcp                                                                                                                             -    -                                                                      enabled  Unsupported\nfilesystem_local   npx                                               -y @modelcontextprotocol/server-filesystem /Users/0xvox/Documents/Evensong/research-vault /Users/0xvox/Documents/古井贡酒/slock-酒业投资群                    -    -                                                                      enabled  Unsupported\nimessage           bun                                               run --cwd ${CLAUDE_PLUGIN_ROOT} --shell=bun --silent start                                                                                           -    -                                                                      enabled  Unsupported\nplaywright         npx                                               @playwright/mcp@latest                                                                                                                               -    -                                                                      enabled  Unsupported\n\nName                 Url                                 Bearer Token Env Var  Status    Auth         \nSanity               https://mcp.sanity.io               -                     enabled   Bearer token \ncloudflare-api       https://mcp.cloudflare.com/mcp      -                     enabled   OAuth        \nfigma                https://mcp.figma.com/mcp           -                     disabled  Unsupported  \ngithub               https://api.githubcopilot.com/mcp/  -                     enabled   Unsupported  \ngitlab               https://gitlab.com/api/v4/mcp       -                     enabled   Not logged in\nnotion               https://mcp.notion.com/mcp          -                     disabled  Unsupported  \nopenaiDeveloperDocs  https://developers.openai.com/mcp   -                     enabled   Unsupported  \nresearch-vault       http://localhost:8787/mcp           -                     enabled   Unsupported  \nstripe               https://mcp.stripe.com              -                     enabled   Not logged in\nsupabase             https://mcp.supabase.com/mcp        -                     enabled   Unsupported  \nvercel               https://mcp.vercel.com              -                     enabled   OAuth",
       "stderr": ""
     },
     {
@@ -99,7 +99,7 @@
       ],
       "status": "pass",
       "exit_code": 0,
-      "stdout": "Hermes Agent v0.12.0 (2026.4.30)\nProject: /Users/0xvox/.hermes/hermes-agent\nPython: 3.11.14\nOpenAI SDK: 2.30.0\nUpdate available: 24 commits behind — run 'hermes update'",
+      "stdout": "Hermes Agent v0.12.0 (2026.4.30)\nProject: /Users/0xvox/.hermes/hermes-agent\nPython: 3.11.14\nOpenAI SDK: 2.30.0\nUpdate available: 175 commits behind — run 'hermes update'",
       "stderr": ""
     },
     {
@@ -169,7 +169,7 @@
       "status": "fail",
       "exit_code": 1,
       "stdout": "",
-      "stderr": "time=\"2026-05-04T01:33:58-04:00\" level=fatal msg=\"colima is not running\""
+      "stderr": "time=\"2026-05-04T23:11:51-04:00\" level=fatal msg=\"colima is not running\""
     },
     {
       "id": "just_version",

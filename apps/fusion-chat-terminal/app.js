@@ -253,6 +253,14 @@ const streamSample = [
 let activeRemote = remotes[0];
 let activeInstructionKind = "slash";
 const transcript = [];
+const transcriptStorageKey = "windburn:fusion-chat:transcript:v1";
+const transcriptLimit = 80;
+const transientTranscriptPatterns = [
+  /^Session restored from this browser\./,
+  /^Bridge API unavailable\./,
+  /^Fusion Bridge v0 connected\./,
+  /^Fusion Bridge websocket (?:connected|unavailable|reported)\b/,
+];
 
 const routeList = document.querySelector("#routeList");
 const activeTitle = document.querySelector("#activeTitle");
@@ -310,9 +318,13 @@ function boot() {
   wireSetupAssistant();
   checkOnboardingReadiness();
   selectRemote("hermes");
-  addMessage("system", "Fusion router online. Active lane: Hermes yolo. Stream-safe privacy is locked for this browser surface.");
-  addMessage("remote", "Jcode direction imported: multi-session harness, side panels, swarm-minded route control. Windburn ownership layer active.");
-  addMessage("alert", "Remaining global flags are intentionally visible: DO observability, CCR public route, and workhorse runner engagement.");
+  if (!hydrateTranscript()) {
+    addMessage("system", "Fusion router online. Active lane: Hermes yolo. Stream-safe privacy is locked for this browser surface.");
+    addMessage("remote", "Jcode direction imported: multi-session harness, side panels, swarm-minded route control. Windburn ownership layer active.");
+    addMessage("alert", "Remaining global flags are intentionally visible: DO observability, CCR public route, and workhorse runner engagement.");
+  } else {
+    addMessage("system", "Session restored from this browser. Live bridge state will refresh quietly.", { persist: false });
+  }
   void hydrateBridgeState();
 }
 
@@ -420,12 +432,13 @@ async function hydrateBridgeState() {
     addMessage(
       "system",
       `Fusion Bridge v0 connected. Read-only API: repo proof available; dirty=${String(repo.dirty ?? "unknown")}.`,
+      { persist: false },
     );
   } catch {
     bridgeState.connected = false;
     bridgeState.status = null;
     setBridgeLabels();
-    addMessage("system", "Bridge API unavailable; static fallback remains active. Start the local read-only bridge for live state.");
+    addMessage("system", "Bridge API unavailable; static fallback remains active. Start the local read-only bridge for live state.", { persist: false });
   }
 }
 
@@ -453,7 +466,7 @@ function connectSuperruntimeWebSocket() {
   bridgeSocket.addEventListener("open", () => {
     bridgeState.runtimeChannel = "websocket";
     setBridgeLabels();
-    addMessage("system", "Fusion Bridge websocket connected. Read-only Superruntime stream active.");
+    addMessage("system", "Fusion Bridge websocket connected. Read-only Superruntime stream active.", { persist: false });
   });
 
   bridgeSocket.addEventListener("message", (event) => {
@@ -471,7 +484,7 @@ function connectSuperruntimeWebSocket() {
   bridgeSocket.addEventListener("error", () => {
     if (!bridgeSocketWarningShown) {
       bridgeSocketWarningShown = true;
-      addMessage("alert", "Fusion Bridge websocket unavailable; read-only HTTP bridge remains active.");
+      addMessage("alert", "Fusion Bridge websocket unavailable; read-only HTTP bridge remains active.", { persist: false });
     }
   });
 }
@@ -481,27 +494,23 @@ function handleSuperruntimeSocketMessage(raw) {
   try {
     event = JSON.parse(raw);
   } catch {
-    addStreamLine("bridge websocket message ignored: invalid JSON");
+    console.warn("Fusion Bridge websocket message ignored: invalid JSON");
     return;
   }
 
   if (event.type === "superruntime.snapshot" && event.payload) {
     superruntimeStatus = normalizeSuperruntimeStatus(event.payload, "websocket");
     renderSuperruntimeStatus();
-    addStreamLine("superruntime websocket snapshot received");
     return;
   }
 
   if (event.type === "bridge.heartbeat") {
     bridgeSocketHeartbeatCount += 1;
-    if (bridgeSocketHeartbeatCount === 1) {
-      addStreamLine("superruntime websocket heartbeat received");
-    }
     return;
   }
 
   if (event.type === "bridge.error") {
-    addMessage("alert", "Fusion Bridge websocket reported a stream-safety error; HTTP bridge remains active.");
+    addMessage("alert", "Fusion Bridge websocket reported a stream-safety error; HTTP bridge remains active.", { persist: false });
   }
 }
 
@@ -1046,23 +1055,112 @@ async function dispatch(raw) {
     return;
   }
 
-  addMessage("remote", `${activeRemote.name} queued: ${text}\nBridge mode is local mock until the signed SSH/websocket adapter is enabled.`);
+  addMessage("remote", buildRouteChatReply(text));
 }
 
-function addMessage(role, body) {
+function buildRouteChatReply(text) {
+  const flagged = remotes
+    .filter((remote) => remote.status === "FLAG")
+    .map((remote) => `${remote.name} (${remote.latency})`);
+  const blocked = remotes
+    .filter((remote) => remote.status === "BLOCK")
+    .map((remote) => remote.name);
+  const bridgeMode = bridgeState.runtimeChannel === "websocket"
+    ? "Fusion Bridge websocket is live for read-only status."
+    : bridgeState.connected
+      ? "Fusion Bridge read-only HTTP status is live."
+      : "Fusion Bridge is using the local fallback model.";
+  const runtime = `Superruntime: ${superruntimeStatus.registeredRuntimeCount} registered, ${superruntimeStatus.queuedTaskCount} queued, lease ${superruntimeStatus.currentLease}.`;
+  const safeAction = activeRemote.id === "hermes"
+    ? "Ask for the next Hermes summary, then stage a read-only handoff before any write."
+    : `Inspect ${activeRemote.name} with /status, then stage a bounded handoff if it still looks clean.`;
+  const topic = text.replace(/\s+/g, " ").slice(0, 120);
+
+  return [
+    `Heard: ${topic}`,
+    `${activeRemote.name}: ${activeRemote.status} (${activeRemote.latency}).`,
+    bridgeMode,
+    runtime,
+    flagged.length ? `Open flags: ${flagged.join("; ")}.` : "Open flags: none in the visible route pool.",
+    blocked.length ? `Blockers: ${blocked.join("; ")}.` : "Blockers: none in the visible route pool.",
+    `Safe next action: ${safeAction}`,
+    "Source: local route summary until the Hermes chat transcript bridge is attached.",
+  ].join("\n");
+}
+
+function addMessage(role, body, options = {}) {
   if (role === "stream") {
     body.split(/\r?\n/).filter(Boolean).forEach((line) => addStreamLine(line));
     return;
   }
 
   const safeBody = redactText(body);
-  transcript.push({ role, body: safeBody });
+  appendTextMessage(role, safeBody, options.persist !== false);
+  if (options.persist !== false && isPersistableTranscriptRole(role)) {
+    saveTranscript();
+  }
+}
+
+function appendTextMessage(role, safeBody, persist = true) {
+  transcript.push({ role, body: safeBody, persist });
   const li = document.createElement("li");
   li.className = `message ${role}`;
   li.innerHTML = `<span class="message-role">${role}</span><span class="message-body"></span>`;
   li.querySelector(".message-body").textContent = safeBody;
   transcriptEl.appendChild(li);
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
+}
+
+function hydrateTranscript() {
+  let records;
+  try {
+    records = JSON.parse(localStorage.getItem(transcriptStorageKey) ?? "[]");
+  } catch {
+    return false;
+  }
+
+  if (!Array.isArray(records) || records.length === 0) {
+    return false;
+  }
+
+  const safeRecords = records
+    .filter(isTranscriptRecord)
+    .filter((record) => !isTransientTranscriptRecord(record))
+    .slice(-transcriptLimit)
+    .map((record) => ({ role: record.role, body: redactText(record.body) }));
+
+  safeRecords.forEach((record) => appendTextMessage(record.role, record.body));
+  return safeRecords.length > 0;
+}
+
+function saveTranscript() {
+  try {
+    const records = transcript
+      .filter(isTranscriptRecord)
+      .filter((record) => record.persist !== false)
+      .filter((record) => !isTransientTranscriptRecord(record))
+      .slice(-transcriptLimit);
+    localStorage.setItem(transcriptStorageKey, JSON.stringify(records));
+  } catch {
+    // Local persistence is a convenience layer; chat should keep working without it.
+  }
+}
+
+function isTranscriptRecord(record) {
+  return (
+    record &&
+    isPersistableTranscriptRole(record.role) &&
+    typeof record.body === "string" &&
+    record.body.trim().length > 0
+  );
+}
+
+function isPersistableTranscriptRole(role) {
+  return role === "system" || role === "remote" || role === "alert" || role === "operator";
+}
+
+function isTransientTranscriptRecord(record) {
+  return transientTranscriptPatterns.some((pattern) => pattern.test(record.body));
 }
 
 function addStreamLine(raw) {
