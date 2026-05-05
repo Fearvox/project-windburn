@@ -27,7 +27,7 @@ STATUS_REF=""
 CARD_REF=""
 RUN_OUTPUT_REF=""
 SLOT_LABEL="none"
-SLOT_LOCK_FD=""
+SLOT_LOCK_PATH=""
 
 usage() {
   cat <<'EOF'
@@ -42,9 +42,10 @@ EOF
 }
 
 cleanup() {
-  if [ -n "$SLOT_LOCK_FD" ]; then
-    eval "exec ${SLOT_LOCK_FD}>&-"
-    SLOT_LOCK_FD=""
+  if [ -n "$SLOT_LOCK_PATH" ] && [ -d "$SLOT_LOCK_PATH" ]; then
+    rm -f "$SLOT_LOCK_PATH/pid"
+    rmdir "$SLOT_LOCK_PATH" 2>/dev/null || true
+    SLOT_LOCK_PATH=""
   fi
   if [ -n "$TMP_CARD_PATH" ] && [ -f "$TMP_CARD_PATH" ]; then
     rm -f "$TMP_CARD_PATH"
@@ -138,7 +139,7 @@ verify_card() {
 }
 
 load_card_meta() {
-  mapfile -t _meta < <(
+  META_OUTPUT="$(
     CARD_PATH="$CARD_PATH" ACTION_OVERRIDE="$ACTION_OVERRIDE" node - <<'NODE'
 const fs = require("fs");
 const card = JSON.parse(fs.readFileSync(process.env.CARD_PATH, "utf8"));
@@ -149,12 +150,12 @@ console.log(card.repo);
 console.log(targetAction);
 console.log(card.requested_action);
 NODE
-  )
-  CARD_ID="${_meta[0]:-}"
-  RUNTIME_ID="${_meta[1]:-}"
-  REPO_NAME="${_meta[2]:-}"
-  TARGET_ACTION="${_meta[3]:-}"
-  REQUESTED_ACTION="${_meta[4]:-}"
+  )"
+  CARD_ID="$(printf '%s\n' "$META_OUTPUT" | sed -n '1p')"
+  RUNTIME_ID="$(printf '%s\n' "$META_OUTPUT" | sed -n '2p')"
+  REPO_NAME="$(printf '%s\n' "$META_OUTPUT" | sed -n '3p')"
+  TARGET_ACTION="$(printf '%s\n' "$META_OUTPUT" | sed -n '4p')"
+  REQUESTED_ACTION="$(printf '%s\n' "$META_OUTPUT" | sed -n '5p')"
 }
 
 dispatch_safe_action() {
@@ -584,18 +585,13 @@ acquire_slot() {
   slot_index=1
   while [ "$slot_index" -le "$MAX_PARALLEL" ]; do
     candidate_slot="$(printf 'slot-%02d' "$slot_index")"
-    candidate_fd=$((200 + slot_index))
-    candidate_lock_file="$SPOOL_LOCK_DIR/${candidate_slot}.lock"
-    eval "exec ${candidate_fd}>\"${candidate_lock_file}\"" || {
-      echo "BLOCK windburn_captain_runtime: runtime_lock_setup_failed"
-      exit 1
-    }
-    if flock -n "$candidate_fd"; then
+    candidate_lock_path="$SPOOL_LOCK_DIR/${candidate_slot}.lock"
+    if mkdir "$candidate_lock_path" 2>/dev/null; then
       SLOT_LABEL="$candidate_slot"
-      SLOT_LOCK_FD="$candidate_fd"
+      SLOT_LOCK_PATH="$candidate_lock_path"
+      printf '%s\n' "$$" >"$SLOT_LOCK_PATH/pid"
       return 0
     fi
-    eval "exec ${candidate_fd}>&-"
     slot_index=$((slot_index + 1))
   done
   return 1

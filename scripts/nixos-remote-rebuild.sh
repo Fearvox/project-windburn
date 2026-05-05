@@ -168,10 +168,17 @@ ssh_base \
    echo "failed_units=$(systemctl --failed --no-legend --plain | sed "/^$/d" | wc -l | tr -d " ")"
    echo "current_system=$(readlink -f /run/current-system)"
    systemctl status windburn-health.service --no-pager || true
+   systemctl status windburn-runner-status.service --no-pager || true
+   systemctl status windburn-runner-status.timer --no-pager || true
    test -x /run/current-system/sw/bin/windburn-health
    /run/current-system/sw/bin/windburn-health >/tmp/windburn-health-smoke.json
    cat /tmp/windburn-health-smoke.json
-   test -f /srv/windburn/evidence/health/current.json'
+   test -f /srv/windburn/evidence/health/current.json
+   test -x /run/current-system/sw/bin/windburn-runner-status
+   /run/current-system/sw/bin/windburn-runner-status >/tmp/windburn-runner-status-smoke.json
+   cat /tmp/windburn-runner-status-smoke.json
+   jq -e ".schema_version == 1 and .secret_values_recorded == false and .redacted_public_safe == true" /tmp/windburn-runner-status-smoke.json >/dev/null
+   test -f /srv/windburn/evidence/runner/current.json'
 
 echo
 echo "rebuild_complete=1"

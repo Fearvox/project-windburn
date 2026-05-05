@@ -6,6 +6,7 @@ in
 {
   imports = [
     ./modules/remote-workhorse-foundation.nix
+    ./modules/remote-workhorse-runner.nix
   ];
 
   # nixos-infect owns boot, hardware, network, hostname, and stateVersion
