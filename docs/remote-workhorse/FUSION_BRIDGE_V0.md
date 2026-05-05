@@ -46,7 +46,10 @@ The browser-safe response uses `source=runner-evidence`, boolean credential
 presence, `runner-ready` lease status, and `codex-provider-ok` harness status.
 It does not expose raw hosts, SSH targets, local paths, remote paths, commands,
 or secret values. If runner evidence is absent, it falls back to the historical
-fixture contract so local smoke tests still run.
+fixture contract so local smoke tests still run. If runner evidence is present
+but reports recorded secrets, missing public redaction, remote mutation, or an
+invalid shape, `/api/superruntime` rejects it with `unsafe_runner_evidence`
+instead of washing it into a safe-looking `200` payload.
 
 Run it locally with:
 

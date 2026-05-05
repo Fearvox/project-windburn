@@ -161,6 +161,39 @@ export function buildEmptySuperruntimePayload(reason = "fixture_absent", options
   };
 }
 
+export function inspectRunnerEvidenceSafety(evidence) {
+  if (!evidence || typeof evidence !== "object" || Array.isArray(evidence)) {
+    return {
+      safe: false,
+      reasons: ["invalid_shape"],
+      checks: {
+        invalid_shape: true,
+        secret_values_recorded: false,
+        redacted_public_safe: false,
+        remote_mutation: false,
+      },
+    };
+  }
+
+  const checks = {
+    invalid_shape: false,
+    secret_values_recorded: safeBoolean(evidence.secret_values_recorded),
+    redacted_public_safe: evidence.redacted_public_safe === true,
+    remote_mutation: safeBoolean(evidence.remote_mutation),
+  };
+  const reasons = [];
+
+  if (checks.secret_values_recorded) reasons.push("secret_values_recorded_true");
+  if (!checks.redacted_public_safe) reasons.push("redacted_public_safe_not_true");
+  if (checks.remote_mutation) reasons.push("remote_mutation_true");
+
+  return {
+    safe: reasons.length === 0,
+    reasons,
+    checks,
+  };
+}
+
 export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
   if (!evidence || typeof evidence !== "object" || Array.isArray(evidence)) {
     return buildEmptySuperruntimePayload("runner_evidence_invalid_shape", options);
