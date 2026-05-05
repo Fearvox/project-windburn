@@ -11,13 +11,27 @@ async function loadJson(filePath) {
   return JSON.parse(await readFile(filePath, "utf8"));
 }
 
+async function loadOptionalJson(filePath) {
+  try {
+    return await loadJson(filePath);
+  } catch (error) {
+    if (error && error.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
 export function createNodeFusionBridgeApi(options = {}) {
   const root = options.root ?? defaultRoot;
   const fixturePath = options.fixturePath ??
     path.join(root, "docs/remote-workhorse/fixtures/superruntime-v0.json");
+  const runnerEvidencePath = options.runnerEvidencePath ??
+    process.env.WINDBURN_RUNNER_EVIDENCE_PATH ??
+    "/srv/windburn/evidence/runner/current.json";
   return createFusionBridgeApi({
     deploymentTarget: "node-http",
     superruntimeSource: "docs/remote-workhorse/fixtures/superruntime-v0.json",
+    runnerEvidenceSource: "runner-evidence",
+    loadRunnerEvidence: () => loadOptionalJson(runnerEvidencePath),
     loadSuperruntimeFixture: () => loadJson(fixturePath),
     serviceVersion: options.serviceVersion,
   });

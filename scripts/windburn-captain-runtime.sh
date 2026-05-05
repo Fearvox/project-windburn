@@ -179,6 +179,15 @@ function loadJson(filePath, label) {
   }
 }
 
+function loadOptionalJson(filePath) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch (error) {
+    if (error && error.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -429,6 +438,31 @@ if (action === "hermes-autoresearch") {
 }
 
 if (action === "superruntime-status") {
+  const runnerEvidencePath = process.env.WINDBURN_RUNNER_EVIDENCE_PATH || "/srv/windburn/evidence/runner/current.json";
+  const runnerEvidence = loadOptionalJson(runnerEvidencePath);
+  if (runnerEvidence) {
+    const status = String(runnerEvidence.status || "FLAG").toUpperCase();
+    const latestSmoke = isObject(runnerEvidence.latest_hermes_codex_smoke) ? runnerEvidence.latest_hermes_codex_smoke : {};
+    const smokeVerdict = String(latestSmoke.verdict || "UNKNOWN").toUpperCase();
+    const tmuxPresent = runnerEvidence.tmux && runnerEvidence.tmux.session_present === true;
+    const leaseStatus = status === "PASS" && tmuxPresent ? "runner-ready" : status === "BLOCK" ? "runner-blocked" : "runner-flagged";
+    const harnessDispatchState = smokeVerdict === "PASS" ? "codex-provider-ok" : smokeVerdict === "UNKNOWN" ? "provider-smoke-unknown" : `provider-smoke-${smokeVerdict.toLowerCase()}`;
+    const verdict = runnerEvidence.secret_values_recorded === true ? "BLOCK" : status === "PASS" ? "PASS" : status === "BLOCK" ? "BLOCK" : "FLAG";
+
+    console.log("WINDBURN_SUPERRUNTIME_STATUS");
+    console.log(`generated_utc=${new Date().toISOString()}`);
+    console.log(`card_id=${card.card_id}`);
+    console.log(`schema_version=${runnerEvidence.schema_version ?? "unknown"}`);
+    console.log("runtime_count=1");
+    console.log("queued_task_count=0");
+    console.log(`current_lease_status=${leaseStatus}`);
+    console.log(`harness_dispatch_state=${harnessDispatchState}`);
+    console.log(`runner_evidence=${status}`);
+    console.log(`secret_values_recorded=${String(runnerEvidence.secret_values_recorded === true)}`);
+    console.log(`verdict=${verdict}`);
+    process.exit(verdict === "BLOCK" ? 1 : 0);
+  }
+
   const fixturePath = path.join(rootDir, "docs/remote-workhorse/fixtures/superruntime-v0.json");
   const fixture = loadJson(fixturePath, "superruntime fixture");
   const latestEvents = Array.isArray(fixture.status_events) ? latestStatusByTask(fixture.status_events) : [];
@@ -652,13 +686,18 @@ run_card_action() {
   HANDLER_LEVEL="$(level_from_verdict "$HANDLER_VERDICT")"
   HANDLER_GIT_STATUS="$(extract_field "$HANDLER_OUTPUT" git_status)"
   HANDLER_SUPERRUNTIME_FIXTURE="$(extract_field "$HANDLER_OUTPUT" superruntime_fixture)"
+  HANDLER_RUNNER_EVIDENCE="$(extract_field "$HANDLER_OUTPUT" runner_evidence)"
   HANDLER_PROVIDER_RATE_LIMITED="$(extract_field "$HANDLER_OUTPUT" provider_rate_limited)"
   HANDLER_TOPIC_COUNT="$(extract_field "$HANDLER_OUTPUT" topic_count)"
   HANDLER_MAX_PARALLEL_EFFECTIVE="$(extract_field "$HANDLER_OUTPUT" max_parallel_effective)"
   HANDLER_ARTIFACT_REFS="$(extract_field "$HANDLER_OUTPUT" artifact_refs)"
   artifact_refs="$STATUS_REF,$CARD_REF,$RUN_OUTPUT_REF"
   if [ "$REQUESTED_ACTION" = "status" ] || [ "$REQUESTED_ACTION" = "superruntime-status" ]; then
-    artifact_refs="$artifact_refs,local:superruntime-fixture"
+    if [ -n "$HANDLER_RUNNER_EVIDENCE" ]; then
+      artifact_refs="$artifact_refs,remote:runner-evidence"
+    else
+      artifact_refs="$artifact_refs,local:superruntime-fixture"
+    fi
   fi
   artifact_refs="$(append_artifact_refs "$artifact_refs" "$HANDLER_ARTIFACT_REFS")"
   final_phase="done"
@@ -678,6 +717,7 @@ run_card_action() {
   echo "slot=$SLOT_LABEL"
   [ -n "$HANDLER_GIT_STATUS" ] && echo "git_status=$HANDLER_GIT_STATUS"
   [ -n "$HANDLER_SUPERRUNTIME_FIXTURE" ] && echo "superruntime_fixture=$HANDLER_SUPERRUNTIME_FIXTURE"
+  [ -n "$HANDLER_RUNNER_EVIDENCE" ] && echo "runner_evidence=$HANDLER_RUNNER_EVIDENCE"
   echo "status_ref=$STATUS_REF"
   echo "card_ref=$CARD_REF"
   echo "output_ref=$RUN_OUTPUT_REF"

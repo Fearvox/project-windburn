@@ -243,7 +243,7 @@ Only these runtime-card actions are currently allowed:
 | --- | --- |
 | `status` | Return compact runtime status and verifier-derived verdict. |
 | `verify-card` | Validate the runtime card and print a redacted wrapper summary. |
-| `superruntime-status` | Return a compact summary from the local Superruntime fixture. |
+| `superruntime-status` | Return compact runner evidence when available, with local Superruntime fixture fallback. |
 | `hermes-autoresearch` | v1 safe-default queue/spool handler. Validates bounded research topics, returns redacted status JSON, and stops at `FLAG hermes_autoresearch_not_configured` unless an operator-confirmed execution env is explicitly enabled. |
 
 Wrapper action note:
@@ -404,7 +404,7 @@ Later layers can add:
 
 1. signed runtime cards and detached verification;
 2. tmux transcript tails with stream-safety filtering;
-3. replacement of the local fixture with a real Superruntime registry source;
+3. replacement of runner evidence summaries with a real Superruntime registry source;
 4. bounded Multica status writeback after policy and audit contracts exist;
 5. richer queue/backoff policy or explicit manual gate for future
    provider/CI-triggered harness calls;

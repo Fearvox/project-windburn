@@ -89,8 +89,14 @@ and exposes:
 GET  /api/status
 GET  /api/remotes
 GET  /api/preflight
+GET  /api/superruntime
 POST /api/setup/xai/inspect
 ```
+
+`/api/superruntime` now prefers the runner evidence written by the remote
+Workhorse status timer and falls back to the local fixture only when that
+evidence is unavailable. It exposes `runner-evidence` source data as redacted
+runtime readiness, tmux presence, and boolean credential-presence fields.
 
 The next bridge should add Hermes transcript streaming before any mutating
 action. Every mutating route must stay behind an explicit operator gate. Secret
@@ -107,7 +113,7 @@ browser-safe labels.
 | Route | Transport | Status Source |
 | --- | --- | --- |
 | `hermes` | SSH tmux `windburn-hermes-runtime:hermes-yolo` | `scripts/hermes-yolo-loop.sh` |
-| `workhorse` | SSH NixOS rebuild/proof scripts | `scripts/nixos-remote-rebuild.sh` |
+| `workhorse` | SSH NixOS rebuild/proof scripts | runner evidence plus `scripts/nixos-remote-rebuild.sh` |
 | `ccr` | SSH plus internal embedding route | `scripts/droplet-engagement-review.sh` |
 | `codex` | Local Windburn shell | `scripts/check.sh` |
 | `superconductor` | Repo anchor link | `scripts/superconductor-codex-intake.sh` |
@@ -117,14 +123,10 @@ browser-safe labels.
 1. Implement `scripts/stream-safety-preflight.sh` from
    `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md` and surface its verdict in the
    Preflight Stack.
-2. Add a fixture-backed Superruntime pane from
-   `SUPERRUNTIME_ORCHESTRATOR_SPEC.md` so public bridges, registered runtimes,
-   leases, and harness dispatch are visible without public Superconductor
-   exposure.
-3. Add websocket or Server-Sent Events for Hermes tmux transcript tailing.
-4. Add Superconductor CLI pipeline intake once that CLI lands.
-5. Add signed command envelopes for gated mutating actions.
-6. Replace CSS-native dot loader with local Dot Matrix registry components once
+2. Add websocket or Server-Sent Events for Hermes tmux transcript tailing.
+3. Add Superconductor CLI pipeline intake once that CLI lands.
+4. Add signed command envelopes for gated mutating actions.
+5. Replace CSS-native dot loader with local Dot Matrix registry components once
    package installation is approved.
-7. Import the useful `jcode` harness pieces intentionally instead of vendoring
+6. Import the useful `jcode` harness pieces intentionally instead of vendoring
    the whole upstream tree.

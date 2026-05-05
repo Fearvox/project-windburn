@@ -29,6 +29,18 @@ configuration is `admin`. See
 scripts/fusion-bridge-api.sh
 ```
 
+Node mode prefers runner evidence over the legacy Superruntime fixture. By
+default it checks the remote-workhorse evidence path; for local smoke tests or
+synced artifacts, point it at a redacted runner JSON file:
+
+```sh
+WINDBURN_RUNNER_EVIDENCE_PATH=/path/to/current.json scripts/fusion-bridge-api.sh
+```
+
+The `/api/superruntime` response keeps the source as `runner-evidence` and
+exposes only browser-safe summary fields: runner status, tmux presence, boolean
+credential presence, lease readiness, and provider-smoke state.
+
 ## Smoke
 
 ```sh

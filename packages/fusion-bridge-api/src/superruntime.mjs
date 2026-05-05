@@ -31,6 +31,10 @@ function safeStringArray(value) {
     .slice(0, 12);
 }
 
+function safeBoolean(value) {
+  return value === true;
+}
+
 function safeCount(value, fallback) {
   const count = Number(firstPresent(value, fallback));
   return Number.isFinite(count) && count >= 0 ? count : fallback;
@@ -153,6 +157,105 @@ export function buildEmptySuperruntimePayload(reason = "fixture_absent", options
     runtimes: [],
     tasks: [],
     status_events: [],
+    secret_values_recorded: false,
+  };
+}
+
+export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
+  if (!evidence || typeof evidence !== "object" || Array.isArray(evidence)) {
+    return buildEmptySuperruntimePayload("runner_evidence_invalid_shape", options);
+  }
+
+  const status = safeString(firstPresent(evidence.status, "FLAG")).toUpperCase();
+  const runnerId = safeString(firstPresent(
+    evidence.runner_id,
+    evidence.id,
+    "windburn-workhorse-runner-status-v0",
+  ));
+  const reason = safeString(firstPresent(evidence.reason, status === "PASS" ? "runner_ready" : "runner_not_ready"));
+  const tmux = evidence.tmux && typeof evidence.tmux === "object" ? evidence.tmux : {};
+  const credentials = evidence.credentials && typeof evidence.credentials === "object" ? evidence.credentials : {};
+  const latestSmoke = evidence.latest_hermes_codex_smoke && typeof evidence.latest_hermes_codex_smoke === "object"
+    ? evidence.latest_hermes_codex_smoke
+    : {};
+  const tmuxSessionPresent = safeBoolean(tmux.session_present);
+  const latestSmokeVerdict = safeString(firstPresent(latestSmoke.verdict, "UNKNOWN")).toUpperCase();
+  const latestSmokeReason = safeString(firstPresent(latestSmoke.reason, latestSmokeVerdict));
+  const harnessDispatchState = latestSmokeVerdict === "PASS"
+    ? "codex-provider-ok"
+    : latestSmokeVerdict === "UNKNOWN"
+      ? "provider-smoke-unknown"
+      : `provider-smoke-${latestSmokeVerdict.toLowerCase()}`;
+  const leaseStatus = status === "PASS" && tmuxSessionPresent
+    ? "runner-ready"
+    : status === "BLOCK"
+      ? "runner-blocked"
+      : "runner-flagged";
+  const generatedAt = safeScalar(firstPresent(evidence.generated_at_utc, evidence.generatedAt));
+
+  return {
+    schema_version: 1,
+    generated_at_utc: options.generatedAt ?? new Date().toISOString(),
+    mode: "read-only",
+    source: options.source ?? "runner-evidence",
+    redacted_public_safe: true,
+    registered_runtime_count: 1,
+    queued_task_count: 0,
+    current_lease: {
+      id: null,
+      runtime_id: "windburn-workhorse-runner",
+      task_id: null,
+      status: leaseStatus,
+      holder: null,
+      acquired_at: generatedAt,
+      expires_at: null,
+    },
+    harness_dispatch_state: harnessDispatchState,
+    runtimes: [{
+      id: "windburn-workhorse-runner",
+      name: "NixOS Workhorse",
+      kind: safeScalar(firstPresent(evidence.runner_kind, "read-only-evidence")),
+      status,
+      lease_state: leaseStatus,
+      dispatch_state: harnessDispatchState,
+      mutation_policy: "read-only",
+      heartbeat_at: generatedAt,
+      stream_safe: true,
+      capabilities: [
+        "read-only-evidence",
+        tmuxSessionPresent ? "tmux-observed" : "tmux-not-observed",
+        safeBoolean(credentials.codex_auth_present) ? "codex-auth-present" : "codex-auth-missing",
+        safeBoolean(credentials.hermes_auth_present) ? "hermes-auth-present" : "hermes-auth-missing",
+      ],
+    }],
+    tasks: [],
+    status_events: [{
+      id: "runner-evidence-current",
+      type: "runner-evidence",
+      status,
+      level: status === "PASS" ? "pass" : status === "BLOCK" ? "block" : "flag",
+      runtime_id: "windburn-workhorse-runner",
+      task_id: null,
+      message: reason,
+      at: generatedAt,
+    }],
+    runner_evidence: {
+      runner_id: runnerId,
+      runner_kind: safeScalar(firstPresent(evidence.runner_kind, "read-only-evidence")),
+      status,
+      reason,
+      system_state: safeScalar(evidence.system_state),
+      failed_units: safeCount(evidence.failed_units, 0),
+      tmux_session_present: tmuxSessionPresent,
+      tmux_session_count: safeCount(tmux.session_count, 0),
+      codex_auth_present: safeBoolean(credentials.codex_auth_present),
+      hermes_auth_present: safeBoolean(credentials.hermes_auth_present),
+      provider_env_present: safeBoolean(credentials.provider_env_present),
+      latest_hermes_codex_smoke_verdict: latestSmokeVerdict,
+      latest_hermes_codex_smoke_reason: latestSmokeReason,
+      remote_mutation: safeBoolean(evidence.remote_mutation),
+      generated_at_utc: generatedAt,
+    },
     secret_values_recorded: false,
   };
 }
