@@ -69,6 +69,12 @@ do-observability-apply:
 hermes-health:
     scripts/hermes-health-gate.sh --out docs/remote-workhorse/preflight/HERMES_HEALTH_GATE.md
 
+hermes-bootstrap-inspect:
+    scripts/hermes-bootstrap.sh --out docs/remote-workhorse/preflight/HERMES_BOOTSTRAP.md
+
+hermes-bootstrap-apply:
+    scripts/hermes-bootstrap.sh --bootstrap --confirm-hermes-bootstrap --out docs/remote-workhorse/preflight/HERMES_BOOTSTRAP.md
+
 hermes-maintenance-inspect:
     scripts/hermes-maintenance.sh --out docs/remote-workhorse/preflight/HERMES_MAINTENANCE.md
 
