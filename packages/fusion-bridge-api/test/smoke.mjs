@@ -149,6 +149,19 @@ for (const unsafeCase of [
   assert(unsafeFindings.length === 0, `${unsafeCase.label} error response not stream-safe: ${unsafeFindings.join(", ")}`);
 }
 
+const unsafeSourceApi = createFusionBridgeApi({
+  deploymentTarget: "unsafe-source",
+  runnerEvidence: makeRunnerEvidence({ secret_values_recorded: true }),
+  runnerEvidenceSource: "/srv/windburn/evidence/runner/current.json",
+  now: () => "2026-05-05T06:00:00.000Z",
+});
+const unsafeSourceSuperruntime = await getFrom(unsafeSourceApi, "/api/superruntime");
+assert(unsafeSourceSuperruntime.response.status === 409, "unsafe runner evidence with unsafe source must return 409");
+assert(unsafeSourceSuperruntime.body.error === "unsafe_runner_evidence", "unsafe source response must stay on unsafe evidence error");
+assert(unsafeSourceSuperruntime.body.source === "[redacted:remote-path]", "unsafe runner evidence source must be redacted");
+const unsafeSourceFindings = assertStreamSafe(unsafeSourceSuperruntime.body);
+assert(unsafeSourceFindings.length === 0, `unsafe source error response not stream-safe: ${unsafeSourceFindings.join(", ")}`);
+
 const tmpDir = await mkdtemp(path.join(os.tmpdir(), "windburn-runner-evidence-"));
 try {
   const runnerEvidencePath = path.join(tmpDir, "current.json");

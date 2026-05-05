@@ -63,7 +63,7 @@ export function createFusionBridgeApi(options = {}) {
           schema_version: 1,
           generated_at_utc: now(),
           mode: "read-only",
-          source: options.runnerEvidenceSource ?? "runner-evidence",
+          source: redact(options.runnerEvidenceSource ?? "runner-evidence"),
           error: "unsafe_runner_evidence",
           unsafe_reasons: safety.reasons,
           runner_evidence_checks: safety.checks,
