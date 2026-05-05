@@ -3,7 +3,7 @@ import { createFusionBridgeApi } from "./src/api.mjs";
 
 const api = createFusionBridgeApi({
   deploymentTarget: "cloudflare-worker",
-  serviceVersion: "0.1.0",
+  serviceVersion: "0.2.0",
   superruntimeFixture: fixture,
   superruntimeSource: "docs/remote-workhorse/fixtures/superruntime-v0.json",
 });
