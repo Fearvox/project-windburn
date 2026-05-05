@@ -29,8 +29,19 @@ function methodNotAllowed(method) {
   }, { status: 405, method });
 }
 
+function websocketUpgradeRequired(method) {
+  return jsonResponse({
+    error: "websocket_upgrade_required",
+    endpoint: "/api/superruntime/stream",
+    channel: "superruntime.readonly.v0",
+    runtime_channel_enabled: true,
+    mutation_bridge_enabled: false,
+    secret_values_recorded: false,
+  }, { status: 426, method });
+}
+
 export function createFusionBridgeApi(options = {}) {
-  const serviceVersion = options.serviceVersion ?? "0.1.0";
+  const serviceVersion = options.serviceVersion ?? "0.2.0";
   const now = options.now ?? (() => new Date().toISOString());
   let startedAt = null;
 
@@ -46,6 +57,11 @@ export function createFusionBridgeApi(options = {}) {
   }
 
   async function superruntime(method) {
+    const { payload, status } = await buildSafeSuperruntimePayload();
+    return jsonResponse(payload, { status, method });
+  }
+
+  async function buildSafeSuperruntimePayload() {
     const fixture = await loadFixture();
     const payload = fixture
       ? buildSuperruntimePayload(fixture, {
@@ -55,14 +71,105 @@ export function createFusionBridgeApi(options = {}) {
       : buildEmptySuperruntimePayload("fixture_absent", { generatedAt: now() });
     const findings = assertStreamSafe(payload);
     if (findings.length > 0) {
-      return jsonResponse({
-        error: "stream_safety_violation",
-        findings,
-        mutation_bridge_enabled: false,
-        secret_values_recorded: false,
-      }, { status: 500, method });
+      return {
+        status: 500,
+        payload: {
+          error: "stream_safety_violation",
+          findings,
+          mutation_bridge_enabled: false,
+          secret_values_recorded: false,
+        },
+      };
     }
-    return jsonResponse(payload, { method });
+    return { status: 200, payload };
+  }
+
+  function safeSocketSend(server, event) {
+    server.send(JSON.stringify({
+      schema_version: 1,
+      generated_at_utc: now(),
+      mutation_bridge_enabled: false,
+      secret_values_recorded: false,
+      ...event,
+    }));
+  }
+
+  async function superruntimeStream(request, method) {
+    if (method !== "GET") {
+      return methodNotAllowed(method);
+    }
+
+    if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
+      return websocketUpgradeRequired(method);
+    }
+
+    const pair = new WebSocketPair();
+    const [client, server] = Object.values(pair);
+    let heartbeat = 0;
+    let timer = null;
+
+    server.accept();
+
+    function sendHeartbeat() {
+      heartbeat += 1;
+      safeSocketSend(server, {
+        type: "bridge.heartbeat",
+        channel: "superruntime.readonly.v0",
+        sequence: heartbeat,
+        runtime_channel_enabled: true,
+      });
+    }
+
+    function closeTimer() {
+      if (timer) clearInterval(timer);
+      timer = null;
+    }
+
+    server.addEventListener("close", closeTimer);
+    server.addEventListener("error", closeTimer);
+    server.addEventListener("message", (event) => {
+      const text = typeof event.data === "string" ? event.data.trim() : "";
+      if (text === "ping" || text === "{\"type\":\"ping\"}") {
+        sendHeartbeat();
+        return;
+      }
+
+      safeSocketSend(server, {
+        type: "bridge.policy",
+        channel: "superruntime.readonly.v0",
+        policy: "read-only-status-stream",
+      });
+    });
+
+    safeSocketSend(server, {
+      type: "bridge.hello",
+      channel: "superruntime.readonly.v0",
+      runtime_channel_enabled: true,
+      provider_webhooks_enabled: false,
+    });
+
+    const { payload, status } = await buildSafeSuperruntimePayload();
+    if (status >= 400 || payload.error) {
+      safeSocketSend(server, {
+        type: "bridge.error",
+        channel: "superruntime.readonly.v0",
+        payload,
+      });
+      server.close(1011, "stream safety violation");
+    } else {
+      safeSocketSend(server, {
+        type: "superruntime.snapshot",
+        channel: "superruntime.readonly.v0",
+        payload,
+      });
+      sendHeartbeat();
+      timer = setInterval(sendHeartbeat, 15000);
+    }
+
+    return new Response(null, {
+      status: 101,
+      webSocket: client,
+    });
   }
 
   function status(method) {
@@ -77,7 +184,7 @@ export function createFusionBridgeApi(options = {}) {
       started_at_utc: startedAtUtc(),
       mutation_bridge_enabled: false,
       provider_webhooks_enabled: false,
-      runtime_channel_enabled: false,
+      runtime_channel_enabled: true,
       secret_values_recorded: false,
       auth: authContractSummary(authContext.role),
     }, { method });
@@ -113,6 +220,9 @@ export function createFusionBridgeApi(options = {}) {
       if (url.pathname === "/api/superruntime") {
         return superruntime(method);
       }
+      if (url.pathname === "/api/superruntime/stream") {
+        return superruntimeStream(request, method);
+      }
       if (url.pathname === "/openapi.json") {
         return jsonResponse(openapi, { method });
       }
@@ -124,7 +234,7 @@ export function createFusionBridgeApi(options = {}) {
       }
       return jsonResponse({
         service: "windburn-fusion-bridge-api",
-        endpoints: ["/healthz", "/api/status", "/api/superruntime", "/openapi.json"],
+        endpoints: ["/healthz", "/api/status", "/api/superruntime", "/api/superruntime/stream", "/openapi.json"],
         mutation_bridge_enabled: false,
       }, { method });
     } catch (error) {

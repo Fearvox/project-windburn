@@ -82,7 +82,14 @@ const bridgeState = {
   connected: false,
   mode: "local mock",
   status: null,
+  runtimeChannel: "poll",
 };
+
+const bridgeWsUrl = window.FUSION_BRIDGE_WS_URL
+  ?? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/api/superruntime/stream`;
+let bridgeSocket = null;
+let bridgeSocketWarningShown = false;
+let bridgeSocketHeartbeatCount = 0;
 
 const sensitiveFactKeys = new Set(["host", "transport", "command"]);
 
@@ -311,7 +318,11 @@ function boot() {
 
 function setBridgeLabels() {
   modeLabel.textContent = bridgeState.connected ? "read-only" : "read-only";
-  bridgeLabel.textContent = bridgeState.connected ? "live bridge" : "local mock";
+  bridgeLabel.textContent = bridgeState.connected
+    ? bridgeState.runtimeChannel === "websocket"
+      ? "websocket"
+      : "live bridge"
+    : "local mock";
 }
 
 function redactText(value) {
@@ -403,6 +414,7 @@ async function hydrateBridgeState() {
     renderRunLedger();
     await hydrateSuperruntimeState();
     selectRemote(activeRemote.id);
+    connectSuperruntimeWebSocket();
 
     const repo = statusPayload.repo ?? {};
     addMessage(
@@ -429,6 +441,68 @@ async function hydrateSuperruntimeState() {
     superruntimeStatus = { ...fallbackSuperruntimeStatus };
   }
   renderSuperruntimeStatus();
+}
+
+function connectSuperruntimeWebSocket() {
+  if (!("WebSocket" in window) || bridgeSocket || !bridgeWsUrl) {
+    return;
+  }
+
+  bridgeSocket = new WebSocket(bridgeWsUrl);
+
+  bridgeSocket.addEventListener("open", () => {
+    bridgeState.runtimeChannel = "websocket";
+    setBridgeLabels();
+    addMessage("system", "Fusion Bridge websocket connected. Read-only Superruntime stream active.");
+  });
+
+  bridgeSocket.addEventListener("message", (event) => {
+    handleSuperruntimeSocketMessage(event.data);
+  });
+
+  bridgeSocket.addEventListener("close", () => {
+    bridgeSocket = null;
+    if (bridgeState.runtimeChannel === "websocket") {
+      bridgeState.runtimeChannel = "poll";
+      setBridgeLabels();
+    }
+  });
+
+  bridgeSocket.addEventListener("error", () => {
+    if (!bridgeSocketWarningShown) {
+      bridgeSocketWarningShown = true;
+      addMessage("alert", "Fusion Bridge websocket unavailable; read-only HTTP bridge remains active.");
+    }
+  });
+}
+
+function handleSuperruntimeSocketMessage(raw) {
+  let event;
+  try {
+    event = JSON.parse(raw);
+  } catch {
+    addStreamLine("bridge websocket message ignored: invalid JSON");
+    return;
+  }
+
+  if (event.type === "superruntime.snapshot" && event.payload) {
+    superruntimeStatus = normalizeSuperruntimeStatus(event.payload, "websocket");
+    renderSuperruntimeStatus();
+    addStreamLine("superruntime websocket snapshot received");
+    return;
+  }
+
+  if (event.type === "bridge.heartbeat") {
+    bridgeSocketHeartbeatCount += 1;
+    if (bridgeSocketHeartbeatCount === 1) {
+      addStreamLine("superruntime websocket heartbeat received");
+    }
+    return;
+  }
+
+  if (event.type === "bridge.error") {
+    addMessage("alert", "Fusion Bridge websocket reported a stream-safety error; HTTP bridge remains active.");
+  }
 }
 
 function normalizeSuperruntimeStatus(payload, source) {
@@ -488,9 +562,11 @@ function safeSuperruntimeLabel(value) {
 }
 
 function renderSuperruntimeStatus() {
-  superruntimeBadge.textContent = bridgeState.connected && superruntimeStatus.source === "bridge"
-    ? "live"
-    : "fixture";
+  superruntimeBadge.textContent = bridgeState.connected && superruntimeStatus.source === "websocket"
+    ? "ws"
+    : bridgeState.connected && superruntimeStatus.source === "bridge"
+      ? "live"
+      : "fixture";
   superruntimeStatusEl.innerHTML = "";
   [
     ["registered", superruntimeStatus.registeredRuntimeCount],

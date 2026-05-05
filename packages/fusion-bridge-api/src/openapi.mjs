@@ -33,6 +33,17 @@ export const openapi = {
         responses: { "200": { description: "Redacted Superruntime state" } },
       },
     },
+    "/api/superruntime/stream": {
+      get: {
+        operationId: "streamSuperruntime",
+        summary: "Read-only WebSocket stream for Superruntime snapshots and heartbeats",
+        "x-windburn-transport": "websocket",
+        responses: {
+          "101": { description: "WebSocket upgrade accepted" },
+          "426": { description: "WebSocket upgrade required" },
+        },
+      },
+    },
     "/openapi.json": {
       get: {
         operationId: "getOpenApi",

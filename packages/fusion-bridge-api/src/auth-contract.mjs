@@ -50,6 +50,15 @@ export const authRouteContracts = Object.freeze([
     enabled: true,
   }),
   Object.freeze({
+    id: "public-superruntime-stream",
+    match: "/api/superruntime/stream",
+    methods: Object.freeze(["GET"]),
+    minRole: "viewer",
+    redaction: "public",
+    enabled: true,
+    transport: "websocket",
+  }),
+  Object.freeze({
     id: "public-openapi",
     match: "/openapi.json",
     methods: Object.freeze(["GET", "HEAD"]),
@@ -145,6 +154,7 @@ export function authContractSummary(activeRole = "viewer") {
       min_role: route.minRole,
       redaction: route.redaction,
       enabled: route.enabled,
+      transport: route.transport ?? "http",
     })),
     public_viewer_policy: "redacted status only",
     operator_policy: "stage tasks only after authentication and explicit confirmation",

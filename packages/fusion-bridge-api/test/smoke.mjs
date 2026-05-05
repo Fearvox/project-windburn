@@ -45,6 +45,12 @@ assert(findings.length === 0, `superruntime response not stream-safe: ${findings
 const openapi = await get("/openapi.json");
 assert(openapi.response.status === 200, "openapi must return 200");
 assert(openapi.body.paths["/api/superruntime"], "openapi must include superruntime path");
+assert(openapi.body.paths["/api/superruntime/stream"], "openapi must include superruntime stream path");
+
+const streamNoUpgrade = await get("/api/superruntime/stream");
+assert(streamNoUpgrade.response.status === 426, "stream endpoint must require websocket upgrade");
+assert(streamNoUpgrade.body.runtime_channel_enabled === true, "stream endpoint must advertise runtime channel");
+assert(streamNoUpgrade.body.mutation_bridge_enabled === false, "stream endpoint must keep mutation disabled");
 
 const mutation = await get("/api/superruntime", "POST");
 assert(mutation.response.status === 405, "mutating requests must be rejected");
