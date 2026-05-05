@@ -5,6 +5,7 @@ import {
   buildEmptySuperruntimePayload,
   buildRunnerEvidenceSuperruntimePayload,
   buildSuperruntimePayload,
+  inspectRunnerEvidenceSafety,
 } from "./superruntime.mjs";
 
 const apiHeaders = {
@@ -41,21 +42,39 @@ export function createFusionBridgeApi(options = {}) {
   }
 
   async function loadFixture() {
-    if (options.superruntimeFixture) return options.superruntimeFixture;
+    if (Object.hasOwn(options, "superruntimeFixture")) return options.superruntimeFixture;
     if (options.loadSuperruntimeFixture) return options.loadSuperruntimeFixture();
     return null;
   }
 
   async function loadRunnerEvidence() {
-    if (options.runnerEvidence) return options.runnerEvidence;
+    if (Object.hasOwn(options, "runnerEvidence")) return options.runnerEvidence;
     if (options.loadRunnerEvidence) return options.loadRunnerEvidence();
     return null;
   }
 
   async function superruntime(method) {
     const runnerEvidence = await loadRunnerEvidence();
-    const fixture = runnerEvidence ? null : await loadFixture();
-    const payload = runnerEvidence
+    const hasRunnerEvidence = runnerEvidence !== null && runnerEvidence !== undefined;
+    if (hasRunnerEvidence) {
+      const safety = inspectRunnerEvidenceSafety(runnerEvidence);
+      if (!safety.safe) {
+        return jsonResponse({
+          schema_version: 1,
+          generated_at_utc: now(),
+          mode: "read-only",
+          source: redact(options.runnerEvidenceSource ?? "runner-evidence"),
+          error: "unsafe_runner_evidence",
+          unsafe_reasons: safety.reasons,
+          runner_evidence_checks: safety.checks,
+          redacted_public_safe: true,
+          mutation_bridge_enabled: false,
+          secret_values_recorded: false,
+        }, { status: 409, method });
+      }
+    }
+    const fixture = hasRunnerEvidence ? null : await loadFixture();
+    const payload = hasRunnerEvidence
       ? buildRunnerEvidenceSuperruntimePayload(runnerEvidence, {
         generatedAt: now(),
         source: options.runnerEvidenceSource ?? "runner-evidence",

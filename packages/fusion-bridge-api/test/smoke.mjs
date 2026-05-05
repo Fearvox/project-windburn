@@ -69,6 +69,13 @@ async function getFrom(apiInstance, pathname, method = "GET") {
   return { response, body };
 }
 
+function makeRunnerEvidence(overrides = {}) {
+  return JSON.parse(JSON.stringify({
+    ...runnerEvidence,
+    ...overrides,
+  }));
+}
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
@@ -105,6 +112,56 @@ assert(runnerSuperruntime.body.secret_values_recorded === false, "runner superru
 const runnerFindings = assertStreamSafe(runnerSuperruntime.body);
 assert(runnerFindings.length === 0, `runner superruntime response not stream-safe: ${runnerFindings.join(", ")}`);
 
+for (const unsafeCase of [
+  {
+    label: "secret values recorded",
+    evidence: makeRunnerEvidence({ secret_values_recorded: true }),
+    reasons: ["secret_values_recorded_true"],
+  },
+  {
+    label: "redaction flag missing",
+    evidence: makeRunnerEvidence({ redacted_public_safe: false }),
+    reasons: ["redacted_public_safe_not_true"],
+  },
+  {
+    label: "remote mutation enabled",
+    evidence: makeRunnerEvidence({ remote_mutation: true }),
+    reasons: ["remote_mutation_true"],
+  },
+]) {
+  const unsafeApi = createFusionBridgeApi({
+    deploymentTarget: `unsafe-${unsafeCase.label}`,
+    runnerEvidence: unsafeCase.evidence,
+    superruntimeFixture: fixture,
+    superruntimeSource: "docs/remote-workhorse/fixtures/superruntime-v0.json",
+    now: () => "2026-05-05T06:00:00.000Z",
+  });
+  const unsafeSuperruntime = await getFrom(unsafeApi, "/api/superruntime");
+  assert(unsafeSuperruntime.response.status === 409, `${unsafeCase.label} must return 409`);
+  assert(unsafeSuperruntime.body.error === "unsafe_runner_evidence", `${unsafeCase.label} must use unsafe_runner_evidence`);
+  assert(unsafeSuperruntime.body.source === "runner-evidence", `${unsafeCase.label} must not fall back to fixture`);
+  assert(unsafeSuperruntime.body.redacted_public_safe === true, `${unsafeCase.label} response must stay public-safe`);
+  assert(unsafeSuperruntime.body.secret_values_recorded === false, `${unsafeCase.label} response must not record secrets`);
+  assert(unsafeSuperruntime.body.mutation_bridge_enabled === false, `${unsafeCase.label} must keep mutation bridge disabled`);
+  assert(JSON.stringify(unsafeSuperruntime.body.unsafe_reasons) === JSON.stringify(unsafeCase.reasons), `${unsafeCase.label} must report stable reason labels`);
+  assert(!("runner_evidence" in unsafeSuperruntime.body), `${unsafeCase.label} must not echo runner evidence`);
+  const unsafeFindings = assertStreamSafe(unsafeSuperruntime.body);
+  assert(unsafeFindings.length === 0, `${unsafeCase.label} error response not stream-safe: ${unsafeFindings.join(", ")}`);
+}
+
+const unsafeSourceApi = createFusionBridgeApi({
+  deploymentTarget: "unsafe-source",
+  runnerEvidence: makeRunnerEvidence({ secret_values_recorded: true }),
+  runnerEvidenceSource: "/srv/windburn/evidence/runner/current.json",
+  now: () => "2026-05-05T06:00:00.000Z",
+});
+const unsafeSourceSuperruntime = await getFrom(unsafeSourceApi, "/api/superruntime");
+assert(unsafeSourceSuperruntime.response.status === 409, "unsafe runner evidence with unsafe source must return 409");
+assert(unsafeSourceSuperruntime.body.error === "unsafe_runner_evidence", "unsafe source response must stay on unsafe evidence error");
+assert(unsafeSourceSuperruntime.body.source === "[redacted:remote-path]", "unsafe runner evidence source must be redacted");
+const unsafeSourceFindings = assertStreamSafe(unsafeSourceSuperruntime.body);
+assert(unsafeSourceFindings.length === 0, `unsafe source error response not stream-safe: ${unsafeSourceFindings.join(", ")}`);
+
 const tmpDir = await mkdtemp(path.join(os.tmpdir(), "windburn-runner-evidence-"));
 try {
   const runnerEvidencePath = path.join(tmpDir, "current.json");
@@ -120,6 +177,28 @@ try {
   assert(nodeSuperruntime.body.runner_evidence.status === "PASS", "node bridge must summarize runner evidence");
   const nodeFindings = assertStreamSafe(nodeSuperruntime.body);
   assert(nodeFindings.length === 0, `node runner evidence response not stream-safe: ${nodeFindings.join(", ")}`);
+
+  await writeFile(runnerEvidencePath, JSON.stringify(makeRunnerEvidence({
+    secret_values_recorded: true,
+    redacted_public_safe: false,
+    remote_mutation: true,
+  }), null, 2));
+  const nodeUnsafeSuperruntime = await getFrom(nodeApi, "/api/superruntime");
+  assert(nodeUnsafeSuperruntime.response.status === 409, "node bridge unsafe runner evidence must return 409");
+  assert(nodeUnsafeSuperruntime.body.error === "unsafe_runner_evidence", "node bridge unsafe runner evidence must be rejected");
+  assert(nodeUnsafeSuperruntime.body.source === "runner-evidence", "node bridge unsafe runner evidence must not fall back to fixture");
+  assert(nodeUnsafeSuperruntime.body.redacted_public_safe === true, "node bridge unsafe error must stay public-safe");
+  assert(nodeUnsafeSuperruntime.body.secret_values_recorded === false, "node bridge unsafe error must not record secrets");
+  assert(nodeUnsafeSuperruntime.body.runner_evidence_checks.secret_values_recorded === true, "node bridge must expose secret flag as boolean-only");
+  assert(nodeUnsafeSuperruntime.body.runner_evidence_checks.redacted_public_safe === false, "node bridge must expose redaction flag as boolean-only");
+  assert(nodeUnsafeSuperruntime.body.runner_evidence_checks.remote_mutation === true, "node bridge must expose mutation flag as boolean-only");
+  assert(JSON.stringify(nodeUnsafeSuperruntime.body.unsafe_reasons) === JSON.stringify([
+    "secret_values_recorded_true",
+    "redacted_public_safe_not_true",
+    "remote_mutation_true",
+  ]), "node bridge must expose stable unsafe reason labels");
+  const nodeUnsafeFindings = assertStreamSafe(nodeUnsafeSuperruntime.body);
+  assert(nodeUnsafeFindings.length === 0, `node unsafe runner evidence response not stream-safe: ${nodeUnsafeFindings.join(", ")}`);
 } finally {
   await rm(tmpDir, { recursive: true, force: true });
 }
