@@ -69,7 +69,7 @@ const fallbackPreflight = [
 let preflight = fallbackPreflight.map((item) => ({ ...item }));
 
 const fallbackSuperruntimeStatus = {
-  source: "fixture",
+  source: "static-fallback",
   registeredRuntimeCount: 1,
   queuedTaskCount: 0,
   currentLease: "leased",
@@ -80,7 +80,7 @@ let superruntimeStatus = { ...fallbackSuperruntimeStatus };
 
 const bridgeState = {
   connected: false,
-  mode: "local mock",
+  mode: "static fallback",
   status: null,
 };
 
@@ -311,7 +311,7 @@ function boot() {
 
 function setBridgeLabels() {
   modeLabel.textContent = bridgeState.connected ? "read-only" : "read-only";
-  bridgeLabel.textContent = bridgeState.connected ? "live bridge" : "local mock";
+  bridgeLabel.textContent = bridgeState.connected ? "live bridge" : "static fallback";
 }
 
 function redactText(value) {
@@ -446,7 +446,7 @@ function normalizeSuperruntimeStatus(payload, source) {
   const harnessPayload = payload?.harness ?? payload?.harness_dispatch ?? payload?.harnessDispatch;
 
   return {
-    source,
+    source: payload?.source ?? source,
     registeredRuntimeCount,
     queuedTaskCount,
     currentLease: safeSuperruntimeLabel(
@@ -488,9 +488,11 @@ function safeSuperruntimeLabel(value) {
 }
 
 function renderSuperruntimeStatus() {
-  superruntimeBadge.textContent = bridgeState.connected && superruntimeStatus.source === "bridge"
-    ? "live"
-    : "fixture";
+  superruntimeBadge.textContent = bridgeState.connected && superruntimeStatus.source === "runner-evidence"
+    ? "runner"
+    : bridgeState.connected
+      ? "live"
+      : "fallback";
   superruntimeStatusEl.innerHTML = "";
   [
     ["registered", superruntimeStatus.registeredRuntimeCount],
@@ -929,7 +931,7 @@ async function dispatch(raw) {
     const repo = bridgeState.status?.repo;
     const bridgeLine = bridgeState.connected
       ? `BRIDGE read-only-live repo-proof dirty=${String(repo?.dirty ?? "unknown")}`
-      : "BRIDGE local-mock static fallback";
+      : "BRIDGE static fallback";
     addMessage("remote", [bridgeLine, ...lines].join("\n"));
     return;
   }
@@ -970,7 +972,10 @@ async function dispatch(raw) {
     return;
   }
 
-  addMessage("remote", `${activeRemote.name} queued: ${text}\nBridge mode is local mock until the signed SSH/websocket adapter is enabled.`);
+  const bridgeNote = bridgeState.connected
+    ? "Read-only bridge recorded this as staged intent; mutation bridge remains disabled."
+    : "Static fallback recorded this locally; start the read-only bridge for live runner evidence.";
+  addMessage("remote", `${activeRemote.name} queued: ${text}\n${bridgeNote}`);
 }
 
 function addMessage(role, body) {

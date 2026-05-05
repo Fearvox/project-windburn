@@ -4,7 +4,7 @@ export const openapi = {
     title: "Windburn Fusion Bridge API",
     version: "0.1.0",
     summary: "Read-only, stream-safe API for Windburn Superruntime status.",
-    description: "Public responses are viewer-scoped and redacted by default. Operator and admin routes are contract-defined but disabled until authenticated task staging and provider configuration are implemented.",
+    description: "Public responses are viewer-scoped and redacted by default. Node mode prefers runner evidence over fixture state. Operator and admin routes are contract-defined but disabled until authenticated task staging and provider configuration are implemented.",
   },
   servers: [
     { url: "http://127.0.0.1:5188", description: "local API package bridge" },
@@ -29,7 +29,7 @@ export const openapi = {
     "/api/superruntime": {
       get: {
         operationId: "getSuperruntime",
-        summary: "Stream-safe Superruntime runtime/task/lease view",
+        summary: "Stream-safe runner-evidence Superruntime runtime/task/lease view",
         responses: { "200": { description: "Redacted Superruntime state" } },
       },
     },

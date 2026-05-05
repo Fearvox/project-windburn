@@ -7,6 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   buildEmptySuperruntimePayload,
+  buildRunnerEvidenceSuperruntimePayload,
   buildSuperruntimePayload,
 } from "../../packages/fusion-bridge-api/src/superruntime.mjs";
 
@@ -21,6 +22,9 @@ const superruntimeFixturePath = path.join(
   root,
   "docs/remote-workhorse/fixtures/superruntime-v0.json",
 );
+const runnerEvidencePath =
+  process.env.WINDBURN_RUNNER_EVIDENCE_PATH ??
+  "/srv/windburn/evidence/runner/current.json";
 
 const contentTypes = new Map([
   [".html", "text/html; charset=utf-8"],
@@ -52,7 +56,7 @@ const routeBlueprints = [
     command: "operator command hidden",
     taste: "remote build and runner cell",
     proof: "docs/remote-workhorse/preflight/NIXOS_FOUNDATION_PROOF.md",
-    forceFlag: "foundation proof exists; live runner bridge still pending",
+    runnerEvidence: true,
   },
   {
     id: "ccr",
@@ -272,16 +276,20 @@ async function readProof(relativePath) {
 
 async function buildRemotes() {
   const binding = await superconductorBindingStatus();
+  const runnerEvidence = await readRunnerEvidence();
   const remotes = await Promise.all(
     routeBlueprints.map(async (route) => {
       const proof = route.proof ? await readProof(route.proof) : null;
+      const runnerProof = route.runnerEvidence && runnerEvidence
+        ? runnerEvidenceRouteProof(runnerEvidence)
+        : null;
       const superconductorRoute = route.id === "superconductor";
       const superconductorMissing =
         superconductorRoute && binding.status !== "present";
       const status = superconductorMissing
         ? "FLAG"
-        : route.forceFlag
-          ? "FLAG"
+        : runnerProof
+          ? runnerProof.status
           : superconductorRoute
             ? "PASS"
             : proof?.status ?? "FLAG";
@@ -289,7 +297,7 @@ async function buildRemotes() {
         ? binding.status
         : superconductorRoute
           ? "binding present"
-          : route.forceFlag ?? proof?.reason ?? "live proof";
+          : runnerProof?.reason ?? proof?.reason ?? "live proof";
 
       return {
         ...streamSafeRoute(route),
@@ -300,7 +308,7 @@ async function buildRemotes() {
         latency,
         taste: route.taste,
         bridge: "read-only-live",
-        proof: proof ?? (superconductorRoute ? {
+        proof: runnerProof ?? proof ?? (superconductorRoute ? {
           status,
           reason: latency,
           source: "workspace binding hidden",
@@ -315,6 +323,28 @@ async function buildRemotes() {
     generated_at_utc: new Date().toISOString(),
     bridge: "read-only-live",
     remotes,
+  };
+}
+
+async function readRunnerEvidence() {
+  if (!existsSync(runnerEvidencePath)) return null;
+  return JSON.parse(await readFile(runnerEvidencePath, "utf8"));
+}
+
+function runnerEvidenceRouteProof(evidence) {
+  const latestSmoke = evidence?.latest_hermes_codex_smoke && typeof evidence.latest_hermes_codex_smoke === "object"
+    ? evidence.latest_hermes_codex_smoke
+    : {};
+  const status = String(evidence?.status ?? "FLAG").toUpperCase();
+  const smokeVerdict = String(latestSmoke.verdict ?? "UNKNOWN").toUpperCase();
+  const tmuxPresent = evidence?.tmux?.session_present === true;
+  return {
+    status: ["PASS", "FLAG", "BLOCK"].includes(status) ? status : "FLAG",
+    reason: status === "PASS" && smokeVerdict === "PASS" && tmuxPresent
+      ? "runner ready"
+      : redact(evidence?.reason ?? "runner evidence read"),
+    source: "runner evidence current",
+    modified_at: evidence?.generated_at_utc ?? null,
   };
 }
 
@@ -340,6 +370,20 @@ async function buildPreflight() {
 }
 
 async function buildSuperruntimeFixture() {
+  try {
+    const evidence = await readRunnerEvidence();
+    if (evidence) {
+      return buildRunnerEvidenceSuperruntimePayload(evidence, {
+        source: "runner-evidence",
+      });
+    }
+  } catch (error) {
+    return {
+      ...buildEmptySuperruntimePayload("runner_evidence_unreadable"),
+      error: redact(error.message),
+    };
+  }
+
   if (!existsSync(superruntimeFixturePath)) {
     return buildEmptySuperruntimePayload("fixture_absent");
   }

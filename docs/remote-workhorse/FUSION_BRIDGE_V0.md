@@ -26,6 +26,7 @@ WINDBURN_FUSION_CHAT_PORT=5179 scripts/fusion-chat-bridge.sh
 | `/api/status` | `GET` | repo branch/head/dirty state and bridge mode | no |
 | `/api/remotes` | `GET` | live route ledger hydrated from proof files | no |
 | `/api/preflight` | `GET` | current proof verdicts for the stack | no |
+| `/api/superruntime` | `GET` | runner-evidence-backed Superruntime summary, with fixture fallback | no |
 | `/api/setup/xai/inspect` | `POST` | runs `scripts/xai-setup-agent.sh` inspect only | no remote mutation |
 
 The xAI endpoint never performs the confirmed API call. It only returns the
@@ -38,6 +39,14 @@ prints.
 local Node HTTP and Cloudflare Workers. It is intentionally smaller than the
 Fusion Chat bridge: only `/healthz`, `/api/status`, `/api/superruntime`, and
 `/openapi.json` are exposed, and all mutation methods return `405`.
+
+Node HTTP mode now prefers runner evidence from
+`WINDBURN_RUNNER_EVIDENCE_PATH` or the default remote-workhorse evidence path.
+The browser-safe response uses `source=runner-evidence`, boolean credential
+presence, `runner-ready` lease status, and `codex-provider-ok` harness status.
+It does not expose raw hosts, SSH targets, local paths, remote paths, commands,
+or secret values. If runner evidence is absent, it falls back to the historical
+fixture contract so local smoke tests still run.
 
 Run it locally with:
 
@@ -69,10 +78,7 @@ scripts/fusion-bridge-worker-dry-run.sh
 
 ## Next
 
-1. Prototype the Superruntime fixture contract from
-   `SUPERRUNTIME_ORCHESTRATOR_SPEC.md` so Fusion Chat can display registered
-   runtimes and signed task envelopes without exposing Superconductor publicly.
-2. Add Hermes tmux transcript tail as a stream endpoint.
-3. Consume Superconductor CLI pipeline mode as another read-only intake source
+1. Add Hermes tmux transcript tail as a stream endpoint.
+2. Consume Superconductor CLI pipeline mode as another read-only intake source
    once it lands.
-4. Add signed command envelopes only after the read-only flow is stable.
+3. Add signed command envelopes only after the read-only flow is stable.

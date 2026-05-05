@@ -45,8 +45,12 @@ WINDBURN_FUSION_CHAT_PORT=5179 scripts/fusion-chat-bridge.sh
   thinking states, and tool-call lines. Use `/stream sample` to smoke-test the
   classifier.
 - Read-only local bridge endpoints for route state, repo status, preflight
-  proofs, the Superruntime fixture model at `/api/superruntime`, and xAI setup
-  inspect. The UI falls back to local mock data when the bridge is not running.
+  proofs, runner-evidence-backed Superruntime state at `/api/superruntime`,
+  and xAI setup inspect. The UI falls back to static stream-safe data when the
+  bridge is not running.
+- Runner evidence intake prefers `WINDBURN_RUNNER_EVIDENCE_PATH`, then the
+  default remote-workhorse evidence path. Browser responses summarize readiness,
+  tmux presence, and credential presence as redacted booleans only.
 - Stream-safe privacy by default: remote hosts, local paths, attach targets,
   operator commands, and credential paths render as spoiler blocks or redacted
   labels. This protects screenshots and Discord livestreams before account

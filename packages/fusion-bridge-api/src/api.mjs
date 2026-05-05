@@ -3,6 +3,7 @@ import { authContractSummary, guardRoute, publicAuthContext } from "./auth-contr
 import { assertStreamSafe, redact } from "./redaction.mjs";
 import {
   buildEmptySuperruntimePayload,
+  buildRunnerEvidenceSuperruntimePayload,
   buildSuperruntimePayload,
 } from "./superruntime.mjs";
 
@@ -45,14 +46,26 @@ export function createFusionBridgeApi(options = {}) {
     return null;
   }
 
+  async function loadRunnerEvidence() {
+    if (options.runnerEvidence) return options.runnerEvidence;
+    if (options.loadRunnerEvidence) return options.loadRunnerEvidence();
+    return null;
+  }
+
   async function superruntime(method) {
-    const fixture = await loadFixture();
-    const payload = fixture
-      ? buildSuperruntimePayload(fixture, {
+    const runnerEvidence = await loadRunnerEvidence();
+    const fixture = runnerEvidence ? null : await loadFixture();
+    const payload = runnerEvidence
+      ? buildRunnerEvidenceSuperruntimePayload(runnerEvidence, {
         generatedAt: now(),
-        source: options.superruntimeSource ?? "superruntime-fixture",
+        source: options.runnerEvidenceSource ?? "runner-evidence",
       })
-      : buildEmptySuperruntimePayload("fixture_absent", { generatedAt: now() });
+      : fixture
+        ? buildSuperruntimePayload(fixture, {
+          generatedAt: now(),
+          source: options.superruntimeSource ?? "superruntime-fixture",
+        })
+        : buildEmptySuperruntimePayload("fixture_absent", { generatedAt: now() });
     const findings = assertStreamSafe(payload);
     if (findings.length > 0) {
       return jsonResponse({
