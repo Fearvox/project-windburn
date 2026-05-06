@@ -177,14 +177,20 @@ ssh_base \
    test -x /run/current-system/sw/bin/hermes
    timeout 180 /run/current-system/sw/bin/hermes --version | sed -n "1,8p"
    test -x /run/current-system/sw/bin/uv
-   test -x /run/current-system/sw/bin/windburn-hermes-runtime-status
-   /run/current-system/sw/bin/windburn-hermes-runtime-status >/tmp/windburn-hermes-runtime-status-smoke.json
-   cat /tmp/windburn-hermes-runtime-status-smoke.json
-   jq -e ".schema_version == 1 and .secret_values_recorded == false and .redacted_public_safe == true and .hermes.command_present == true and .uv.command_present == true" /tmp/windburn-hermes-runtime-status-smoke.json >/dev/null
-   test -x /run/current-system/sw/bin/windburn-runner-status
-   /run/current-system/sw/bin/windburn-runner-status >/tmp/windburn-runner-status-smoke.json
-   cat /tmp/windburn-runner-status-smoke.json
-   jq -e ".schema_version == 1 and .secret_values_recorded == false and .redacted_public_safe == true" /tmp/windburn-runner-status-smoke.json >/dev/null
+	   test -x /run/current-system/sw/bin/windburn-hermes-runtime-status
+	   /run/current-system/sw/bin/windburn-hermes-runtime-status >/tmp/windburn-hermes-runtime-status-smoke.json
+	   cat /tmp/windburn-hermes-runtime-status-smoke.json
+	   jq -e ".schema_version == 1 and .secret_values_recorded == false and .redacted_public_safe == true and .hermes.command_present == true and .uv.command_present == true" /tmp/windburn-hermes-runtime-status-smoke.json >/dev/null
+	   test -x /run/current-system/sw/bin/windburn-hermes-yolo-ensure
+	   test -x /run/current-system/sw/bin/windburn-hermes-yolo-status
+	   systemctl start windburn-hermes-yolo-ensure.service
+	   /run/current-system/sw/bin/windburn-hermes-yolo-status >/tmp/windburn-hermes-yolo-status-smoke.json
+	   cat /tmp/windburn-hermes-yolo-status-smoke.json
+	   jq -e ".schema_version == 1 and .status == \"PASS\" and .secret_values_recorded == false and .redacted_public_safe == true and .lane.fixed_session_present == true and .lane.yolo_window_present == true and .lane.pane_alive == true and .lane.yolo_process_count >= 1" /tmp/windburn-hermes-yolo-status-smoke.json >/dev/null
+	   test -x /run/current-system/sw/bin/windburn-runner-status
+	   /run/current-system/sw/bin/windburn-runner-status >/tmp/windburn-runner-status-smoke.json
+	   cat /tmp/windburn-runner-status-smoke.json
+	   jq -e ".schema_version == 1 and .secret_values_recorded == false and .redacted_public_safe == true and .hermes_yolo.status == \"PASS\"" /tmp/windburn-runner-status-smoke.json >/dev/null
    test -f /srv/windburn/evidence/runner/current.json'
 
 echo

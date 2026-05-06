@@ -135,9 +135,10 @@ ssh "$WINDBURN_REMOTE_USER@$WINDBURN_REMOTE_HOST" \
   'hermes --version && uv --version && windburn-runner-status'
 ```
 
-## Next Gate
+## Follow-On Gate
 
-The next slice is a real interactive Hermes tmux lane on this workhorse:
+The follow-on interactive Hermes tmux lane is now recorded in
+`WORKHORSE_HERMES_YOLO_LANE_PROOF.md`:
 
 - create or restart a fixed tmux session/window,
 - run `hermes --yolo` from the system command,

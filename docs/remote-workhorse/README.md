@@ -22,18 +22,19 @@ Read order for a new agent:
 17. `preflight/PROVIDER_SECRET_SMOKE.md`
 18. `preflight/HERMES_CODEX_RUNTIME_PROOF.md`
 19. `preflight/WORKHORSE_HERMES_RUNTIME_PROOF.md`
-20. `preflight/DROPLET_ENGAGEMENT_REVIEW.md`
-21. `preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md`
-22. `preflight/HERMES_HEALTH_GATE.md`
-23. `preflight/HERMES_MAINTENANCE.md`
-24. `preflight/HERMES_YOLO_LOOP_PROOF.md`
-25. `FUSION_CHAT_TERMINAL.md`
-26. `FUSION_BRIDGE_V0.md`
-27. `SUPERRUNTIME_ORCHESTRATOR_SPEC.md`
-28. `MULTICA_SSH_RUNTIME_INGRESS.md`
-29. `FUSION_CHAT_PERSONALIZATION_SETTINGS_HANDOFF.md`
-30. `preflight/XAI_SETUP_AGENT_SMOKE.md`
-31. `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md`
+20. `preflight/WORKHORSE_HERMES_YOLO_LANE_PROOF.md`
+21. `preflight/DROPLET_ENGAGEMENT_REVIEW.md`
+22. `preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md`
+23. `preflight/HERMES_HEALTH_GATE.md`
+24. `preflight/HERMES_MAINTENANCE.md`
+25. `preflight/HERMES_YOLO_LOOP_PROOF.md`
+26. `FUSION_CHAT_TERMINAL.md`
+27. `FUSION_BRIDGE_V0.md`
+28. `SUPERRUNTIME_ORCHESTRATOR_SPEC.md`
+29. `MULTICA_SSH_RUNTIME_INGRESS.md`
+30. `FUSION_CHAT_PERSONALIZATION_SETTINGS_HANDOFF.md`
+31. `preflight/XAI_SETUP_AGENT_SMOKE.md`
+32. `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md`
 
 Read `SUPERRUNTIME_ORCHESTRATOR_SPEC.md` and
 `MULTICA_SSH_RUNTIME_INGRESS.md` together for the current v1 bootstrap queue
@@ -55,6 +56,8 @@ The remote Hermes `openai-codex` runtime route is proven in
 The NixOS workhorse's durable Hermes command, `uv`, runtime evidence timer, and
 fresh Hermes Codex smoke are proven in
 `preflight/WORKHORSE_HERMES_RUNTIME_PROOF.md`.
+The durable fixed Hermes yolo tmux lane and runner evidence gate are proven in
+`preflight/WORKHORSE_HERMES_YOLO_LANE_PROOF.md`.
 The current multi-droplet engagement review is recorded in
 `preflight/DROPLET_ENGAGEMENT_REVIEW.md` and can be refreshed with
 `scripts/droplet-engagement-review.sh --out docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md`.
