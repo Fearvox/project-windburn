@@ -174,6 +174,13 @@ ssh_base \
    /run/current-system/sw/bin/windburn-health >/tmp/windburn-health-smoke.json
    cat /tmp/windburn-health-smoke.json
    test -f /srv/windburn/evidence/health/current.json
+   test -x /run/current-system/sw/bin/hermes
+   timeout 180 /run/current-system/sw/bin/hermes --version | sed -n "1,8p"
+   test -x /run/current-system/sw/bin/uv
+   test -x /run/current-system/sw/bin/windburn-hermes-runtime-status
+   /run/current-system/sw/bin/windburn-hermes-runtime-status >/tmp/windburn-hermes-runtime-status-smoke.json
+   cat /tmp/windburn-hermes-runtime-status-smoke.json
+   jq -e ".schema_version == 1 and .secret_values_recorded == false and .redacted_public_safe == true and .hermes.command_present == true and .uv.command_present == true" /tmp/windburn-hermes-runtime-status-smoke.json >/dev/null
    test -x /run/current-system/sw/bin/windburn-runner-status
    /run/current-system/sw/bin/windburn-runner-status >/tmp/windburn-runner-status-smoke.json
    cat /tmp/windburn-runner-status-smoke.json
