@@ -68,3 +68,13 @@ scripts/digitalocean-snapshot.sh
 scripts/nixos-remote-rebuild.sh
 git status --short --branch
 ```
+
+## Darwin Self-Evolution for Creator Visual Paths
+
+One atomic slice per run. Prioritize frontier adapter (capsule → p5/remotion/browser-demo/fixed-canvas QA using browser-qa skill). Mutation must render testable phenotype, evaluate creator usefulness (helps make visual artifacts without bloat), select smallest winner, retain with regression gate, avoid dashboards.
+
+Retained winner: fusion-chat-terminal's industrial-brutalist terminal UI with live matrix scanline and setup assistant for xAI lane (links to DASH). Use browser-qa + vision_analyze on deployed preview for visual regression, fixed-canvas verification if applicable, and interaction smoke on setup/polish buttons.
+
+Mutation axes this run: improved audit integration in AGENTS.md to enforce loaded skills (frontend-design, browser-qa, verification-loop).
+
+Verification gate added: include `hermes mcp test research_vault` and visual proof in captain runtime checks.

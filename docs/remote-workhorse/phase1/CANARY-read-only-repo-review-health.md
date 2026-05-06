@@ -1,8 +1,8 @@
 # CANARY-read-only-repo-review-health
 
-Generated: `2026-05-04T05:33:59.063595Z`
+Generated: `2026-05-06T23:40:24.751969Z`
 
-Target: `/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/.`
+Target: `/Users/0xvox/Windburn/.`
 
 Host: `deMacBook-Pro.local`
 
@@ -14,10 +14,10 @@ VERDICT: `PASS`
 
 ## Evidence
 
-- Git repo: `/Users/0xvox/Windburn/.worktrees/fusion-chat-terminal` branch `codex/fusion-chat-terminal` run-time head `aea8e4f`
-- tool inventory: /Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/./docs/remote-workhorse/phase1/TOOL_INVENTORY.json
-- Research Vault proof: /Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/./docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json
-- code-review-graph proof: /Users/0xvox/Windburn/.worktrees/fusion-chat-terminal/./docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json
+- Git repo: `/Users/0xvox/Windburn` branch `main` run-time head `ecb4510`
+- tool inventory: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/TOOL_INVENTORY.json
+- Research Vault proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json
+- code-review-graph proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json
 - Generated doctor JSON: `docs/remote-workhorse/phase1/evidence/current/doctor.json`
 
 ## Probe Summary
