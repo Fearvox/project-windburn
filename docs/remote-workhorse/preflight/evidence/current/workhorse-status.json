@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-05-07T06:53:33.11778Z",
+  "target": ".",
+  "remote_evidence_dir": "docs/remote-workhorse/preflight/evidence/current/remote",
+  "checks": [
+    {
+      "id": "local_doctor",
+      "label": "Phase 1 local doctor",
+      "path": "docs/remote-workhorse/phase1/evidence/current/doctor.json",
+      "required": true,
+      "exists": true,
+      "status": "PASS",
+      "summary": null,
+      "secret_values_recorded": null,
+      "redacted_public_safe": null
+    },
+    {
+      "id": "preflight",
+      "label": "Remote NixOS preflight",
+      "path": "docs/remote-workhorse/preflight/evidence/current/preflight.json",
+      "required": true,
+      "exists": true,
+      "status": "PASS",
+      "summary": null,
+      "secret_values_recorded": null,
+      "redacted_public_safe": null
+    },
+    {
+      "id": "health",
+      "label": "Remote health evidence",
+      "path": "docs/remote-workhorse/preflight/evidence/current/remote/health/current.json",
+      "required": false,
+      "exists": true,
+      "status": "PASS",
+      "summary": "sanitized remote workhorse health snapshot",
+      "secret_values_recorded": false,
+      "redacted_public_safe": true
+    },
+    {
+      "id": "codex_runtime",
+      "label": "Remote Codex runtime evidence",
+      "path": "docs/remote-workhorse/preflight/evidence/current/remote/codex-runtime/current.json",
+      "required": false,
+      "exists": true,
+      "status": "PASS",
+      "summary": null,
+      "secret_values_recorded": false,
+      "redacted_public_safe": true
+    },
+    {
+      "id": "hermes_runtime",
+      "label": "Remote Hermes runtime evidence",
+      "path": "docs/remote-workhorse/preflight/evidence/current/remote/hermes-runtime/current.json",
+      "required": false,
+      "exists": true,
+      "status": "PASS",
+      "summary": null,
+      "secret_values_recorded": false,
+      "redacted_public_safe": true
+    },
+    {
+      "id": "hermes_yolo",
+      "label": "Remote Hermes yolo evidence",
+      "path": "docs/remote-workhorse/preflight/evidence/current/remote/hermes-yolo/current.json",
+      "required": false,
+      "exists": true,
+      "status": "PASS",
+      "summary": null,
+      "secret_values_recorded": false,
+      "redacted_public_safe": true
+    },
+    {
+      "id": "runner",
+      "label": "Remote runner aggregate evidence",
+      "path": "docs/remote-workhorse/preflight/evidence/current/remote/runner/current.json",
+      "required": false,
+      "exists": true,
+      "status": "PASS",
+      "summary": null,
+      "secret_values_recorded": false,
+      "redacted_public_safe": true
+    }
+  ],
+  "verdict": {
+    "status": "PASS",
+    "reasons": [
+      "all Phase 1 canary checks passed"
+    ]
+  }
+}

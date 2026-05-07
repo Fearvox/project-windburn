@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-05-07T06:52:55Z",
+  "runner_id": "windburn-hermes-yolo-lane-v0",
+  "hostname": "windburn-workhorse-nyc1",
+  "status": "PASS",
+  "reason": "hermes_yolo_lane_ready",
+  "tmux": {
+    "present": true,
+    "version": "tmux 3.6a"
+  },
+  "lane": {
+    "fixed_session_present": true,
+    "yolo_window_present": true,
+    "pane_alive": true,
+    "yolo_process_count": 1,
+    "command_kind": "hermes-yolo",
+    "command_redacted": true
+  },
+  "remote_mutation": false,
+  "secret_values_recorded": false,
+  "redacted_public_safe": true
+}

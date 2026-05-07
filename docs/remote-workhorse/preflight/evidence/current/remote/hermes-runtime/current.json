@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-05-07T06:52:48Z",
+  "runner_id": "windburn-hermes-runtime-v0",
+  "hostname": "windburn-workhorse-nyc1",
+  "status": "PASS",
+  "reason": "hermes_runtime_ready",
+  "hermes": {
+    "source": "github:NousResearch/hermes-agent",
+    "rev": "6f2dab248a6cc8591af46e5deb2dc939c2b43146",
+    "package": "/nix/store/0w5naffx06vragrzjgrzva44rz9pa7jc-hermes-agent-0.12.0",
+    "command_present": true,
+    "bin": "/nix/store/0w5naffx06vragrzjgrzva44rz9pa7jc-hermes-agent-0.12.0/bin/hermes",
+    "version_probe": {
+      "status": "PASS",
+      "exit_code": 0,
+      "head": "Hermes Agent v0.12.0 (2026.4.30)\nProject: /nix/store/rgxwlc7x9z322w2346sg84fq71486fss-hermes-agent-env/lib/python3.12/site-packages\nPython: 3.12.13\nOpenAI SDK: 2.24.0"
+    }
+  },
+  "uv": {
+    "command_present": true,
+    "bin": "/nix/store/ifb198gjdvz4crp76df55xf6bkb7q7y4-uv-0.9.30/bin/uv"
+  },
+  "remote_mutation": false,
+  "secret_values_recorded": false,
+  "redacted_public_safe": true
+}
