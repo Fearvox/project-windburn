@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-05-07T06:52:44Z",
+  "runner_id": "windburn-codex-runtime-v0",
+  "hostname": "windburn-workhorse-nyc1",
+  "status": "PASS",
+  "reason": "codex_runtime_ready",
+  "codex": {
+    "package": "nixpkgs#codex",
+    "nixpkgs_rev": "ed67bc86e84e51d4a88e73c7fd36006dc876476f",
+    "model": "gpt-5.5",
+    "command_present": true,
+    "bin": "/nix/store/vpkgf9ci690qdakphh5xpz4ivkg5nq0w-codex-0.128.0/bin/codex",
+    "version_probe": {
+      "status": "PASS",
+      "exit_code": 0,
+      "head": "codex-cli 0.128.0"
+    },
+    "command_redacted": true
+  },
+  "tmux": {
+    "present": true,
+    "version": "tmux 3.6a"
+  },
+  "lane": {
+    "fixed_session_present": true,
+    "codex_window_present": true,
+    "pane_alive": true,
+    "process_count": 2,
+    "command_kind": "codex-yolo",
+    "command_redacted": true
+  },
+  "remote_mutation": false,
+  "secret_values_recorded": false,
+  "redacted_public_safe": true
+}

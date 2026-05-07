@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-05-07T06:52:40Z",
+  "status": "PASS",
+  "reason": "remote_health_ready",
+  "summary": "sanitized remote workhorse health snapshot",
+  "hostname": "windburn-workhorse-nyc1",
+  "os": "NixOS 25.11 (Xantusia)",
+  "kernel": "Linux 6.12.84 x86_64 GNU/Linux",
+  "system_state": "running",
+  "failed_units": 0,
+  "disk_root": "/dev/vda1       154G  9.3G  145G   7% /",
+  "memory": "Mem:           7.8Gi       869Mi       1.4Gi       7.0Mi       5.8Gi       6.9Gi",
+  "swap": "Swap:          3.9Gi       768Ki       3.9Gi",
+  "secret_values_recorded": false,
+  "redacted_public_safe": true
+}

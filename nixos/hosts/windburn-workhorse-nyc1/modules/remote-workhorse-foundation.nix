@@ -27,6 +27,14 @@ let
       kernel="$(uname -srmo)"
       system_state="$(systemctl is-system-running || true)"
       failed_units="$(systemctl --failed --no-legend --plain | sed '/^$/d' | wc -l | tr -d ' ')"
+      status=FLAG
+      reason=system_not_fully_running
+      if [ "$system_state" = running ] && [ "$failed_units" = 0 ]; then
+        status=PASS
+        reason=remote_health_ready
+      elif [ "$failed_units" != 0 ]; then
+        reason=failed_units_present
+      fi
       disk_root="$(df -h / | awk 'NR == 2 {print $0}')"
       mem_line="$(free -h | awk '/^Mem:/ {print $0}')"
       swap_line="$(free -h | awk '/^Swap:/ {print $0}')"
@@ -34,6 +42,8 @@ let
       tmp="$out_dir/current.json.tmp"
       jq -n \
         --arg generated_at "$generated_at" \
+        --arg status "$status" \
+        --arg reason "$reason" \
         --arg hostname "$hostname" \
         --arg os "$os_pretty" \
         --arg kernel "$kernel" \
@@ -45,6 +55,9 @@ let
         '{
           schema_version: 1,
           generated_at_utc: $generated_at,
+          status: $status,
+          reason: $reason,
+          summary: "sanitized remote workhorse health snapshot",
           hostname: $hostname,
           os: $os,
           kernel: $kernel,
@@ -52,7 +65,9 @@ let
           failed_units: ($failed_units | tonumber),
           disk_root: $disk_root,
           memory: $memory,
-          swap: $swap
+          swap: $swap,
+          secret_values_recorded: false,
+          redacted_public_safe: true
         }' > "$tmp"
 
       mv "$tmp" "$out_dir/current.json"

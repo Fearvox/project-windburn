@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-05-07T06:52:57Z",
+  "runner_id": "windburn-workhorse-runner-status-v0",
+  "runner_kind": "read-only-evidence",
+  "hostname": "windburn-workhorse-nyc1",
+  "status": "PASS",
+  "reason": "runner_foundation_ready",
+  "system_state": "running",
+  "failed_units": 0,
+  "tmux": {
+    "session_present": true,
+    "session_count": 3
+  },
+  "credentials": {
+    "codex_auth_present": true,
+    "hermes_auth_present": true,
+    "provider_env_present": false
+  },
+  "codex_cli": {
+    "present": true,
+    "status": "PASS",
+    "reason": "codex_runtime_ready",
+    "codex_command_present": true,
+    "version_status": "PASS"
+  },
+  "codex_tui": {
+    "present": true,
+    "status": "PASS",
+    "reason": "codex_runtime_ready",
+    "fixed_session_present": true,
+    "codex_window_present": true,
+    "pane_alive": true,
+    "process_count": 2,
+    "command_redacted": true
+  },
+  "hermes_runtime": {
+    "present": true,
+    "status": "PASS",
+    "reason": "hermes_runtime_ready",
+    "hermes_command_present": true,
+    "uv_command_present": true
+  },
+  "hermes_yolo": {
+    "present": true,
+    "status": "PASS",
+    "reason": "hermes_yolo_lane_ready",
+    "fixed_session_present": true,
+    "yolo_window_present": true,
+    "pane_alive": true,
+    "yolo_process_count": 1,
+    "command_redacted": true
+  },
+  "herdr_cockpit": {
+    "present": true,
+    "status": "PASS",
+    "reason": "herdr_cockpit_ready",
+    "command_present": true,
+    "server_active": true,
+    "socket_present": true,
+    "socket_api_status": "PASS",
+    "process_count": 1,
+    "operator_surface": "herdr",
+    "attach_target_redacted": true,
+    "command_redacted": true
+  },
+  "health": {
+    "present": true,
+    "generated_at_utc": "2026-05-07T06:52:40Z"
+  },
+  "latest_hermes_codex_smoke": {
+    "run_id": "20260507T031507Z-hermes-codex-smoke",
+    "verdict": "PASS",
+    "reason": "HERMES_CODEX_PROVIDER_OK",
+    "generated_at_utc": "2026-05-07T03:15:24Z"
+  },
+  "capabilities": [
+    "read-only-status",
+    "timer-evidence",
+    "hermes-codex-smoke-readback",
+    "codex-cli-command",
+    "codex-fixed-tmux-lane",
+    "hermes-runtime-command",
+    "uv-package-manager",
+    "hermes-yolo-tmux-lane",
+    "herdr-cockpit-socket-api"
+  ],
+  "remote_mutation": false,
+  "secret_values_recorded": false,
+  "redacted_public_safe": true
+}
