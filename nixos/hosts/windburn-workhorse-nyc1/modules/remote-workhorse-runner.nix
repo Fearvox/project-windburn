@@ -42,6 +42,25 @@ let
       fi
       hermes_auth_present="$(bool_file /root/.hermes/auth.json)"
       provider_env_present="$(bool_file /srv/windburn/secrets/provider.env)"
+      codex_runtime_present="$(bool_file /srv/windburn/evidence/codex-runtime/current.json)"
+      codex_runtime_status=UNKNOWN
+      codex_runtime_reason=missing_codex_runtime_evidence
+      codex_command_present=false
+      codex_version_status=UNKNOWN
+      codex_fixed_session_present=false
+      codex_window_present=false
+      codex_pane_alive=false
+      codex_process_count=0
+      if [ "$codex_runtime_present" = true ]; then
+        codex_runtime_status="$(jq -r '.status // "UNKNOWN"' /srv/windburn/evidence/codex-runtime/current.json 2>/dev/null || printf '%s' UNKNOWN)"
+        codex_runtime_reason="$(jq -r '.reason // "unknown"' /srv/windburn/evidence/codex-runtime/current.json 2>/dev/null || printf '%s' unknown)"
+        codex_command_present="$(jq -r '(.codex.command_present // false) | tostring' /srv/windburn/evidence/codex-runtime/current.json 2>/dev/null || printf '%s' false)"
+        codex_version_status="$(jq -r '.codex.version_probe.status // "UNKNOWN"' /srv/windburn/evidence/codex-runtime/current.json 2>/dev/null || printf '%s' UNKNOWN)"
+        codex_fixed_session_present="$(jq -r '(.lane.fixed_session_present // false) | tostring' /srv/windburn/evidence/codex-runtime/current.json 2>/dev/null || printf '%s' false)"
+        codex_window_present="$(jq -r '(.lane.codex_window_present // false) | tostring' /srv/windburn/evidence/codex-runtime/current.json 2>/dev/null || printf '%s' false)"
+        codex_pane_alive="$(jq -r '(.lane.pane_alive // false) | tostring' /srv/windburn/evidence/codex-runtime/current.json 2>/dev/null || printf '%s' false)"
+        codex_process_count="$(jq -r '(.lane.process_count // 0) | tostring' /srv/windburn/evidence/codex-runtime/current.json 2>/dev/null || printf '%s' 0)"
+      fi
       hermes_runtime_present="$(bool_file /srv/windburn/evidence/hermes-runtime/current.json)"
       hermes_runtime_status=UNKNOWN
       hermes_runtime_reason=missing_hermes_runtime_evidence
@@ -103,6 +122,9 @@ let
       elif [ "$codex_auth_present" != true ]; then
         runner_status=FLAG
         runner_reason=codex_auth_missing
+      elif [ "$codex_runtime_status" != PASS ]; then
+        runner_status=FLAG
+        runner_reason=codex_runtime_not_pass
       elif [ "$hermes_command_present" != true ]; then
         runner_status=FLAG
         runner_reason=hermes_command_missing
@@ -133,6 +155,15 @@ let
         --arg codex_auth_present "$codex_auth_present" \
         --arg hermes_auth_present "$hermes_auth_present" \
         --arg provider_env_present "$provider_env_present" \
+        --arg codex_runtime_present "$codex_runtime_present" \
+        --arg codex_runtime_status "$codex_runtime_status" \
+        --arg codex_runtime_reason "$codex_runtime_reason" \
+        --arg codex_command_present "$codex_command_present" \
+        --arg codex_version_status "$codex_version_status" \
+        --arg codex_fixed_session_present "$codex_fixed_session_present" \
+        --arg codex_window_present "$codex_window_present" \
+        --arg codex_pane_alive "$codex_pane_alive" \
+        --argjson codex_process_count "$codex_process_count" \
         --arg hermes_runtime_present "$hermes_runtime_present" \
         --arg hermes_runtime_status "$hermes_runtime_status" \
         --arg hermes_runtime_reason "$hermes_runtime_reason" \
@@ -170,6 +201,23 @@ let
             hermes_auth_present: ($hermes_auth_present == "true"),
             provider_env_present: ($provider_env_present == "true")
           },
+          codex_cli: {
+            present: ($codex_runtime_present == "true"),
+            status: $codex_runtime_status,
+            reason: $codex_runtime_reason,
+            codex_command_present: ($codex_command_present == "true"),
+            version_status: $codex_version_status
+          },
+          codex_tui: {
+            present: ($codex_runtime_present == "true"),
+            status: $codex_runtime_status,
+            reason: $codex_runtime_reason,
+            fixed_session_present: ($codex_fixed_session_present == "true"),
+            codex_window_present: ($codex_window_present == "true"),
+            pane_alive: ($codex_pane_alive == "true"),
+            process_count: $codex_process_count,
+            command_redacted: true
+          },
           hermes_runtime: {
             present: ($hermes_runtime_present == "true"),
             status: $hermes_runtime_status,
@@ -201,6 +249,8 @@ let
             "read-only-status",
             "timer-evidence",
             "hermes-codex-smoke-readback",
+            "codex-cli-command",
+            "codex-fixed-tmux-lane",
             "hermes-runtime-command",
             "uv-package-manager",
             "hermes-yolo-tmux-lane"
@@ -232,11 +282,13 @@ in
     wantedBy = [ "multi-user.target" ];
     wants = [
       "windburn-health.service"
+      "windburn-codex-runtime-status.service"
       "windburn-hermes-runtime-status.service"
       "windburn-hermes-yolo-status.service"
     ];
     after = [
       "windburn-health.service"
+      "windburn-codex-runtime-status.service"
       "windburn-hermes-runtime-status.service"
       "windburn-hermes-yolo-status.service"
     ];

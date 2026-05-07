@@ -3,7 +3,7 @@
 let
   hermesRev = "6f2dab248a6cc8591af46e5deb2dc939c2b43146";
   hermesFlake = builtins.getFlake "github:NousResearch/hermes-agent/${hermesRev}";
-  hermesAgent = hermesFlake.packages.${pkgs.system}.default;
+  hermesAgent = hermesFlake.packages.${pkgs.stdenv.hostPlatform.system}.default;
   yoloSession = "windburn-hermes-runtime";
   yoloWindow = "hermes-yolo";
   yoloWorkdir = "/srv/windburn";

@@ -40,9 +40,10 @@ WINDBURN_RUNNER_EVIDENCE_PATH=/path/to/current.json scripts/fusion-bridge-api.sh
 The `/api/superruntime` response keeps the source as `runner-evidence` and
 exposes only browser-safe summary fields: runner status, tmux presence, boolean
 credential presence, lease readiness, provider-smoke state, and the redacted
-`hermes_yolo` status surface. The yolo surface exposes PASS/FLAG/BLOCK or
-UNAVAILABLE, pane liveness, process count, timer state when present, a
-tmux/unavailable operator surface label, and `command: "redacted"` only.
+`hermes_yolo`, `codex_cli`, and `codex_tui` status surfaces. These surfaces
+expose PASS/FLAG/BLOCK or UNAVAILABLE, command presence, pane liveness, process
+count, timer state when present, an operator surface label, and
+`command: "redacted"` only.
 
 ## Smoke
 

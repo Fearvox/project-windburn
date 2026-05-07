@@ -1,8 +1,8 @@
 # CANARY-read-only-repo-review-health
 
-Generated: `2026-05-07T03:44:17.355409Z`
+Generated: `2026-05-07T04:53:51.460071Z`
 
-Target: `/Users/0xvox/Windburn/.`
+Target: `/Users/0xvox/Windburn/.worktrees/workhorse-codex-cli/.`
 
 Host: `deMacBook-Pro.local`
 
@@ -14,10 +14,10 @@ VERDICT: `PASS`
 
 ## Evidence
 
-- Git repo: `/Users/0xvox/Windburn` branch `main` run-time head `dfa6ffb`
-- tool inventory: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/TOOL_INVENTORY.json
-- Research Vault proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json
-- code-review-graph proof: /Users/0xvox/Windburn/./docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json
+- Git repo: `/Users/0xvox/Windburn/.worktrees/workhorse-codex-cli` branch `codex/workhorse-codex-cli` run-time head `57beed3`
+- tool inventory: /Users/0xvox/Windburn/.worktrees/workhorse-codex-cli/./docs/remote-workhorse/phase1/TOOL_INVENTORY.json
+- Research Vault proof: /Users/0xvox/Windburn/.worktrees/workhorse-codex-cli/./docs/remote-workhorse/phase1/RESEARCH_VAULT_PROOF.json
+- code-review-graph proof: /Users/0xvox/Windburn/.worktrees/workhorse-codex-cli/./docs/remote-workhorse/phase1/CODE_REVIEW_GRAPH_PROOF.json
 - Generated doctor JSON: `docs/remote-workhorse/phase1/evidence/current/doctor.json`
 
 ## Probe Summary
