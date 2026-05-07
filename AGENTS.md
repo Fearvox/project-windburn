@@ -73,8 +73,8 @@ git status --short --branch
 
 One atomic slice per run. Prioritize frontier adapter (capsule → p5/remotion/browser-demo/fixed-canvas QA using browser-qa skill). Mutation must render testable phenotype, evaluate creator usefulness (helps make visual artifacts without bloat), select smallest winner, retain with regression gate, avoid dashboards.
 
-Retained winner: fusion-chat-terminal's industrial-brutalist terminal UI with live matrix scanline and setup assistant for xAI lane (links to DASH). Use browser-qa + vision_analyze on deployed preview for visual regression, fixed-canvas verification if applicable, and interaction smoke on setup/polish buttons.
+Retained winner: fusion-chat-terminal's industrial-brutalist terminal UI with live matrix scanline (now with animated moving beam per frontend-design meaningful motion) and setup assistant for xAI lane (links to DASH). 
 
-Mutation axes this run: improved audit integration in AGENTS.md to enforce loaded skills (frontend-design, browser-qa, verification-loop).
+Selected mutation this run: CSS-driven animated matrix scanline (moving gradient beam + glow). Phenotype rendered and tested via browser QA. Creator usefulness: provides visible "live" monitoring feedback during evolution/creator loops without bloat or new deps. Selected as smallest winner over static version. Retained with regression gate in verification-loop + browser-qa (check for animation, no layout shift, console clean).
 
-Verification gate added: include `hermes mcp test research_vault` and visual proof in captain runtime checks.
+Verification gate added: `hermes mcp test research_vault`, `scripts/check.sh`, preview script + browser_navigate + browser_vision on apps/fusion-chat-terminal/index.html for scanline motion proof.
