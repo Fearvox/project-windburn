@@ -52,6 +52,18 @@ const runnerEvidence = {
     yolo_process_count: 1,
     command_redacted: true,
   },
+  herdr_cockpit: {
+    status: "PASS",
+    reason: "herdr_cockpit_ready",
+    command_present: true,
+    server_active: true,
+    socket_present: true,
+    socket_api_status: "PASS",
+    process_count: 1,
+    operator_surface: "herdr",
+    attach_target_redacted: true,
+    command_redacted: true,
+  },
   latest_hermes_codex_smoke: {
     verdict: "PASS",
     reason: "HERMES_CODEX_PROVIDER_OK",
@@ -152,8 +164,18 @@ assert(runnerSuperruntime.body.hermes_yolo.operator_surface === "tmux", "operato
 assert(runnerSuperruntime.body.hermes_yolo.command === "redacted", "hermes_yolo command must stay redacted");
 assert(runnerSuperruntime.body.hermes_yolo.command_redacted === true, "hermes_yolo command redaction flag must be true");
 assert(runnerSuperruntime.body.hermes_yolo.stream.status === "stubbed", "hermes_yolo stream must be a bounded redacted stub");
+assert(runnerSuperruntime.body.herdr_cockpit.status === "PASS", "herdr_cockpit status must be top-level");
+assert(runnerSuperruntime.body.herdr_cockpit.command_present === true, "herdr command presence must be boolean-only");
+assert(runnerSuperruntime.body.herdr_cockpit.server_active === true, "herdr server activity must be boolean-only");
+assert(runnerSuperruntime.body.herdr_cockpit.socket_present === true, "herdr socket presence must be boolean-only");
+assert(runnerSuperruntime.body.herdr_cockpit.socket_api_status === "PASS", "herdr socket API status must be visible");
+assert(runnerSuperruntime.body.herdr_cockpit.operator_surface === "herdr", "herdr operator surface must be summarized");
+assert(runnerSuperruntime.body.herdr_cockpit.attach_target === "redacted", "herdr attach target must stay redacted");
+assert(runnerSuperruntime.body.herdr_cockpit.command === "redacted", "herdr command must stay redacted");
+assert(runnerSuperruntime.body.runner_evidence.herdr_cockpit_status === "PASS", "runner evidence must summarize herdr cockpit");
 assert(runnerSuperruntime.body.status_events.some((event) => event.type === "hermes-yolo-status"), "hermes_yolo status event must be present");
 assert(runnerSuperruntime.body.status_events.some((event) => event.type === "codex-tui-status"), "codex_tui status event must be present");
+assert(runnerSuperruntime.body.status_events.some((event) => event.type === "herdr-cockpit-status"), "herdr_cockpit status event must be present");
 assert(runnerSuperruntime.body.secret_values_recorded === false, "runner superruntime must not record secrets");
 
 const runnerFindings = assertStreamSafe(runnerSuperruntime.body);
@@ -210,6 +232,26 @@ for (const unsafeCase of [
       },
     }),
     reasons: ["codex_tui_command_not_redacted"],
+  },
+  {
+    label: "herdr cockpit command not redacted",
+    evidence: makeRunnerEvidence({
+      herdr_cockpit: {
+        ...runnerEvidence.herdr_cockpit,
+        command_redacted: false,
+      },
+    }),
+    reasons: ["herdr_cockpit_command_not_redacted"],
+  },
+  {
+    label: "herdr cockpit attach not redacted",
+    evidence: makeRunnerEvidence({
+      herdr_cockpit: {
+        ...runnerEvidence.herdr_cockpit,
+        attach_target_redacted: false,
+      },
+    }),
+    reasons: ["herdr_cockpit_attach_not_redacted"],
   },
 ]) {
   const unsafeApi = createFusionBridgeApi({

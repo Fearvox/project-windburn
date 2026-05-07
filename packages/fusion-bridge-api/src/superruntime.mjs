@@ -65,6 +65,11 @@ function codexTuiSource(evidence) {
   return tui && typeof tui === "object" && !Array.isArray(tui) ? tui : null;
 }
 
+function herdrCockpitSource(evidence) {
+  const cockpit = evidence?.herdr_cockpit;
+  return cockpit && typeof cockpit === "object" && !Array.isArray(cockpit) ? cockpit : null;
+}
+
 function buildHermesYoloStatus(evidence, generatedAt) {
   const yolo = hermesYoloSource(evidence);
   const status = safeHermesYoloStatus(firstPresent(yolo?.status, yolo?.verdict));
@@ -164,6 +169,43 @@ function buildCodexTuiStatus(evidence, generatedAt) {
       bounded: true,
       reason: "raw_codex_pane_content_not_exposed",
     },
+  };
+}
+
+function buildHerdrCockpitStatus(evidence, generatedAt) {
+  const cockpit = herdrCockpitSource(evidence);
+  const status = safeHermesYoloStatus(firstPresent(cockpit?.status, cockpit?.verdict));
+  const processCount = safeCount(firstPresent(
+    cockpit?.process_count,
+    cockpit?.server?.process_count,
+  ), 0);
+  const socketApiStatus = safeScalar(firstPresent(
+    cockpit?.socket_api_status,
+    cockpit?.server?.socket_api_status,
+    "unknown",
+  ));
+  const updatedAt = safeScalar(firstPresent(
+    cockpit?.updated_at,
+    cockpit?.generated_at_utc,
+    evidence?.generated_at_utc,
+    evidence?.generatedAt,
+    generatedAt,
+  ));
+
+  return {
+    status,
+    command_present: safeBoolean(firstPresent(cockpit?.command_present, cockpit?.herdr?.command_present)),
+    server_active: safeBoolean(firstPresent(cockpit?.server_active, cockpit?.server?.service_active)),
+    socket_present: safeBoolean(firstPresent(cockpit?.socket_present, cockpit?.server?.socket_present)),
+    socket_api_status: socketApiStatus,
+    process_count: processCount,
+    operator_surface: status === "UNAVAILABLE" ? "unavailable" : "herdr",
+    attach_target: "redacted",
+    attach_target_redacted: true,
+    command: "redacted",
+    command_redacted: true,
+    updated_at: updatedAt,
+    receipt: cockpit ? "runner-evidence:herdr_cockpit" : "runner-evidence:herdr_cockpit:unavailable",
   };
 }
 
@@ -315,6 +357,8 @@ export function inspectRunnerEvidenceSafety(evidence) {
     remote_mutation: safeBoolean(evidence.remote_mutation),
     hermes_yolo_command_redacted: hermesYoloSource(evidence)?.command_redacted !== false,
     codex_tui_command_redacted: codexTuiSource(evidence)?.command_redacted !== false,
+    herdr_cockpit_command_redacted: herdrCockpitSource(evidence)?.command_redacted !== false,
+    herdr_cockpit_attach_redacted: herdrCockpitSource(evidence)?.attach_target_redacted !== false,
   };
   const reasons = [];
 
@@ -323,6 +367,8 @@ export function inspectRunnerEvidenceSafety(evidence) {
   if (checks.remote_mutation) reasons.push("remote_mutation_true");
   if (!checks.hermes_yolo_command_redacted) reasons.push("hermes_yolo_command_not_redacted");
   if (!checks.codex_tui_command_redacted) reasons.push("codex_tui_command_not_redacted");
+  if (!checks.herdr_cockpit_command_redacted) reasons.push("herdr_cockpit_command_not_redacted");
+  if (!checks.herdr_cockpit_attach_redacted) reasons.push("herdr_cockpit_attach_not_redacted");
 
   return {
     safe: reasons.length === 0,
@@ -365,6 +411,7 @@ export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
   const hermesYolo = buildHermesYoloStatus(evidence, generatedAt);
   const codexCli = buildCodexCliStatus(evidence);
   const codexTui = buildCodexTuiStatus(evidence, generatedAt);
+  const herdrCockpit = buildHerdrCockpitStatus(evidence, generatedAt);
 
   return {
     schema_version: 1,
@@ -402,6 +449,7 @@ export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
         codexTui.status === "PASS" ? "codex-tmux-lane-ready" : "codex-tmux-lane-not-ready",
         safeBoolean(credentials.hermes_auth_present) ? "hermes-auth-present" : "hermes-auth-missing",
         hermesYolo.status === "UNAVAILABLE" ? "hermes-yolo-unavailable" : "hermes-yolo-status",
+        herdrCockpit.status === "PASS" ? "herdr-cockpit-ready" : "herdr-cockpit-not-ready",
       ],
     }],
     tasks: [],
@@ -440,10 +488,23 @@ export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
           : `codex_tui ${codexTui.status.toLowerCase()}`,
         at: codexTui.updated_at,
       },
+      {
+        id: "runner-evidence-herdr-cockpit",
+        type: "herdr-cockpit-status",
+        status: herdrCockpit.status,
+        level: statusLevel(herdrCockpit.status),
+        runtime_id: "windburn-workhorse-runner",
+        task_id: null,
+        message: herdrCockpit.status === "UNAVAILABLE"
+          ? "herdr_cockpit unavailable"
+          : `herdr_cockpit ${herdrCockpit.status.toLowerCase()}`,
+        at: herdrCockpit.updated_at,
+      },
     ],
     codex_cli: codexCli,
     codex_tui: codexTui,
     hermes_yolo: hermesYolo,
+    herdr_cockpit: herdrCockpit,
     runner_evidence: {
       runner_id: runnerId,
       runner_kind: safeScalar(firstPresent(evidence.runner_kind, "read-only-evidence")),
@@ -456,6 +517,7 @@ export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
       codex_auth_present: safeBoolean(credentials.codex_auth_present),
       codex_cli_present: codexCli.command_present,
       codex_tui_status: codexTui.status,
+      herdr_cockpit_status: herdrCockpit.status,
       hermes_auth_present: safeBoolean(credentials.hermes_auth_present),
       provider_env_present: safeBoolean(credentials.provider_env_present),
       latest_hermes_codex_smoke_verdict: latestSmokeVerdict,
