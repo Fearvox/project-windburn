@@ -9,6 +9,9 @@ trap cleanup EXIT INT TERM
 
 cargo fmt --check
 cargo test
+scripts/research-run-card-verify.sh
+cat docs/remote-workhorse/fixtures/research-run-card-v0.json | scripts/research-run-card-verify.sh -
+scripts/research-appliance-smoke.sh
 scripts/superruntime-fixture-verify.sh
 scripts/multica-runtime-card-verify.sh
 cat docs/remote-workhorse/fixtures/multica-runtime-card-v0.json | scripts/multica-runtime-card-verify.sh -

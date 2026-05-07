@@ -204,10 +204,15 @@ ssh_base \
 	   /run/current-system/sw/bin/windburn-herdr-status >/tmp/windburn-herdr-status-smoke.json
 	   cat /tmp/windburn-herdr-status-smoke.json
 	   jq -e ".schema_version == 1 and .status == \"PASS\" and .secret_values_recorded == false and .redacted_public_safe == true and .herdr.command_present == true and .server.service_active == true and .server.socket_present == true and .server.socket_api_status == \"PASS\" and .operator_surface.attach_target_redacted == true" /tmp/windburn-herdr-status-smoke.json >/dev/null
+	   test -x /run/current-system/sw/bin/windburn-research-appliance-status
+	   test -x /run/current-system/sw/bin/windburn-research-runner
+	   /run/current-system/sw/bin/windburn-research-appliance-status >/tmp/windburn-research-appliance-status-smoke.json
+	   cat /tmp/windburn-research-appliance-status-smoke.json
+	   jq -e ".schema_version == 1 and .status == \"PASS\" and .secret_values_recorded == false and .redacted_public_safe == true and (.capabilities | index(\"research-run-card-validation\") != null) and (.capabilities | index(\"agent-memory-causality\") != null) and (.capabilities | index(\"huggingface-export-gated\") != null)" /tmp/windburn-research-appliance-status-smoke.json >/dev/null
 	   test -x /run/current-system/sw/bin/windburn-runner-status
 	   /run/current-system/sw/bin/windburn-runner-status >/tmp/windburn-runner-status-smoke.json
 	   cat /tmp/windburn-runner-status-smoke.json
-	   jq -e ".schema_version == 1 and .secret_values_recorded == false and .redacted_public_safe == true and .codex_tui.status == \"PASS\" and .hermes_yolo.status == \"PASS\" and .herdr_cockpit.status == \"PASS\"" /tmp/windburn-runner-status-smoke.json >/dev/null
+	   jq -e ".schema_version == 1 and .secret_values_recorded == false and .redacted_public_safe == true and .codex_tui.status == \"PASS\" and .hermes_yolo.status == \"PASS\" and .herdr_cockpit.status == \"PASS\" and .research_appliance.status == \"PASS\"" /tmp/windburn-runner-status-smoke.json >/dev/null
    test -f /srv/windburn/evidence/runner/current.json'
 
 echo

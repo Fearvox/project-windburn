@@ -99,6 +99,12 @@ multica-runtime-card-verify:
 multica-runtime-card-verify-hermes:
     scripts/multica-runtime-card-verify.sh docs/remote-workhorse/fixtures/multica-hermes-autoresearch-card-v0.json
 
+research-run-card-verify:
+    scripts/research-run-card-verify.sh docs/remote-workhorse/fixtures/research-run-card-v0.json
+
+research-appliance-smoke:
+    scripts/research-appliance-smoke.sh
+
 windburn-captain-runtime-status:
     scripts/windburn-captain-runtime.sh --card docs/remote-workhorse/fixtures/multica-runtime-card-v0.json --action status
 

@@ -9,6 +9,7 @@ in
     ./modules/remote-workhorse-codex.nix
     ./modules/remote-workhorse-herdr.nix
     ./modules/remote-workhorse-hermes.nix
+    ./modules/remote-workhorse-research.nix
     ./modules/remote-workhorse-runner.nix
   ];
 

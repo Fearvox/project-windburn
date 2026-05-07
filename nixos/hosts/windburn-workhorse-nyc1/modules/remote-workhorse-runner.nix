@@ -106,6 +106,19 @@ let
         herdr_socket_api_status="$(jq -r '.server.socket_api_status // "UNKNOWN"' /srv/windburn/evidence/herdr/current.json 2>/dev/null || printf '%s' UNKNOWN)"
         herdr_process_count="$(jq -r '(.server.process_count // 0) | tostring' /srv/windburn/evidence/herdr/current.json 2>/dev/null || printf '%s' 0)"
       fi
+      research_present="$(bool_file /srv/windburn/evidence/research-appliance/current.json)"
+      research_status=UNKNOWN
+      research_reason=missing_research_appliance_evidence
+      research_staged_run_count=0
+      research_public_safe=false
+      research_hf_export_gated=false
+      if [ "$research_present" = true ]; then
+        research_status="$(jq -r '.status // "UNKNOWN"' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' UNKNOWN)"
+        research_reason="$(jq -r '.reason // "unknown"' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' unknown)"
+        research_staged_run_count="$(jq -r '(.staged_run_count // 0) | tostring' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' 0)"
+        research_public_safe="$(jq -r '(.redacted_public_safe // false) | tostring' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' false)"
+        research_hf_export_gated="$(jq -r '(.capabilities // [] | index("huggingface-export-gated") != null) | tostring' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' false)"
+      fi
 
       tmux_sessions="$(tmux ls 2>/dev/null || true)"
       tmux_session_count="$(printf '%s\n' "$tmux_sessions" | sed '/^$/d' | wc -l | tr -d ' ')"
@@ -165,6 +178,9 @@ let
       elif [ "$herdr_status" != PASS ]; then
         runner_status=FLAG
         runner_reason=herdr_cockpit_not_pass
+      elif [ "$research_status" != PASS ]; then
+        runner_status=FLAG
+        runner_reason=research_appliance_not_pass
       fi
 
       tmp="$out_dir/current.json.tmp"
@@ -210,6 +226,12 @@ let
         --arg herdr_socket_present "$herdr_socket_present" \
         --arg herdr_socket_api_status "$herdr_socket_api_status" \
         --argjson herdr_process_count "$herdr_process_count" \
+        --arg research_present "$research_present" \
+        --arg research_status "$research_status" \
+        --arg research_reason "$research_reason" \
+        --argjson research_staged_run_count "$research_staged_run_count" \
+        --arg research_public_safe "$research_public_safe" \
+        --arg research_hf_export_gated "$research_hf_export_gated" \
         --arg tmux_session_present "$tmux_session_present" \
         --argjson tmux_session_count "$tmux_session_count" \
         --arg latest_smoke_run_id "$latest_smoke_run_id" \
@@ -283,6 +305,14 @@ let
             attach_target_redacted: true,
             command_redacted: true
           },
+          research_appliance: {
+            present: ($research_present == "true"),
+            status: $research_status,
+            reason: $research_reason,
+            staged_run_count: $research_staged_run_count,
+            public_safe_evidence: ($research_public_safe == "true"),
+            huggingface_export_gated: ($research_hf_export_gated == "true")
+          },
           health: {
             present: ($health_present == "true"),
             generated_at_utc: $health_generated_at
@@ -302,7 +332,10 @@ let
             "hermes-runtime-command",
             "uv-package-manager",
             "hermes-yolo-tmux-lane",
-            "herdr-cockpit-socket-api"
+            "herdr-cockpit-socket-api",
+            "research-run-card-validation",
+            "agent-memory-causality",
+            "huggingface-export-gated"
           ],
           remote_mutation: false,
           secret_values_recorded: false,
@@ -335,6 +368,7 @@ in
       "windburn-herdr-status.service"
       "windburn-hermes-runtime-status.service"
       "windburn-hermes-yolo-status.service"
+      "windburn-research-appliance-status.service"
     ];
     after = [
       "windburn-health.service"
@@ -342,6 +376,7 @@ in
       "windburn-herdr-status.service"
       "windburn-hermes-runtime-status.service"
       "windburn-hermes-yolo-status.service"
+      "windburn-research-appliance-status.service"
     ];
     serviceConfig = {
       Type = "oneshot";

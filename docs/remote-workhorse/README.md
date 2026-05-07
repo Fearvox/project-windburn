@@ -38,6 +38,7 @@ Read order for a new agent:
 33. `FUSION_CHAT_PERSONALIZATION_SETTINGS_HANDOFF.md`
 34. `preflight/XAI_SETUP_AGENT_SMOKE.md`
 35. `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md`
+36. `RESEARCH_APPLIANCE_V0.md`
 
 Read `SUPERRUNTIME_ORCHESTRATOR_SPEC.md` and
 `MULTICA_SSH_RUNTIME_INGRESS.md` together for the current v1 bootstrap queue
@@ -95,3 +96,6 @@ The xAI setup lane credential shape and current API proof are recorded in
 `preflight/XAI_SETUP_AGENT_SMOKE.md`.
 The livestream safety gate and `NO_ROTATE / LOCKDOWN_FIRST / ROTATE` decision
 contract are specified in `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md`.
+The small remote research workhorse appliance, including the Agent Memory
+Causality run-card contract and gated Hugging Face export lane, is specified in
+`RESEARCH_APPLIANCE_V0.md`.
