@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  hermesRev = "6f2dab248a6cc8591af46e5deb2dc939c2b43146";
+  hermesRev = "49c3c2e0d37c96dc593a807a5e81fdf4f0aa3d85";
   hermesFlake = builtins.getFlake "github:NousResearch/hermes-agent/${hermesRev}";
   hermesAgent = hermesFlake.packages.${pkgs.stdenv.hostPlatform.system}.default;
   yoloSession = "windburn-hermes-runtime";
@@ -26,6 +26,16 @@ let
 
       generated_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
       hostname="$(cat /proc/sys/kernel/hostname)"
+      hermes_rev="${hermesRev}"
+      ensured_rev_file=/srv/windburn/state/hermes-yolo.rev
+      ensured_rev=""
+      ensured_rev_matches=false
+      if [ -f "$ensured_rev_file" ]; then
+        ensured_rev="$(sed -n '1p' "$ensured_rev_file" 2>/dev/null || true)"
+      fi
+      if [ "$ensured_rev" = "$hermes_rev" ]; then
+        ensured_rev_matches=true
+      fi
       session="${yoloSession}"
       window="${yoloWindow}"
       tmux_present=false
@@ -75,6 +85,9 @@ let
       jq -n \
         --arg generated_at "$generated_at" \
         --arg hostname "$hostname" \
+        --arg hermes_rev "$hermes_rev" \
+        --arg ensured_rev "$ensured_rev" \
+        --arg ensured_rev_matches "$ensured_rev_matches" \
         --arg status "$status" \
         --arg reason "$reason" \
         --arg tmux_present "$tmux_present" \
@@ -90,6 +103,10 @@ let
           hostname: $hostname,
           status: $status,
           reason: $reason,
+          hermes: {
+            source: "github:NousResearch/hermes-agent",
+            rev: $hermes_rev
+          },
           tmux: {
             present: ($tmux_present == "true"),
             version: (if ($tmux_version | length) == 0 then null else $tmux_version end)
@@ -100,6 +117,8 @@ let
             pane_alive: ($pane_alive == "true"),
             yolo_process_count: $process_count,
             command_kind: "hermes-yolo",
+            ensured_rev: (if ($ensured_rev | length) == 0 then null else $ensured_rev end),
+            ensured_rev_matches: ($ensured_rev_matches == "true"),
             command_redacted: true
           },
           remote_mutation: false,
@@ -133,8 +152,12 @@ let
       window="${yoloWindow}"
       workdir="${yoloWorkdir}"
       command="cd $workdir && exec /run/current-system/sw/bin/hermes --yolo"
+      expected_rev="${hermesRev}"
+      state_dir=/srv/windburn/state
+      rev_file="$state_dir/hermes-yolo.rev"
 
       mkdir -p "$workdir"
+      mkdir -p "$state_dir"
 
       window_exists() {
         tmux list-windows -t "$session" -F '#{window_name}' 2>/dev/null | grep -Fxq "$window"
@@ -148,18 +171,27 @@ let
         pgrep -fc '(hermes .*--yolo|python3 .*hermes .*--yolo|/run/current-system/sw/bin/hermes --yolo)' 2>/dev/null || printf '%s' 0
       }
 
+      rev_mismatch() {
+        if [ ! -f "$rev_file" ]; then
+          return 0
+        fi
+        [ "$(sed -n '1p' "$rev_file" 2>/dev/null || true)" != "$expected_rev" ]
+      }
+
       if ! tmux has-session -t "$session" 2>/dev/null; then
         tmux new-session -d -s "$session" -n shell -c "$workdir"
       fi
 
       if window_exists; then
-        if [ "$(pane_dead)" != 0 ] || [ "$(yolo_process_count)" -lt 1 ]; then
+        if [ "$(pane_dead)" != 0 ] || [ "$(yolo_process_count)" -lt 1 ] || rev_mismatch; then
           tmux respawn-pane -k -t "$session:$window" "$command"
         fi
       else
         tmux new-window -t "$session" -n "$window" "$command"
       fi
 
+      printf '%s\n' "$expected_rev" > "$rev_file"
+      chmod 0644 "$rev_file"
       sleep 4
       exec windburn-hermes-yolo-status
     '';
@@ -293,6 +325,7 @@ in
   systemd.tmpfiles.rules = [
     "d /srv/windburn/evidence/hermes-runtime 0755 windburn windburn -"
     "d /srv/windburn/evidence/hermes-yolo 0755 windburn windburn -"
+    "d /srv/windburn/state 0755 root root -"
   ];
 
   systemd.services.windburn-hermes-runtime-status = {

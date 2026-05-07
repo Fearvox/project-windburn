@@ -79,6 +79,7 @@ let
       hermes_yolo_window_present=false
       hermes_yolo_pane_alive=false
       hermes_yolo_process_count=0
+      hermes_yolo_ensured_rev_matches=false
       if [ "$hermes_yolo_present" = true ]; then
         hermes_yolo_status="$(jq -r '.status // "UNKNOWN"' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' UNKNOWN)"
         hermes_yolo_reason="$(jq -r '.reason // "unknown"' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' unknown)"
@@ -86,6 +87,7 @@ let
         hermes_yolo_window_present="$(jq -r '(.lane.yolo_window_present // false) | tostring' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' false)"
         hermes_yolo_pane_alive="$(jq -r '(.lane.pane_alive // false) | tostring' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' false)"
         hermes_yolo_process_count="$(jq -r '(.lane.yolo_process_count // 0) | tostring' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' 0)"
+        hermes_yolo_ensured_rev_matches="$(jq -r '(.lane.ensured_rev_matches // false) | tostring' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' false)"
       fi
       herdr_present="$(bool_file /srv/windburn/evidence/herdr/current.json)"
       herdr_status=UNKNOWN
@@ -154,6 +156,9 @@ let
       elif [ "$hermes_yolo_status" != PASS ]; then
         runner_status=FLAG
         runner_reason=hermes_yolo_lane_not_pass
+      elif [ "$hermes_yolo_ensured_rev_matches" != true ]; then
+        runner_status=FLAG
+        runner_reason=hermes_yolo_rev_not_ensured
       elif [ "$latest_smoke_verdict" != PASS ]; then
         runner_status=FLAG
         runner_reason=latest_hermes_codex_smoke_not_pass
@@ -196,6 +201,7 @@ let
         --arg hermes_yolo_window_present "$hermes_yolo_window_present" \
         --arg hermes_yolo_pane_alive "$hermes_yolo_pane_alive" \
         --argjson hermes_yolo_process_count "$hermes_yolo_process_count" \
+        --arg hermes_yolo_ensured_rev_matches "$hermes_yolo_ensured_rev_matches" \
         --arg herdr_present "$herdr_present" \
         --arg herdr_status "$herdr_status" \
         --arg herdr_reason "$herdr_reason" \
@@ -261,6 +267,7 @@ let
             yolo_window_present: ($hermes_yolo_window_present == "true"),
             pane_alive: ($hermes_yolo_pane_alive == "true"),
             yolo_process_count: $hermes_yolo_process_count,
+            ensured_rev_matches: ($hermes_yolo_ensured_rev_matches == "true"),
             command_redacted: true
           },
           herdr_cockpit: {
