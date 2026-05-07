@@ -24,18 +24,19 @@ Read order for a new agent:
 19. `preflight/WORKHORSE_HERMES_RUNTIME_PROOF.md`
 20. `preflight/WORKHORSE_CODEX_RUNTIME_PROOF.md`
 21. `preflight/WORKHORSE_HERMES_YOLO_LANE_PROOF.md`
-22. `preflight/DROPLET_ENGAGEMENT_REVIEW.md`
-23. `preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md`
-24. `preflight/HERMES_HEALTH_GATE.md`
-25. `preflight/HERMES_MAINTENANCE.md`
-26. `preflight/HERMES_YOLO_LOOP_PROOF.md`
-27. `FUSION_CHAT_TERMINAL.md`
-28. `FUSION_BRIDGE_V0.md`
-29. `SUPERRUNTIME_ORCHESTRATOR_SPEC.md`
-30. `MULTICA_SSH_RUNTIME_INGRESS.md`
-31. `FUSION_CHAT_PERSONALIZATION_SETTINGS_HANDOFF.md`
-32. `preflight/XAI_SETUP_AGENT_SMOKE.md`
-33. `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md`
+22. `preflight/WORKHORSE_HERDR_COCKPIT_PROOF.md`
+23. `preflight/DROPLET_ENGAGEMENT_REVIEW.md`
+24. `preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md`
+25. `preflight/HERMES_HEALTH_GATE.md`
+26. `preflight/HERMES_MAINTENANCE.md`
+27. `preflight/HERMES_YOLO_LOOP_PROOF.md`
+28. `FUSION_CHAT_TERMINAL.md`
+29. `FUSION_BRIDGE_V0.md`
+30. `SUPERRUNTIME_ORCHESTRATOR_SPEC.md`
+31. `MULTICA_SSH_RUNTIME_INGRESS.md`
+32. `FUSION_CHAT_PERSONALIZATION_SETTINGS_HANDOFF.md`
+33. `preflight/XAI_SETUP_AGENT_SMOKE.md`
+34. `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md`
 
 Read `SUPERRUNTIME_ORCHESTRATOR_SPEC.md` and
 `MULTICA_SSH_RUNTIME_INGRESS.md` together for the current v1 bootstrap queue
@@ -62,6 +63,9 @@ Fusion Bridge readback fields are proven in
 `preflight/WORKHORSE_CODEX_RUNTIME_PROOF.md`.
 The durable fixed Hermes yolo tmux lane and runner evidence gate are proven in
 `preflight/WORKHORSE_HERMES_YOLO_LANE_PROOF.md`.
+The human-friendly Herdr cockpit server, socket API status, runner evidence
+section, and Fusion Bridge readback are recorded in
+`preflight/WORKHORSE_HERDR_COCKPIT_PROOF.md`.
 The current multi-droplet engagement review is recorded in
 `preflight/DROPLET_ENGAGEMENT_REVIEW.md` and can be refreshed with
 `scripts/droplet-engagement-review.sh --out docs/remote-workhorse/preflight/DROPLET_ENGAGEMENT_REVIEW.md`.

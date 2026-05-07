@@ -87,6 +87,23 @@ let
         hermes_yolo_pane_alive="$(jq -r '(.lane.pane_alive // false) | tostring' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' false)"
         hermes_yolo_process_count="$(jq -r '(.lane.yolo_process_count // 0) | tostring' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' 0)"
       fi
+      herdr_present="$(bool_file /srv/windburn/evidence/herdr/current.json)"
+      herdr_status=UNKNOWN
+      herdr_reason=missing_herdr_evidence
+      herdr_command_present=false
+      herdr_server_active=false
+      herdr_socket_present=false
+      herdr_socket_api_status=UNKNOWN
+      herdr_process_count=0
+      if [ "$herdr_present" = true ]; then
+        herdr_status="$(jq -r '.status // "UNKNOWN"' /srv/windburn/evidence/herdr/current.json 2>/dev/null || printf '%s' UNKNOWN)"
+        herdr_reason="$(jq -r '.reason // "unknown"' /srv/windburn/evidence/herdr/current.json 2>/dev/null || printf '%s' unknown)"
+        herdr_command_present="$(jq -r '(.herdr.command_present // false) | tostring' /srv/windburn/evidence/herdr/current.json 2>/dev/null || printf '%s' false)"
+        herdr_server_active="$(jq -r '(.server.service_active // false) | tostring' /srv/windburn/evidence/herdr/current.json 2>/dev/null || printf '%s' false)"
+        herdr_socket_present="$(jq -r '(.server.socket_present // false) | tostring' /srv/windburn/evidence/herdr/current.json 2>/dev/null || printf '%s' false)"
+        herdr_socket_api_status="$(jq -r '.server.socket_api_status // "UNKNOWN"' /srv/windburn/evidence/herdr/current.json 2>/dev/null || printf '%s' UNKNOWN)"
+        herdr_process_count="$(jq -r '(.server.process_count // 0) | tostring' /srv/windburn/evidence/herdr/current.json 2>/dev/null || printf '%s' 0)"
+      fi
 
       tmux_sessions="$(tmux ls 2>/dev/null || true)"
       tmux_session_count="$(printf '%s\n' "$tmux_sessions" | sed '/^$/d' | wc -l | tr -d ' ')"
@@ -140,6 +157,9 @@ let
       elif [ "$latest_smoke_verdict" != PASS ]; then
         runner_status=FLAG
         runner_reason=latest_hermes_codex_smoke_not_pass
+      elif [ "$herdr_status" != PASS ]; then
+        runner_status=FLAG
+        runner_reason=herdr_cockpit_not_pass
       fi
 
       tmp="$out_dir/current.json.tmp"
@@ -176,6 +196,14 @@ let
         --arg hermes_yolo_window_present "$hermes_yolo_window_present" \
         --arg hermes_yolo_pane_alive "$hermes_yolo_pane_alive" \
         --argjson hermes_yolo_process_count "$hermes_yolo_process_count" \
+        --arg herdr_present "$herdr_present" \
+        --arg herdr_status "$herdr_status" \
+        --arg herdr_reason "$herdr_reason" \
+        --arg herdr_command_present "$herdr_command_present" \
+        --arg herdr_server_active "$herdr_server_active" \
+        --arg herdr_socket_present "$herdr_socket_present" \
+        --arg herdr_socket_api_status "$herdr_socket_api_status" \
+        --argjson herdr_process_count "$herdr_process_count" \
         --arg tmux_session_present "$tmux_session_present" \
         --argjson tmux_session_count "$tmux_session_count" \
         --arg latest_smoke_run_id "$latest_smoke_run_id" \
@@ -235,6 +263,19 @@ let
             yolo_process_count: $hermes_yolo_process_count,
             command_redacted: true
           },
+          herdr_cockpit: {
+            present: ($herdr_present == "true"),
+            status: $herdr_status,
+            reason: $herdr_reason,
+            command_present: ($herdr_command_present == "true"),
+            server_active: ($herdr_server_active == "true"),
+            socket_present: ($herdr_socket_present == "true"),
+            socket_api_status: $herdr_socket_api_status,
+            process_count: $herdr_process_count,
+            operator_surface: "herdr",
+            attach_target_redacted: true,
+            command_redacted: true
+          },
           health: {
             present: ($health_present == "true"),
             generated_at_utc: $health_generated_at
@@ -253,7 +294,8 @@ let
             "codex-fixed-tmux-lane",
             "hermes-runtime-command",
             "uv-package-manager",
-            "hermes-yolo-tmux-lane"
+            "hermes-yolo-tmux-lane",
+            "herdr-cockpit-socket-api"
           ],
           remote_mutation: false,
           secret_values_recorded: false,
@@ -283,12 +325,14 @@ in
     wants = [
       "windburn-health.service"
       "windburn-codex-runtime-status.service"
+      "windburn-herdr-status.service"
       "windburn-hermes-runtime-status.service"
       "windburn-hermes-yolo-status.service"
     ];
     after = [
       "windburn-health.service"
       "windburn-codex-runtime-status.service"
+      "windburn-herdr-status.service"
       "windburn-hermes-runtime-status.service"
       "windburn-hermes-yolo-status.service"
     ];
