@@ -79,6 +79,11 @@ const fallbackSuperruntimeStatus = {
   hermesYoloProcesses: 0,
   hermesYoloTimer: "unknown",
   hermesYoloSurface: "unavailable",
+  codexCliStatus: "unavailable",
+  codexTuiStatus: "unavailable",
+  codexTuiPane: "unknown",
+  codexTuiProcesses: 0,
+  codexTuiSurface: "unavailable",
 };
 
 let superruntimeStatus = { ...fallbackSuperruntimeStatus };
@@ -452,7 +457,14 @@ function normalizeSuperruntimeStatus(payload, source) {
   const hermesYolo = payload?.hermes_yolo && typeof payload.hermes_yolo === "object"
     ? payload.hermes_yolo
     : {};
+  const codexCli = payload?.codex_cli && typeof payload.codex_cli === "object"
+    ? payload.codex_cli
+    : {};
+  const codexTui = payload?.codex_tui && typeof payload.codex_tui === "object"
+    ? payload.codex_tui
+    : {};
   const yoloProcessCount = numberOrFallback(hermesYolo.process_count, hermesYolo.processCount, 0);
+  const codexProcessCount = numberOrFallback(codexTui.process_count, codexTui.processCount, 0);
 
   return {
     source: payload?.source ?? source,
@@ -479,6 +491,11 @@ function normalizeSuperruntimeStatus(payload, source) {
     hermesYoloProcesses: yoloProcessCount,
     hermesYoloTimer: safeSuperruntimeLabel(hermesYolo.timer_status ?? "unknown"),
     hermesYoloSurface: safeSuperruntimeLabel(hermesYolo.operator_surface ?? "unavailable"),
+    codexCliStatus: safeSuperruntimeLabel(codexCli.status ?? "unavailable"),
+    codexTuiStatus: safeSuperruntimeLabel(codexTui.status ?? "unavailable"),
+    codexTuiPane: codexTui.pane_alive === true ? "alive" : "not alive",
+    codexTuiProcesses: codexProcessCount,
+    codexTuiSurface: safeSuperruntimeLabel(codexTui.operator_surface ?? "unavailable"),
   };
 }
 
@@ -515,6 +532,8 @@ function renderSuperruntimeStatus() {
     ["harness", superruntimeStatus.harnessDispatchState],
     ["yolo", superruntimeStatus.hermesYoloStatus],
     ["pane", `${superruntimeStatus.hermesYoloPane} / ${superruntimeStatus.hermesYoloProcesses} proc`],
+    ["codex", superruntimeStatus.codexCliStatus],
+    ["codex pane", `${superruntimeStatus.codexTuiPane} / ${superruntimeStatus.codexTuiProcesses} proc`],
     ["timer", superruntimeStatus.hermesYoloTimer],
     ["surface", superruntimeStatus.hermesYoloSurface],
   ].forEach(([label, value]) => {
@@ -957,7 +976,13 @@ async function dispatch(raw) {
       `timer=${superruntimeStatus.hermesYoloTimer}`,
       `surface=${superruntimeStatus.hermesYoloSurface}`,
     ].join(" ");
-    addMessage("remote", [bridgeLine, yoloLine, ...lines].join("\n"));
+    const codexLine = [
+      `CODEX_CLI ${String(superruntimeStatus.codexCliStatus).toUpperCase()}`,
+      `pane=${superruntimeStatus.codexTuiPane}`,
+      `processes=${superruntimeStatus.codexTuiProcesses}`,
+      `surface=${superruntimeStatus.codexTuiSurface}`,
+    ].join(" ");
+    addMessage("remote", [bridgeLine, yoloLine, codexLine, ...lines].join("\n"));
     return;
   }
 

@@ -55,6 +55,16 @@ function hermesYoloSource(evidence) {
   return yolo && typeof yolo === "object" && !Array.isArray(yolo) ? yolo : null;
 }
 
+function codexCliSource(evidence) {
+  const cli = evidence?.codex_cli;
+  return cli && typeof cli === "object" && !Array.isArray(cli) ? cli : null;
+}
+
+function codexTuiSource(evidence) {
+  const tui = evidence?.codex_tui;
+  return tui && typeof tui === "object" && !Array.isArray(tui) ? tui : null;
+}
+
 function buildHermesYoloStatus(evidence, generatedAt) {
   const yolo = hermesYoloSource(evidence);
   const status = safeHermesYoloStatus(firstPresent(yolo?.status, yolo?.verdict));
@@ -99,6 +109,60 @@ function buildHermesYoloStatus(evidence, generatedAt) {
       redacted: true,
       bounded: true,
       reason: "raw_pane_content_not_exposed",
+    },
+  };
+}
+
+function buildCodexCliStatus(evidence) {
+  const cli = codexCliSource(evidence);
+  const status = safeHermesYoloStatus(firstPresent(cli?.status, cli?.verdict));
+  return {
+    status,
+    command_present: safeBoolean(firstPresent(cli?.codex_command_present, cli?.command_present)),
+    version_status: safeScalar(firstPresent(cli?.version_status, cli?.version_probe?.status, "unknown")),
+    command: "redacted",
+    command_redacted: true,
+    receipt: cli ? "runner-evidence:codex_cli" : "runner-evidence:codex_cli:unavailable",
+  };
+}
+
+function buildCodexTuiStatus(evidence, generatedAt) {
+  const tui = codexTuiSource(evidence);
+  const status = safeHermesYoloStatus(firstPresent(tui?.status, tui?.verdict));
+  const paneAlive = safeBoolean(firstPresent(tui?.pane_alive, tui?.lane?.pane_alive));
+  const processCount = safeCount(firstPresent(
+    tui?.process_count,
+    tui?.codex_process_count,
+    tui?.lane?.process_count,
+    tui?.lane?.codex_process_count,
+  ), 0);
+  const operatorSurface = status === "UNAVAILABLE"
+    ? "unavailable"
+    : paneAlive || processCount > 0
+      ? "tmux"
+      : "unavailable";
+  const updatedAt = safeScalar(firstPresent(
+    tui?.updated_at,
+    tui?.generated_at_utc,
+    evidence?.generated_at_utc,
+    evidence?.generatedAt,
+    generatedAt,
+  ));
+
+  return {
+    status,
+    pane_alive: paneAlive,
+    process_count: processCount,
+    operator_surface: operatorSurface,
+    command: "redacted",
+    command_redacted: true,
+    updated_at: updatedAt,
+    receipt: tui ? "runner-evidence:codex_tui" : "runner-evidence:codex_tui:unavailable",
+    stream: {
+      status: "stubbed",
+      redacted: true,
+      bounded: true,
+      reason: "raw_codex_pane_content_not_exposed",
     },
   };
 }
@@ -250,6 +314,7 @@ export function inspectRunnerEvidenceSafety(evidence) {
     redacted_public_safe: evidence.redacted_public_safe === true,
     remote_mutation: safeBoolean(evidence.remote_mutation),
     hermes_yolo_command_redacted: hermesYoloSource(evidence)?.command_redacted !== false,
+    codex_tui_command_redacted: codexTuiSource(evidence)?.command_redacted !== false,
   };
   const reasons = [];
 
@@ -257,6 +322,7 @@ export function inspectRunnerEvidenceSafety(evidence) {
   if (!checks.redacted_public_safe) reasons.push("redacted_public_safe_not_true");
   if (checks.remote_mutation) reasons.push("remote_mutation_true");
   if (!checks.hermes_yolo_command_redacted) reasons.push("hermes_yolo_command_not_redacted");
+  if (!checks.codex_tui_command_redacted) reasons.push("codex_tui_command_not_redacted");
 
   return {
     safe: reasons.length === 0,
@@ -297,6 +363,8 @@ export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
       : "runner-flagged";
   const generatedAt = safeScalar(firstPresent(evidence.generated_at_utc, evidence.generatedAt));
   const hermesYolo = buildHermesYoloStatus(evidence, generatedAt);
+  const codexCli = buildCodexCliStatus(evidence);
+  const codexTui = buildCodexTuiStatus(evidence, generatedAt);
 
   return {
     schema_version: 1,
@@ -330,6 +398,8 @@ export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
         "read-only-evidence",
         tmuxSessionPresent ? "tmux-observed" : "tmux-not-observed",
         safeBoolean(credentials.codex_auth_present) ? "codex-auth-present" : "codex-auth-missing",
+        codexCli.command_present ? "codex-cli-present" : "codex-cli-missing",
+        codexTui.status === "PASS" ? "codex-tmux-lane-ready" : "codex-tmux-lane-not-ready",
         safeBoolean(credentials.hermes_auth_present) ? "hermes-auth-present" : "hermes-auth-missing",
         hermesYolo.status === "UNAVAILABLE" ? "hermes-yolo-unavailable" : "hermes-yolo-status",
       ],
@@ -358,7 +428,21 @@ export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
           : `hermes_yolo ${hermesYolo.status.toLowerCase()}`,
         at: hermesYolo.updated_at,
       },
+      {
+        id: "runner-evidence-codex-tui",
+        type: "codex-tui-status",
+        status: codexTui.status,
+        level: statusLevel(codexTui.status),
+        runtime_id: "windburn-workhorse-runner",
+        task_id: null,
+        message: codexTui.status === "UNAVAILABLE"
+          ? "codex_tui unavailable"
+          : `codex_tui ${codexTui.status.toLowerCase()}`,
+        at: codexTui.updated_at,
+      },
     ],
+    codex_cli: codexCli,
+    codex_tui: codexTui,
     hermes_yolo: hermesYolo,
     runner_evidence: {
       runner_id: runnerId,
@@ -370,6 +454,8 @@ export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
       tmux_session_present: tmuxSessionPresent,
       tmux_session_count: safeCount(tmux.session_count, 0),
       codex_auth_present: safeBoolean(credentials.codex_auth_present),
+      codex_cli_present: codexCli.command_present,
+      codex_tui_status: codexTui.status,
       hermes_auth_present: safeBoolean(credentials.hermes_auth_present),
       provider_env_present: safeBoolean(credentials.provider_env_present),
       latest_hermes_codex_smoke_verdict: latestSmokeVerdict,

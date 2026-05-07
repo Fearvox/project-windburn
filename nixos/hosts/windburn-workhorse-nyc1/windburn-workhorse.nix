@@ -6,6 +6,7 @@ in
 {
   imports = [
     ./modules/remote-workhorse-foundation.nix
+    ./modules/remote-workhorse-codex.nix
     ./modules/remote-workhorse-hermes.nix
     ./modules/remote-workhorse-runner.nix
   ];

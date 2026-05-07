@@ -28,6 +28,21 @@ const runnerEvidence = {
     hermes_auth_present: true,
     provider_env_present: false,
   },
+  codex_cli: {
+    status: "PASS",
+    reason: "codex_runtime_ready",
+    codex_command_present: true,
+    version_status: "PASS",
+  },
+  codex_tui: {
+    status: "PASS",
+    reason: "codex_runtime_ready",
+    fixed_session_present: true,
+    codex_window_present: true,
+    pane_alive: true,
+    process_count: 1,
+    command_redacted: true,
+  },
   hermes_yolo: {
     status: "PASS",
     reason: "hermes_yolo_lane_ready",
@@ -115,7 +130,20 @@ assert(runnerSuperruntime.body.harness_dispatch_state === "codex-provider-ok", "
 assert(runnerSuperruntime.body.runner_evidence.status === "PASS", "runner evidence status must be preserved");
 assert(runnerSuperruntime.body.runner_evidence.tmux_session_present === true, "runner tmux presence must be summarized");
 assert(runnerSuperruntime.body.runner_evidence.codex_auth_present === true, "credential presence must be boolean-only");
+assert(runnerSuperruntime.body.runner_evidence.codex_cli_present === true, "codex CLI presence must be summarized");
+assert(runnerSuperruntime.body.runner_evidence.codex_tui_status === "PASS", "codex TUI status must be summarized");
 assert(runnerSuperruntime.body.runner_evidence.provider_env_present === false, "missing provider env must stay visible as a boolean");
+assert(runnerSuperruntime.body.codex_cli.status === "PASS", "codex_cli status must be top-level");
+assert(runnerSuperruntime.body.codex_cli.command_present === true, "codex_cli command presence must be boolean-only");
+assert(runnerSuperruntime.body.codex_cli.version_status === "PASS", "codex_cli version status must be visible");
+assert(runnerSuperruntime.body.codex_cli.command === "redacted", "codex_cli command must stay redacted");
+assert(runnerSuperruntime.body.codex_tui.status === "PASS", "codex_tui status must be top-level");
+assert(runnerSuperruntime.body.codex_tui.pane_alive === true, "codex_tui pane liveness must be boolean-only");
+assert(runnerSuperruntime.body.codex_tui.process_count === 1, "codex_tui process count must be numeric");
+assert(runnerSuperruntime.body.codex_tui.operator_surface === "tmux", "codex_tui operator surface must be summarized");
+assert(runnerSuperruntime.body.codex_tui.command === "redacted", "codex_tui command must stay redacted");
+assert(runnerSuperruntime.body.codex_tui.command_redacted === true, "codex_tui command redaction flag must be true");
+assert(runnerSuperruntime.body.codex_tui.stream.status === "stubbed", "codex_tui stream must be a bounded redacted stub");
 assert(runnerSuperruntime.body.hermes_yolo.status === "PASS", "hermes_yolo status must be top-level");
 assert(runnerSuperruntime.body.hermes_yolo.pane_alive === true, "hermes_yolo pane liveness must be boolean-only");
 assert(runnerSuperruntime.body.hermes_yolo.process_count === 1, "hermes_yolo process count must be numeric");
@@ -125,6 +153,7 @@ assert(runnerSuperruntime.body.hermes_yolo.command === "redacted", "hermes_yolo 
 assert(runnerSuperruntime.body.hermes_yolo.command_redacted === true, "hermes_yolo command redaction flag must be true");
 assert(runnerSuperruntime.body.hermes_yolo.stream.status === "stubbed", "hermes_yolo stream must be a bounded redacted stub");
 assert(runnerSuperruntime.body.status_events.some((event) => event.type === "hermes-yolo-status"), "hermes_yolo status event must be present");
+assert(runnerSuperruntime.body.status_events.some((event) => event.type === "codex-tui-status"), "codex_tui status event must be present");
 assert(runnerSuperruntime.body.secret_values_recorded === false, "runner superruntime must not record secrets");
 
 const runnerFindings = assertStreamSafe(runnerSuperruntime.body);
@@ -171,6 +200,16 @@ for (const unsafeCase of [
       },
     }),
     reasons: ["hermes_yolo_command_not_redacted"],
+  },
+  {
+    label: "codex tui command not redacted",
+    evidence: makeRunnerEvidence({
+      codex_tui: {
+        ...runnerEvidence.codex_tui,
+        command_redacted: false,
+      },
+    }),
+    reasons: ["codex_tui_command_not_redacted"],
   },
 ]) {
   const unsafeApi = createFusionBridgeApi({

@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-07T03:44:17.355409Z",
+  "generated_at_utc": "2026-05-07T04:53:51.460071Z",
   "host": "deMacBook-Pro.local",
-  "invocation_cwd": "/Users/0xvox/Windburn",
-  "target": "/Users/0xvox/Windburn/.",
+  "invocation_cwd": "/Users/0xvox/Windburn/.worktrees/workhorse-codex-cli",
+  "target": "/Users/0xvox/Windburn/.worktrees/workhorse-codex-cli/.",
   "git": {
     "is_repo": true,
-    "top_level": "/Users/0xvox/Windburn",
-    "branch": "main",
-    "head": "dfa6ffb",
-    "status_short": "## main...origin/main [behind 1]\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json",
+    "top_level": "/Users/0xvox/Windburn/.worktrees/workhorse-codex-cli",
+    "branch": "codex/workhorse-codex-cli",
+    "head": "57beed3",
+    "status_short": "## codex/workhorse-codex-cli\n M apps/fusion-chat-terminal/app.js\n M docs/remote-workhorse/FUSION_BRIDGE_V0.md\n M docs/remote-workhorse/README.md\n M docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md\n M docs/remote-workhorse/phase1/evidence/current/doctor.json\n M nixos/hosts/windburn-workhorse-nyc1/modules/remote-workhorse-hermes.nix\n M nixos/hosts/windburn-workhorse-nyc1/modules/remote-workhorse-runner.nix\n M nixos/hosts/windburn-workhorse-nyc1/windburn-workhorse.nix\n M packages/fusion-bridge-api/README.md\n M packages/fusion-bridge-api/src/superruntime.mjs\n M packages/fusion-bridge-api/test/smoke.mjs\n M scripts/nixos-remote-rebuild.sh\n?? docs/remote-workhorse/preflight/WORKHORSE_CODEX_RUNTIME_PROOF.md\n?? nixos/hosts/windburn-workhorse-nyc1/modules/remote-workhorse-codex.nix",
     "error": null
   },
   "probes": [
@@ -169,7 +169,7 @@
       "status": "fail",
       "exit_code": 1,
       "stdout": "",
-      "stderr": "time=\"2026-05-06T23:44:16-04:00\" level=fatal msg=\"colima is not running\""
+      "stderr": "time=\"2026-05-07T00:53:51-04:00\" level=fatal msg=\"colima is not running\""
     },
     {
       "id": "just_version",

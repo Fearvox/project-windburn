@@ -174,6 +174,14 @@ ssh_base \
    /run/current-system/sw/bin/windburn-health >/tmp/windburn-health-smoke.json
    cat /tmp/windburn-health-smoke.json
    test -f /srv/windburn/evidence/health/current.json
+   test -x /run/current-system/sw/bin/codex
+   timeout 90 /run/current-system/sw/bin/codex --version | sed -n "1,8p"
+   test -x /run/current-system/sw/bin/windburn-codex-yolo-ensure
+   test -x /run/current-system/sw/bin/windburn-codex-runtime-status
+   systemctl start windburn-codex-yolo-ensure.service
+   /run/current-system/sw/bin/windburn-codex-runtime-status >/tmp/windburn-codex-runtime-status-smoke.json
+   cat /tmp/windburn-codex-runtime-status-smoke.json
+   jq -e ".schema_version == 1 and .status == \"PASS\" and .secret_values_recorded == false and .redacted_public_safe == true and .codex.command_present == true and .lane.codex_window_present == true and .lane.pane_alive == true and .lane.process_count >= 1" /tmp/windburn-codex-runtime-status-smoke.json >/dev/null
    test -x /run/current-system/sw/bin/hermes
    timeout 180 /run/current-system/sw/bin/hermes --version | sed -n "1,8p"
    test -x /run/current-system/sw/bin/uv
@@ -190,7 +198,7 @@ ssh_base \
 	   test -x /run/current-system/sw/bin/windburn-runner-status
 	   /run/current-system/sw/bin/windburn-runner-status >/tmp/windburn-runner-status-smoke.json
 	   cat /tmp/windburn-runner-status-smoke.json
-	   jq -e ".schema_version == 1 and .secret_values_recorded == false and .redacted_public_safe == true and .hermes_yolo.status == \"PASS\"" /tmp/windburn-runner-status-smoke.json >/dev/null
+	   jq -e ".schema_version == 1 and .secret_values_recorded == false and .redacted_public_safe == true and .codex_tui.status == \"PASS\" and .hermes_yolo.status == \"PASS\"" /tmp/windburn-runner-status-smoke.json >/dev/null
    test -f /srv/windburn/evidence/runner/current.json'
 
 echo

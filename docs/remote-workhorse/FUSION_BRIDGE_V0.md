@@ -44,12 +44,14 @@ Node HTTP mode now prefers runner evidence from
 `WINDBURN_RUNNER_EVIDENCE_PATH` or the default remote-workhorse evidence path.
 The browser-safe response uses `source=runner-evidence`, boolean credential
 presence, `runner-ready` lease status, and `codex-provider-ok` harness status.
-It does not expose raw hosts, SSH targets, local paths, remote paths, commands,
-or secret values. If runner evidence is absent, it falls back to the historical
-fixture contract so local smoke tests still run. If runner evidence is present
-but reports recorded secrets, missing public redaction, remote mutation, or an
-invalid shape, `/api/superruntime` rejects it with `unsafe_runner_evidence`
-instead of washing it into a safe-looking `200` payload.
+It now also exposes redacted Codex CLI/TUI readiness through `codex_cli` and
+`codex_tui`. It does not expose raw hosts, SSH targets, tmux targets, local
+paths, remote paths, commands, or secret values. If runner evidence is absent,
+it falls back to the historical fixture contract so local smoke tests still
+run. If runner evidence is present but reports recorded secrets, missing public
+redaction, remote mutation, unredacted Codex TUI command material, or an invalid
+shape, `/api/superruntime` rejects it with `unsafe_runner_evidence` instead of
+washing it into a safe-looking `200` payload.
 
 Run it locally with:
 
