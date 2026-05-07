@@ -29,4 +29,5 @@ cat docs/remote-workhorse/fixtures/multica-hermes-autoresearch-card-v0.json | WI
 scripts/fusion-bridge-api-smoke.sh
 cargo run -p runtimectl -- doctor --target . --evidence-dir /tmp/windburn-phase1-doctor-check
 cargo run -p runtimectl -- canary --target . --evidence-dir docs/remote-workhorse/phase1/evidence/current --report docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md
+cargo run -p runtimectl -- workhorse-status --target . --output "$TMP_SPOOL_DIR/workhorse-status.json" --report "$TMP_SPOOL_DIR/WORKHORSE_RUNTIME_STATUS.md"
 git diff --check
