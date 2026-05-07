@@ -56,6 +56,36 @@ enum Commands {
         #[arg(long)]
         remote_host: Option<String>,
     },
+    /// Summarize local and imported remote workhorse runtime evidence.
+    WorkhorseStatus {
+        #[arg(long, default_value = ".")]
+        target: PathBuf,
+        #[arg(
+            long,
+            default_value = "docs/remote-workhorse/phase1/evidence/current/doctor.json"
+        )]
+        phase1_doctor: PathBuf,
+        #[arg(
+            long,
+            default_value = "docs/remote-workhorse/preflight/evidence/current/preflight.json"
+        )]
+        preflight: PathBuf,
+        #[arg(
+            long,
+            default_value = "docs/remote-workhorse/preflight/evidence/current/remote"
+        )]
+        remote_evidence_dir: PathBuf,
+        #[arg(
+            long,
+            default_value = "docs/remote-workhorse/preflight/evidence/current/workhorse-status.json"
+        )]
+        output: PathBuf,
+        #[arg(
+            long,
+            default_value = "docs/remote-workhorse/preflight/WORKHORSE_RUNTIME_STATUS.md"
+        )]
+        report: PathBuf,
+    },
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -113,6 +143,29 @@ struct RemotePreflightEvidence {
     files: Vec<FileCheck>,
     probes: Vec<CommandProbe>,
     verdict: Verdict,
+}
+
+#[derive(Serialize, Debug, Clone)]
+struct WorkhorseStatusEvidence {
+    schema_version: u8,
+    generated_at_utc: String,
+    target: String,
+    remote_evidence_dir: String,
+    checks: Vec<WorkhorseEvidenceCheck>,
+    verdict: Verdict,
+}
+
+#[derive(Serialize, Debug, Clone)]
+struct WorkhorseEvidenceCheck {
+    id: String,
+    label: String,
+    path: String,
+    required: bool,
+    exists: bool,
+    status: Option<String>,
+    summary: Option<String>,
+    secret_values_recorded: Option<bool>,
+    redacted_public_safe: Option<bool>,
 }
 
 const DOCTL_READ_INVENTORY_PROBE_IDS: &[&str] = &[
@@ -184,6 +237,24 @@ fn main() -> Result<()> {
                 remote_host.or_else(|| std::env::var("WINDBURN_REMOTE_HOST").ok()),
             )?;
             print_verdict("preflight", &evidence.verdict);
+        }
+        Commands::WorkhorseStatus {
+            target,
+            phase1_doctor,
+            preflight,
+            remote_evidence_dir,
+            output,
+            report,
+        } => {
+            let evidence = run_workhorse_status(
+                &target,
+                &phase1_doctor,
+                &preflight,
+                &remote_evidence_dir,
+                &output,
+                &report,
+            )?;
+            print_verdict("workhorse-status", &evidence.verdict);
         }
     }
     Ok(())
@@ -811,10 +882,8 @@ fn run_preflight(
         }
     }
 
-    if remote_host.is_some() {
-        if probe_status(&probes, "ssh_host_keyscan") != Some("pass") {
-            flags.push("remote host identity probe did not pass yet: ssh_host_keyscan".to_string());
-        }
+    if remote_host.is_some() && probe_status(&probes, "ssh_host_keyscan") != Some("pass") {
+        flags.push("remote host identity probe did not pass yet: ssh_host_keyscan".to_string());
     }
 
     let verdict = canary_verdict(blockers, flags);
@@ -837,6 +906,220 @@ fn run_preflight(
     fs::write(&report, render_preflight_report(&evidence))
         .with_context(|| format!("write preflight report {}", report.display()))?;
     Ok(evidence)
+}
+
+fn run_workhorse_status(
+    target_arg: &Path,
+    phase1_doctor_arg: &Path,
+    preflight_arg: &Path,
+    remote_evidence_dir_arg: &Path,
+    output_arg: &Path,
+    report_arg: &Path,
+) -> Result<WorkhorseStatusEvidence> {
+    let target = absolutize(target_arg)?;
+    let phase1_doctor = absolutize(phase1_doctor_arg)?;
+    let preflight = absolutize(preflight_arg)?;
+    let remote_evidence_dir = absolutize(remote_evidence_dir_arg)?;
+    let output = absolutize(output_arg)?;
+    let report = absolutize(report_arg)?;
+
+    let checks = vec![
+        workhorse_json_check(
+            "local_doctor",
+            "Phase 1 local doctor",
+            &phase1_doctor,
+            &target,
+            true,
+            Some("/verdict/status"),
+            false,
+        )?,
+        workhorse_json_check(
+            "preflight",
+            "Remote NixOS preflight",
+            &preflight,
+            &target,
+            true,
+            Some("/verdict/status"),
+            false,
+        )?,
+        workhorse_json_check(
+            "health",
+            "Remote health evidence",
+            &remote_evidence_dir.join("health/current.json"),
+            &target,
+            false,
+            Some("/status"),
+            true,
+        )?,
+        workhorse_json_check(
+            "codex_runtime",
+            "Remote Codex runtime evidence",
+            &remote_evidence_dir.join("codex-runtime/current.json"),
+            &target,
+            false,
+            Some("/status"),
+            true,
+        )?,
+        workhorse_json_check(
+            "hermes_runtime",
+            "Remote Hermes runtime evidence",
+            &remote_evidence_dir.join("hermes-runtime/current.json"),
+            &target,
+            false,
+            Some("/status"),
+            true,
+        )?,
+        workhorse_json_check(
+            "hermes_yolo",
+            "Remote Hermes yolo evidence",
+            &remote_evidence_dir.join("hermes-yolo/current.json"),
+            &target,
+            false,
+            Some("/status"),
+            true,
+        )?,
+        workhorse_json_check(
+            "runner",
+            "Remote runner aggregate evidence",
+            &remote_evidence_dir.join("runner/current.json"),
+            &target,
+            false,
+            Some("/status"),
+            true,
+        )?,
+    ];
+    let verdict = classify_workhorse_status(&checks);
+    let evidence = WorkhorseStatusEvidence {
+        schema_version: 1,
+        generated_at_utc: now_utc(),
+        target: target_arg.display().to_string(),
+        remote_evidence_dir: evidence_path_label(&remote_evidence_dir, &target),
+        checks,
+        verdict,
+    };
+
+    write_json(&output, &evidence)?;
+    if let Some(parent) = report.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("create workhorse status report dir {}", parent.display()))?;
+    }
+    fs::write(&report, render_workhorse_status_report(&evidence))
+        .with_context(|| format!("write workhorse status report {}", report.display()))?;
+    Ok(evidence)
+}
+
+fn workhorse_json_check(
+    id: &str,
+    label: &str,
+    path: &Path,
+    display_root: &Path,
+    required: bool,
+    status_pointer: Option<&str>,
+    runtime_safety_required: bool,
+) -> Result<WorkhorseEvidenceCheck> {
+    if !path.is_file() {
+        return Ok(WorkhorseEvidenceCheck {
+            id: id.to_string(),
+            label: label.to_string(),
+            path: evidence_path_label(path, display_root),
+            required,
+            exists: false,
+            status: None,
+            summary: None,
+            secret_values_recorded: None,
+            redacted_public_safe: None,
+        });
+    }
+
+    let value = read_json_value(path)?.context("read existing workhorse evidence JSON")?;
+    let status = status_pointer
+        .and_then(|pointer| json_str(&value, pointer))
+        .or_else(|| json_str(&value, "/status"))
+        .map(str::to_string)
+        .or_else(|| derive_workhorse_status(id, &value));
+    let mut summary = json_str(&value, "/summary").map(str::to_string);
+    if runtime_safety_required && json_bool(&value, "/secret_values_recorded").is_none() {
+        summary = Some("runtime evidence omits secret_values_recorded safety field".to_string());
+    }
+
+    Ok(WorkhorseEvidenceCheck {
+        id: id.to_string(),
+        label: label.to_string(),
+        path: evidence_path_label(path, display_root),
+        required,
+        exists: true,
+        status,
+        summary,
+        secret_values_recorded: runtime_safety_required
+            .then(|| json_bool(&value, "/secret_values_recorded"))
+            .flatten(),
+        redacted_public_safe: runtime_safety_required
+            .then(|| json_bool(&value, "/redacted_public_safe"))
+            .flatten(),
+    })
+}
+
+fn evidence_path_label(path: &Path, display_root: &Path) -> String {
+    path.strip_prefix(display_root)
+        .unwrap_or(path)
+        .display()
+        .to_string()
+}
+
+fn derive_workhorse_status(id: &str, value: &Value) -> Option<String> {
+    if id == "runner" {
+        let codex = json_str(value, "/codex_tui/status");
+        let hermes = json_str(value, "/hermes_yolo/status");
+        if codex == Some("PASS") && hermes == Some("PASS") {
+            return Some("PASS".to_string());
+        }
+        if codex.is_some() || hermes.is_some() {
+            return Some("FLAG".to_string());
+        }
+    }
+    None
+}
+
+fn classify_workhorse_status(checks: &[WorkhorseEvidenceCheck]) -> Verdict {
+    let mut blockers = Vec::new();
+    let mut flags = Vec::new();
+
+    for check in checks {
+        if !check.exists {
+            if check.required {
+                blockers.push(format!("required evidence missing: {}", check.id));
+            } else {
+                flags.push(format!("advisory runtime evidence missing: {}", check.id));
+            }
+            continue;
+        }
+
+        if check.secret_values_recorded == Some(true) {
+            blockers.push(format!("{} evidence recorded secret values", check.id));
+        }
+        if check.redacted_public_safe == Some(false) {
+            blockers.push(format!("{} evidence is not redacted_public_safe", check.id));
+        }
+        if !check.required
+            && check.exists
+            && (check.secret_values_recorded.is_none() || check.redacted_public_safe.is_none())
+        {
+            blockers.push(format!("{} evidence lacks public-safety fields", check.id));
+        }
+
+        match check.status.as_deref() {
+            Some("PASS") => {}
+            Some("FLAG") => flags.push(format!("{} reported FLAG", check.id)),
+            Some("BLOCK") => blockers.push(format!("{} reported BLOCK", check.id)),
+            Some(other) => flags.push(format!("{} reported non-pass status: {other}", check.id)),
+            None if check.required => {
+                blockers.push(format!("{} evidence status missing", check.id))
+            }
+            None => flags.push(format!("{} evidence status missing", check.id)),
+        }
+    }
+
+    canary_verdict(blockers, flags)
 }
 
 fn file_check(target: &Path, label: &str, relative_path: &str) -> FileCheck {
@@ -1394,6 +1677,46 @@ fn render_preflight_report(evidence: &RemotePreflightEvidence) -> String {
     body
 }
 
+fn render_workhorse_status_report(evidence: &WorkhorseStatusEvidence) -> String {
+    let mut body = String::new();
+    body.push_str("# WORKHORSE_RUNTIME_STATUS\n\n");
+    body.push_str(&format!("Generated: `{}`\n\n", evidence.generated_at_utc));
+    body.push_str(&format!("VERDICT: `{}`\n\n", evidence.verdict.status));
+
+    body.push_str("## Verdict Reasons\n\n");
+    for reason in &evidence.verdict.reasons {
+        body.push_str(&format!("- {reason}\n"));
+    }
+
+    body.push_str("\n## Evidence Checks\n\n");
+    body.push_str("| Check | Required | Exists | Status | Safety | Evidence |\n");
+    body.push_str("| --- | --- | --- | --- | --- | --- |\n");
+    for check in &evidence.checks {
+        let safety = match (check.secret_values_recorded, check.redacted_public_safe) {
+            (Some(false), Some(true)) => "sanitized",
+            (Some(true), _) => "secret-values-recorded",
+            (_, Some(false)) => "not-public-safe",
+            (None, None) => "n/a",
+            _ => "incomplete",
+        };
+        body.push_str(&format!(
+            "| {} | `{}` | `{}` | `{}` | `{}` | `{}` |\n",
+            check.label,
+            check.required,
+            check.exists,
+            check.status.as_deref().unwrap_or("missing"),
+            safety,
+            check.path
+        ));
+    }
+
+    body.push_str("\n## Boundary\n\n");
+    body.push_str("- This command reads local/imported JSON evidence only.\n");
+    body.push_str("- Missing remote runtime evidence is a `FLAG`, not proof that the remote lane is broken.\n");
+    body.push_str("- Secret-bearing or non-redacted runtime evidence is a `BLOCK` before any public sharing.\n");
+    body
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1544,6 +1867,77 @@ github.com/digitalocean/doctl/do.PaginateResp(...)";
         ));
     }
 
+    #[test]
+    fn workhorse_status_blocks_secret_bearing_runtime_evidence() {
+        let checks = vec![
+            fake_workhorse_check("local_doctor", "PASS", true, false, true),
+            fake_workhorse_check("runner", "PASS", false, true, true),
+        ];
+
+        let verdict = classify_workhorse_status(&checks);
+
+        assert_eq!(verdict.status, "BLOCK");
+        assert_eq!(
+            verdict.reasons,
+            vec!["runner evidence recorded secret values"]
+        );
+    }
+
+    #[test]
+    fn workhorse_status_flags_missing_advisory_remote_evidence() {
+        let checks = vec![
+            fake_workhorse_check("local_doctor", "PASS", true, false, true),
+            fake_workhorse_missing_check("hermes_yolo", false),
+        ];
+
+        let verdict = classify_workhorse_status(&checks);
+
+        assert_eq!(verdict.status, "FLAG");
+        assert_eq!(
+            verdict.reasons,
+            vec!["advisory runtime evidence missing: hermes_yolo"]
+        );
+    }
+
+    #[test]
+    fn workhorse_status_blocks_runtime_evidence_without_safety_fields() {
+        let checks = vec![
+            fake_workhorse_check("local_doctor", "PASS", true, false, true),
+            WorkhorseEvidenceCheck {
+                id: "hermes_runtime".to_string(),
+                label: "hermes_runtime".to_string(),
+                path: "hermes_runtime.json".to_string(),
+                required: false,
+                exists: true,
+                status: Some("PASS".to_string()),
+                summary: None,
+                secret_values_recorded: None,
+                redacted_public_safe: None,
+            },
+        ];
+
+        let verdict = classify_workhorse_status(&checks);
+
+        assert_eq!(verdict.status, "BLOCK");
+        assert_eq!(
+            verdict.reasons,
+            vec!["hermes_runtime evidence lacks public-safety fields"]
+        );
+    }
+
+    #[test]
+    fn workhorse_status_passes_when_evidence_is_present_and_sanitized() {
+        let checks = vec![
+            fake_workhorse_check("local_doctor", "PASS", true, false, true),
+            fake_workhorse_check("preflight", "PASS", true, false, true),
+            fake_workhorse_check("runner", "PASS", false, false, true),
+        ];
+
+        let verdict = classify_workhorse_status(&checks);
+
+        assert_eq!(verdict.status, "PASS");
+    }
+
     fn required_probe_set(status: &str) -> Vec<CommandProbe> {
         vec![
             fake_probe("codex_version", status),
@@ -1567,6 +1961,40 @@ github.com/digitalocean/doctl/do.PaginateResp(...)";
             exit_code: Some(0),
             stdout: String::new(),
             stderr: String::new(),
+        }
+    }
+
+    fn fake_workhorse_check(
+        id: &str,
+        status: &str,
+        required: bool,
+        secret_values_recorded: bool,
+        redacted_public_safe: bool,
+    ) -> WorkhorseEvidenceCheck {
+        WorkhorseEvidenceCheck {
+            id: id.to_string(),
+            label: id.to_string(),
+            path: format!("{id}.json"),
+            required,
+            exists: true,
+            status: Some(status.to_string()),
+            summary: None,
+            secret_values_recorded: Some(secret_values_recorded),
+            redacted_public_safe: Some(redacted_public_safe),
+        }
+    }
+
+    fn fake_workhorse_missing_check(id: &str, required: bool) -> WorkhorseEvidenceCheck {
+        WorkhorseEvidenceCheck {
+            id: id.to_string(),
+            label: id.to_string(),
+            path: format!("{id}.json"),
+            required,
+            exists: false,
+            status: None,
+            summary: None,
+            secret_values_recorded: None,
+            redacted_public_safe: None,
         }
     }
 }
