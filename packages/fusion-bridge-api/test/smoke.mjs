@@ -28,6 +28,15 @@ const runnerEvidence = {
     hermes_auth_present: true,
     provider_env_present: false,
   },
+  hermes_yolo: {
+    status: "PASS",
+    reason: "hermes_yolo_lane_ready",
+    fixed_session_present: true,
+    yolo_window_present: true,
+    pane_alive: true,
+    yolo_process_count: 1,
+    command_redacted: true,
+  },
   latest_hermes_codex_smoke: {
     verdict: "PASS",
     reason: "HERMES_CODEX_PROVIDER_OK",
@@ -107,10 +116,35 @@ assert(runnerSuperruntime.body.runner_evidence.status === "PASS", "runner eviden
 assert(runnerSuperruntime.body.runner_evidence.tmux_session_present === true, "runner tmux presence must be summarized");
 assert(runnerSuperruntime.body.runner_evidence.codex_auth_present === true, "credential presence must be boolean-only");
 assert(runnerSuperruntime.body.runner_evidence.provider_env_present === false, "missing provider env must stay visible as a boolean");
+assert(runnerSuperruntime.body.hermes_yolo.status === "PASS", "hermes_yolo status must be top-level");
+assert(runnerSuperruntime.body.hermes_yolo.pane_alive === true, "hermes_yolo pane liveness must be boolean-only");
+assert(runnerSuperruntime.body.hermes_yolo.process_count === 1, "hermes_yolo process count must be numeric");
+assert(runnerSuperruntime.body.hermes_yolo.timer_status === "unknown", "missing yolo timer must be explicit unknown");
+assert(runnerSuperruntime.body.hermes_yolo.operator_surface === "tmux", "operator surface must be summarized without attach target");
+assert(runnerSuperruntime.body.hermes_yolo.command === "redacted", "hermes_yolo command must stay redacted");
+assert(runnerSuperruntime.body.hermes_yolo.command_redacted === true, "hermes_yolo command redaction flag must be true");
+assert(runnerSuperruntime.body.hermes_yolo.stream.status === "stubbed", "hermes_yolo stream must be a bounded redacted stub");
+assert(runnerSuperruntime.body.status_events.some((event) => event.type === "hermes-yolo-status"), "hermes_yolo status event must be present");
 assert(runnerSuperruntime.body.secret_values_recorded === false, "runner superruntime must not record secrets");
 
 const runnerFindings = assertStreamSafe(runnerSuperruntime.body);
 assert(runnerFindings.length === 0, `runner superruntime response not stream-safe: ${runnerFindings.join(", ")}`);
+
+const noYoloApi = createFusionBridgeApi({
+  deploymentTarget: "no-yolo-runner-evidence-smoke",
+  runnerEvidence: makeRunnerEvidence({ hermes_yolo: undefined }),
+  superruntimeFixture: fixture,
+  superruntimeSource: "docs/remote-workhorse/fixtures/superruntime-v0.json",
+  now: () => "2026-05-05T06:00:00.000Z",
+});
+const noYoloSuperruntime = await getFrom(noYoloApi, "/api/superruntime");
+assert(noYoloSuperruntime.response.status === 200, "missing hermes_yolo must use clean fallback");
+assert(noYoloSuperruntime.body.source === "runner-evidence", "missing hermes_yolo must not fall back to fixture");
+assert(noYoloSuperruntime.body.hermes_yolo.status === "UNAVAILABLE", "missing hermes_yolo status must be UNAVAILABLE");
+assert(noYoloSuperruntime.body.hermes_yolo.operator_surface === "unavailable", "missing hermes_yolo operator surface must be unavailable");
+assert(noYoloSuperruntime.body.hermes_yolo.command === "redacted", "missing hermes_yolo command must still be redacted");
+const noYoloFindings = assertStreamSafe(noYoloSuperruntime.body);
+assert(noYoloFindings.length === 0, `missing yolo fallback not stream-safe: ${noYoloFindings.join(", ")}`);
 
 for (const unsafeCase of [
   {
@@ -127,6 +161,16 @@ for (const unsafeCase of [
     label: "remote mutation enabled",
     evidence: makeRunnerEvidence({ remote_mutation: true }),
     reasons: ["remote_mutation_true"],
+  },
+  {
+    label: "hermes yolo command not redacted",
+    evidence: makeRunnerEvidence({
+      hermes_yolo: {
+        ...runnerEvidence.hermes_yolo,
+        command_redacted: false,
+      },
+    }),
+    reasons: ["hermes_yolo_command_not_redacted"],
   },
 ]) {
   const unsafeApi = createFusionBridgeApi({

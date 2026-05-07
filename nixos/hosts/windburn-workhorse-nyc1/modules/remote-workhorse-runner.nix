@@ -42,6 +42,32 @@ let
       fi
       hermes_auth_present="$(bool_file /root/.hermes/auth.json)"
       provider_env_present="$(bool_file /srv/windburn/secrets/provider.env)"
+      hermes_runtime_present="$(bool_file /srv/windburn/evidence/hermes-runtime/current.json)"
+      hermes_runtime_status=UNKNOWN
+      hermes_runtime_reason=missing_hermes_runtime_evidence
+      hermes_command_present=false
+      uv_command_present=false
+      if [ "$hermes_runtime_present" = true ]; then
+        hermes_runtime_status="$(jq -r '.status // "UNKNOWN"' /srv/windburn/evidence/hermes-runtime/current.json 2>/dev/null || printf '%s' UNKNOWN)"
+        hermes_runtime_reason="$(jq -r '.reason // "unknown"' /srv/windburn/evidence/hermes-runtime/current.json 2>/dev/null || printf '%s' unknown)"
+        hermes_command_present="$(jq -r '(.hermes.command_present // false) | tostring' /srv/windburn/evidence/hermes-runtime/current.json 2>/dev/null || printf '%s' false)"
+        uv_command_present="$(jq -r '(.uv.command_present // false) | tostring' /srv/windburn/evidence/hermes-runtime/current.json 2>/dev/null || printf '%s' false)"
+      fi
+      hermes_yolo_present="$(bool_file /srv/windburn/evidence/hermes-yolo/current.json)"
+      hermes_yolo_status=UNKNOWN
+      hermes_yolo_reason=missing_hermes_yolo_evidence
+      hermes_yolo_session_present=false
+      hermes_yolo_window_present=false
+      hermes_yolo_pane_alive=false
+      hermes_yolo_process_count=0
+      if [ "$hermes_yolo_present" = true ]; then
+        hermes_yolo_status="$(jq -r '.status // "UNKNOWN"' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' UNKNOWN)"
+        hermes_yolo_reason="$(jq -r '.reason // "unknown"' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' unknown)"
+        hermes_yolo_session_present="$(jq -r '(.lane.fixed_session_present // false) | tostring' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' false)"
+        hermes_yolo_window_present="$(jq -r '(.lane.yolo_window_present // false) | tostring' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' false)"
+        hermes_yolo_pane_alive="$(jq -r '(.lane.pane_alive // false) | tostring' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' false)"
+        hermes_yolo_process_count="$(jq -r '(.lane.yolo_process_count // 0) | tostring' /srv/windburn/evidence/hermes-yolo/current.json 2>/dev/null || printf '%s' 0)"
+      fi
 
       tmux_sessions="$(tmux ls 2>/dev/null || true)"
       tmux_session_count="$(printf '%s\n' "$tmux_sessions" | sed '/^$/d' | wc -l | tr -d ' ')"
@@ -77,6 +103,18 @@ let
       elif [ "$codex_auth_present" != true ]; then
         runner_status=FLAG
         runner_reason=codex_auth_missing
+      elif [ "$hermes_command_present" != true ]; then
+        runner_status=FLAG
+        runner_reason=hermes_command_missing
+      elif [ "$uv_command_present" != true ]; then
+        runner_status=FLAG
+        runner_reason=uv_command_missing
+      elif [ "$hermes_runtime_status" != PASS ]; then
+        runner_status=FLAG
+        runner_reason=hermes_runtime_not_pass
+      elif [ "$hermes_yolo_status" != PASS ]; then
+        runner_status=FLAG
+        runner_reason=hermes_yolo_lane_not_pass
       elif [ "$latest_smoke_verdict" != PASS ]; then
         runner_status=FLAG
         runner_reason=latest_hermes_codex_smoke_not_pass
@@ -95,6 +133,18 @@ let
         --arg codex_auth_present "$codex_auth_present" \
         --arg hermes_auth_present "$hermes_auth_present" \
         --arg provider_env_present "$provider_env_present" \
+        --arg hermes_runtime_present "$hermes_runtime_present" \
+        --arg hermes_runtime_status "$hermes_runtime_status" \
+        --arg hermes_runtime_reason "$hermes_runtime_reason" \
+        --arg hermes_command_present "$hermes_command_present" \
+        --arg uv_command_present "$uv_command_present" \
+        --arg hermes_yolo_present "$hermes_yolo_present" \
+        --arg hermes_yolo_status "$hermes_yolo_status" \
+        --arg hermes_yolo_reason "$hermes_yolo_reason" \
+        --arg hermes_yolo_session_present "$hermes_yolo_session_present" \
+        --arg hermes_yolo_window_present "$hermes_yolo_window_present" \
+        --arg hermes_yolo_pane_alive "$hermes_yolo_pane_alive" \
+        --argjson hermes_yolo_process_count "$hermes_yolo_process_count" \
         --arg tmux_session_present "$tmux_session_present" \
         --argjson tmux_session_count "$tmux_session_count" \
         --arg latest_smoke_run_id "$latest_smoke_run_id" \
@@ -120,6 +170,23 @@ let
             hermes_auth_present: ($hermes_auth_present == "true"),
             provider_env_present: ($provider_env_present == "true")
           },
+          hermes_runtime: {
+            present: ($hermes_runtime_present == "true"),
+            status: $hermes_runtime_status,
+            reason: $hermes_runtime_reason,
+            hermes_command_present: ($hermes_command_present == "true"),
+            uv_command_present: ($uv_command_present == "true")
+          },
+          hermes_yolo: {
+            present: ($hermes_yolo_present == "true"),
+            status: $hermes_yolo_status,
+            reason: $hermes_yolo_reason,
+            fixed_session_present: ($hermes_yolo_session_present == "true"),
+            yolo_window_present: ($hermes_yolo_window_present == "true"),
+            pane_alive: ($hermes_yolo_pane_alive == "true"),
+            yolo_process_count: $hermes_yolo_process_count,
+            command_redacted: true
+          },
           health: {
             present: ($health_present == "true"),
             generated_at_utc: $health_generated_at
@@ -133,7 +200,10 @@ let
           capabilities: [
             "read-only-status",
             "timer-evidence",
-            "hermes-codex-smoke-readback"
+            "hermes-codex-smoke-readback",
+            "hermes-runtime-command",
+            "uv-package-manager",
+            "hermes-yolo-tmux-lane"
           ],
           remote_mutation: false,
           secret_values_recorded: false,
@@ -160,6 +230,16 @@ in
   systemd.services.windburn-runner-status = {
     description = "Write Windburn remote workhorse runner evidence";
     wantedBy = [ "multi-user.target" ];
+    wants = [
+      "windburn-health.service"
+      "windburn-hermes-runtime-status.service"
+      "windburn-hermes-yolo-status.service"
+    ];
+    after = [
+      "windburn-health.service"
+      "windburn-hermes-runtime-status.service"
+      "windburn-hermes-yolo-status.service"
+    ];
     serviceConfig = {
       Type = "oneshot";
       User = "root";

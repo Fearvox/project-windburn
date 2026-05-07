@@ -40,6 +40,75 @@ function safeCount(value, fallback) {
   return Number.isFinite(count) && count >= 0 ? count : fallback;
 }
 
+function safeHermesYoloStatus(value) {
+  const status = safeString(firstPresent(value, "UNAVAILABLE")).toUpperCase();
+  return ["PASS", "FLAG", "BLOCK"].includes(status) ? status : "UNAVAILABLE";
+}
+
+function safeTimerStatus(value) {
+  const status = safeString(firstPresent(value, "unknown")).toLowerCase();
+  return ["active", "inactive"].includes(status) ? status : "unknown";
+}
+
+function hermesYoloSource(evidence) {
+  const yolo = evidence?.hermes_yolo;
+  return yolo && typeof yolo === "object" && !Array.isArray(yolo) ? yolo : null;
+}
+
+function buildHermesYoloStatus(evidence, generatedAt) {
+  const yolo = hermesYoloSource(evidence);
+  const status = safeHermesYoloStatus(firstPresent(yolo?.status, yolo?.verdict));
+  const paneAlive = safeBoolean(firstPresent(yolo?.pane_alive, yolo?.lane?.pane_alive));
+  const processCount = safeCount(firstPresent(
+    yolo?.process_count,
+    yolo?.yolo_process_count,
+    yolo?.lane?.process_count,
+    yolo?.lane?.yolo_process_count,
+  ), 0);
+  const timerStatus = safeTimerStatus(firstPresent(
+    yolo?.timer_status,
+    yolo?.timer?.status,
+    yolo?.timer_active === true ? "active" : null,
+    yolo?.timer_active === false ? "inactive" : null,
+  ));
+  const operatorSurface = status === "UNAVAILABLE"
+    ? "unavailable"
+    : yolo?.operator_surface === "tmux" || paneAlive || processCount > 0
+      ? "tmux"
+      : "unavailable";
+  const updatedAt = safeScalar(firstPresent(
+    yolo?.updated_at,
+    yolo?.generated_at_utc,
+    evidence?.generated_at_utc,
+    evidence?.generatedAt,
+    generatedAt,
+  ));
+
+  return {
+    status,
+    pane_alive: paneAlive,
+    process_count: processCount,
+    timer_status: timerStatus,
+    operator_surface: operatorSurface,
+    command: "redacted",
+    command_redacted: true,
+    updated_at: updatedAt,
+    receipt: yolo ? "runner-evidence:hermes_yolo" : "runner-evidence:hermes_yolo:unavailable",
+    stream: {
+      status: "stubbed",
+      redacted: true,
+      bounded: true,
+      reason: "raw_pane_content_not_exposed",
+    },
+  };
+}
+
+function statusLevel(status) {
+  if (status === "PASS") return "pass";
+  if (status === "BLOCK") return "block";
+  return "flag";
+}
+
 function safeRuntime(runtime, index) {
   if (!runtime || typeof runtime !== "object") {
     return {
@@ -180,12 +249,14 @@ export function inspectRunnerEvidenceSafety(evidence) {
     secret_values_recorded: safeBoolean(evidence.secret_values_recorded),
     redacted_public_safe: evidence.redacted_public_safe === true,
     remote_mutation: safeBoolean(evidence.remote_mutation),
+    hermes_yolo_command_redacted: hermesYoloSource(evidence)?.command_redacted !== false,
   };
   const reasons = [];
 
   if (checks.secret_values_recorded) reasons.push("secret_values_recorded_true");
   if (!checks.redacted_public_safe) reasons.push("redacted_public_safe_not_true");
   if (checks.remote_mutation) reasons.push("remote_mutation_true");
+  if (!checks.hermes_yolo_command_redacted) reasons.push("hermes_yolo_command_not_redacted");
 
   return {
     safe: reasons.length === 0,
@@ -225,6 +296,7 @@ export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
       ? "runner-blocked"
       : "runner-flagged";
   const generatedAt = safeScalar(firstPresent(evidence.generated_at_utc, evidence.generatedAt));
+  const hermesYolo = buildHermesYoloStatus(evidence, generatedAt);
 
   return {
     schema_version: 1,
@@ -259,19 +331,35 @@ export function buildRunnerEvidenceSuperruntimePayload(evidence, options = {}) {
         tmuxSessionPresent ? "tmux-observed" : "tmux-not-observed",
         safeBoolean(credentials.codex_auth_present) ? "codex-auth-present" : "codex-auth-missing",
         safeBoolean(credentials.hermes_auth_present) ? "hermes-auth-present" : "hermes-auth-missing",
+        hermesYolo.status === "UNAVAILABLE" ? "hermes-yolo-unavailable" : "hermes-yolo-status",
       ],
     }],
     tasks: [],
-    status_events: [{
-      id: "runner-evidence-current",
-      type: "runner-evidence",
-      status,
-      level: status === "PASS" ? "pass" : status === "BLOCK" ? "block" : "flag",
-      runtime_id: "windburn-workhorse-runner",
-      task_id: null,
-      message: reason,
-      at: generatedAt,
-    }],
+    status_events: [
+      {
+        id: "runner-evidence-current",
+        type: "runner-evidence",
+        status,
+        level: statusLevel(status),
+        runtime_id: "windburn-workhorse-runner",
+        task_id: null,
+        message: reason,
+        at: generatedAt,
+      },
+      {
+        id: "runner-evidence-hermes-yolo",
+        type: "hermes-yolo-status",
+        status: hermesYolo.status,
+        level: statusLevel(hermesYolo.status),
+        runtime_id: "windburn-workhorse-runner",
+        task_id: null,
+        message: hermesYolo.status === "UNAVAILABLE"
+          ? "hermes_yolo unavailable"
+          : `hermes_yolo ${hermesYolo.status.toLowerCase()}`,
+        at: hermesYolo.updated_at,
+      },
+    ],
+    hermes_yolo: hermesYolo,
     runner_evidence: {
       runner_id: runnerId,
       runner_kind: safeScalar(firstPresent(evidence.runner_kind, "read-only-evidence")),

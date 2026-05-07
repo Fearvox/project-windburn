@@ -29,7 +29,7 @@ export const openapi = {
     "/api/superruntime": {
       get: {
         operationId: "getSuperruntime",
-        summary: "Stream-safe runner-evidence Superruntime runtime/task/lease view",
+        summary: "Stream-safe runner-evidence Superruntime runtime/task/lease and hermes_yolo view",
         responses: { "200": { description: "Redacted Superruntime state" } },
       },
     },

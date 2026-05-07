@@ -9,6 +9,7 @@ import {
   buildEmptySuperruntimePayload,
   buildRunnerEvidenceSuperruntimePayload,
   buildSuperruntimePayload,
+  inspectRunnerEvidenceSafety,
 } from "../../packages/fusion-bridge-api/src/superruntime.mjs";
 
 const appDir = path.dirname(fileURLToPath(import.meta.url));
@@ -45,7 +46,8 @@ const routeBlueprints = [
     transport: "tmux attach target hidden",
     command: "operator command hidden",
     taste: "primary high-context chat lane",
-    proof: "docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md",
+    proof: "docs/remote-workhorse/preflight/WORKHORSE_HERMES_YOLO_LANE_PROOF.md",
+    runnerEvidence: "hermes_yolo",
   },
   {
     id: "workhorse",
@@ -91,7 +93,7 @@ const routeBlueprints = [
 ];
 
 const preflightProofs = [
-  ["Hermes yolo tmux loop", "docs/remote-workhorse/preflight/HERMES_YOLO_LOOP_PROOF.md"],
+  ["Hermes yolo tmux lane", "docs/remote-workhorse/preflight/WORKHORSE_HERMES_YOLO_LANE_PROOF.md"],
   ["xAI setup lane", "docs/remote-workhorse/preflight/XAI_SETUP_AGENT_SMOKE.md"],
   ["NixOS foundation", "docs/remote-workhorse/preflight/NIXOS_FOUNDATION_PROOF.md"],
   ["DO uptime and alerts", "docs/remote-workhorse/preflight/DIGITALOCEAN_OBSERVABILITY_GATE.md"],
@@ -277,11 +279,14 @@ async function readProof(relativePath) {
 async function buildRemotes() {
   const binding = await superconductorBindingStatus();
   const runnerEvidence = await readRunnerEvidence();
+  const runnerEvidenceSafe = runnerEvidence ? inspectRunnerEvidenceSafety(runnerEvidence).safe : false;
   const remotes = await Promise.all(
     routeBlueprints.map(async (route) => {
       const proof = route.proof ? await readProof(route.proof) : null;
-      const runnerProof = route.runnerEvidence && runnerEvidence
-        ? runnerEvidenceRouteProof(runnerEvidence)
+      const runnerProof = route.runnerEvidence && runnerEvidenceSafe
+        ? route.runnerEvidence === "hermes_yolo"
+          ? hermesYoloRouteProof(runnerEvidence)
+          : runnerEvidenceRouteProof(runnerEvidence)
         : null;
       const superconductorRoute = route.id === "superconductor";
       const superconductorMissing =
@@ -348,6 +353,25 @@ function runnerEvidenceRouteProof(evidence) {
   };
 }
 
+function hermesYoloRouteProof(evidence) {
+  const payload = buildRunnerEvidenceSuperruntimePayload(evidence, {
+    source: "runner-evidence",
+  });
+  const yolo = payload.hermes_yolo ?? {};
+  const status = yolo.status === "UNAVAILABLE" ? "FLAG" : yolo.status;
+  const paneLabel = yolo.pane_alive ? "pane alive" : "pane unavailable";
+  const processCount = Number.isFinite(Number(yolo.process_count)) ? Number(yolo.process_count) : 0;
+
+  return {
+    status: ["PASS", "FLAG", "BLOCK"].includes(status) ? status : "FLAG",
+    reason: yolo.status === "PASS"
+      ? `${paneLabel}; processes=${processCount}`
+      : `hermes_yolo ${String(yolo.status ?? "UNAVAILABLE").toLowerCase()}`,
+    source: "runner evidence hermes_yolo",
+    modified_at: yolo.updated_at ?? evidence?.generated_at_utc ?? null,
+  };
+}
+
 async function buildPreflight() {
   const preflight = await Promise.all(
     preflightProofs.map(async ([label, source]) => {
@@ -373,6 +397,14 @@ async function buildSuperruntimeFixture() {
   try {
     const evidence = await readRunnerEvidence();
     if (evidence) {
+      const safety = inspectRunnerEvidenceSafety(evidence);
+      if (!safety.safe) {
+        return {
+          ...buildEmptySuperruntimePayload("unsafe_runner_evidence"),
+          unsafe_reasons: safety.reasons,
+          runner_evidence_checks: safety.checks,
+        };
+      }
       return buildRunnerEvidenceSuperruntimePayload(evidence, {
         source: "runner-evidence",
       });

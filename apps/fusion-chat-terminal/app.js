@@ -74,6 +74,11 @@ const fallbackSuperruntimeStatus = {
   queuedTaskCount: 0,
   currentLease: "leased",
   harnessDispatchState: "dispatches recorded 1",
+  hermesYoloStatus: "unavailable",
+  hermesYoloPane: "unknown",
+  hermesYoloProcesses: 0,
+  hermesYoloTimer: "unknown",
+  hermesYoloSurface: "unavailable",
 };
 
 let superruntimeStatus = { ...fallbackSuperruntimeStatus };
@@ -444,6 +449,10 @@ function normalizeSuperruntimeStatus(payload, source) {
     numberOrFallback(payload?.queued_task_count, payload?.queuedTaskCount, queuedTasks.length);
   const leasePayload = payload?.current_lease ?? payload?.currentLease ?? payload?.lease;
   const harnessPayload = payload?.harness ?? payload?.harness_dispatch ?? payload?.harnessDispatch;
+  const hermesYolo = payload?.hermes_yolo && typeof payload.hermes_yolo === "object"
+    ? payload.hermes_yolo
+    : {};
+  const yoloProcessCount = numberOrFallback(hermesYolo.process_count, hermesYolo.processCount, 0);
 
   return {
     source: payload?.source ?? source,
@@ -465,6 +474,11 @@ function normalizeSuperruntimeStatus(payload, source) {
         payload?.harnessDispatchState ??
         "unknown",
     ),
+    hermesYoloStatus: safeSuperruntimeLabel(hermesYolo.status ?? "unavailable"),
+    hermesYoloPane: hermesYolo.pane_alive === true ? "alive" : "not alive",
+    hermesYoloProcesses: yoloProcessCount,
+    hermesYoloTimer: safeSuperruntimeLabel(hermesYolo.timer_status ?? "unknown"),
+    hermesYoloSurface: safeSuperruntimeLabel(hermesYolo.operator_surface ?? "unavailable"),
   };
 }
 
@@ -499,6 +513,10 @@ function renderSuperruntimeStatus() {
     ["queued", superruntimeStatus.queuedTaskCount],
     ["lease", superruntimeStatus.currentLease],
     ["harness", superruntimeStatus.harnessDispatchState],
+    ["yolo", superruntimeStatus.hermesYoloStatus],
+    ["pane", `${superruntimeStatus.hermesYoloPane} / ${superruntimeStatus.hermesYoloProcesses} proc`],
+    ["timer", superruntimeStatus.hermesYoloTimer],
+    ["surface", superruntimeStatus.hermesYoloSurface],
   ].forEach(([label, value]) => {
     const row = document.createElement("div");
     const term = document.createElement("span");
@@ -932,7 +950,14 @@ async function dispatch(raw) {
     const bridgeLine = bridgeState.connected
       ? `BRIDGE read-only-live repo-proof dirty=${String(repo?.dirty ?? "unknown")}`
       : "BRIDGE static fallback";
-    addMessage("remote", [bridgeLine, ...lines].join("\n"));
+    const yoloLine = [
+      `HERMES_YOLO ${String(superruntimeStatus.hermesYoloStatus).toUpperCase()}`,
+      `pane=${superruntimeStatus.hermesYoloPane}`,
+      `processes=${superruntimeStatus.hermesYoloProcesses}`,
+      `timer=${superruntimeStatus.hermesYoloTimer}`,
+      `surface=${superruntimeStatus.hermesYoloSurface}`,
+    ].join(" ");
+    addMessage("remote", [bridgeLine, yoloLine, ...lines].join("\n"));
     return;
   }
 
