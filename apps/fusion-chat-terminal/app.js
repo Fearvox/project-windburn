@@ -6,7 +6,7 @@ const fallbackRemotes = [
     kind: "tmux",
     status: "PASS",
     latency: "tmux live",
-    transport: "tmux attach target hidden",
+    transport: "session attach target hidden",
     command: "operator script hidden",
     taste: "primary high-context chat lane",
   },
@@ -88,10 +88,50 @@ const fallbackSuperruntimeStatus = {
 
 let superruntimeStatus = { ...fallbackSuperruntimeStatus };
 
+const fallbackAuthContract = {
+  version: "auth-contract-v0",
+  active_role: "viewer",
+  mutation_routes_enabled: false,
+  roles: [
+    {
+      id: "viewer",
+      label: "Viewer",
+      purpose: "public read-only status",
+      grants: ["read redacted status", "read OpenAPI"],
+    },
+    {
+      id: "operator",
+      label: "Operator",
+      purpose: "authenticated local intent staging",
+      grants: ["stage task intent only"],
+    },
+    {
+      id: "admin",
+      label: "Admin",
+      purpose: "future provider and auth config",
+      grants: ["disabled until real auth exists"],
+    },
+  ],
+  route_guards: [
+    { id: "status", match: "/api/status", methods: ["GET", "HEAD"], min_role: "viewer", enabled: true },
+    { id: "task-stage", match: "/api/tasks/stage", methods: ["POST"], min_role: "operator", enabled: false },
+    { id: "admin-config", match: "/api/admin/*", methods: ["GET", "POST"], min_role: "admin", enabled: false },
+  ],
+  policies: {
+    viewer_redaction: "enabled",
+    operator_dispatch: "local-intent-only",
+    admin_config: "disabled",
+  },
+};
+
+let authContract;
+const stagedTaskIntents = [];
+
 const bridgeState = {
   connected: false,
   mode: "static fallback",
   status: null,
+  authSource: "fallback",
 };
 
 const sensitiveFactKeys = new Set(["host", "transport", "command"]);
@@ -127,10 +167,13 @@ const sensitivityPatterns = [
   },
 ];
 
+authContract = normalizeAuthContract(fallbackAuthContract, "fallback");
+
 const actions = [
   ["/status", "Status"],
   ["/route hermes", "Hermes"],
   ["/route workhorse", "NixOS"],
+  ["/stage task", "Stage"],
   ["/broadcast preflight", "Broadcast"],
   ["/attach tmux", "Attach"],
   ["/explain flags", "Flags"],
@@ -153,12 +196,17 @@ const slashCommands = [
   {
     command: "/attach tmux",
     label: "Attach handoff",
-    instruction: "Show the next human-approved tmux attach target without running it.",
+    instruction: "Show the next human-approved session attach target without running it.",
   },
   {
     command: "/broadcast preflight",
     label: "Broadcast intent",
     instruction: "Stage a read-only broadcast plan across routes; no mutation bridge.",
+  },
+  {
+    command: "/stage task",
+    label: "Stage operator intent",
+    instruction: "Record a local-only task intent for an operator; no webhook, queue, or remote mutation.",
   },
   {
     command: "/setup xai",
@@ -279,6 +327,9 @@ const globalStats = document.querySelector("#globalStats");
 const runLedger = document.querySelector("#runLedger");
 const superruntimeStatusEl = document.querySelector("#superruntimeStatus");
 const superruntimeBadge = document.querySelector("#superruntimeBadge");
+const authRoleLabel = document.querySelector("#authRoleLabel");
+const authContractBadge = document.querySelector("#authContractBadge");
+const authCapabilityModel = document.querySelector("#authCapabilityModel");
 const setupAssistant = document.querySelector("#setupAssistant");
 const setupAssistantToggle = document.querySelector("#setupAssistantToggle");
 const setupAssistantBody = document.querySelector("#setupAssistantBody");
@@ -310,6 +361,7 @@ function boot() {
   renderOperationalSummary();
   renderRunLedger();
   renderSuperruntimeStatus();
+  renderAuthCapabilityModel();
   wireSetupAssistant();
   checkOnboardingReadiness();
   selectRemote("hermes");
@@ -322,6 +374,9 @@ function boot() {
 function setBridgeLabels() {
   modeLabel.textContent = bridgeState.connected ? "read-only" : "read-only";
   bridgeLabel.textContent = bridgeState.connected ? "live bridge" : "static fallback";
+  if (authRoleLabel) {
+    authRoleLabel.textContent = `${authContract.activeRole} / no secrets`;
+  }
 }
 
 function redactText(value) {
@@ -378,32 +433,77 @@ function safeRemote(remote) {
   };
 }
 
+function normalizeAuthRole(role) {
+  const id = redactText(role?.id ?? role?.name ?? "viewer").toLowerCase();
+  return {
+    id,
+    label: redactText(role?.label ?? id),
+    purpose: redactText(role?.purpose ?? "capability boundary"),
+    grants: Array.isArray(role?.grants)
+      ? role.grants.map((grant) => redactText(grant)).slice(0, 5)
+      : [],
+  };
+}
+
+function normalizeAuthGuard(guard) {
+  return {
+    id: redactText(guard?.id ?? "route"),
+    match: redactText(guard?.match ?? guard?.path ?? "route hidden"),
+    methods: Array.isArray(guard?.methods) ? guard.methods.map((method) => redactText(method)) : [],
+    minRole: redactText(guard?.min_role ?? guard?.minRole ?? "viewer"),
+    enabled: guard?.enabled === true,
+  };
+}
+
+function normalizeAuthContract(payload, source) {
+  const roles = Array.isArray(payload?.roles) && payload.roles.length
+    ? payload.roles.map(normalizeAuthRole)
+    : fallbackAuthContract.roles.map(normalizeAuthRole);
+  const activeRole = redactText(payload?.active_role ?? payload?.activeRole ?? "viewer").toLowerCase();
+  const routeGuards = Array.isArray(payload?.route_guards) && payload.route_guards.length
+    ? payload.route_guards.map(normalizeAuthGuard)
+    : fallbackAuthContract.route_guards.map(normalizeAuthGuard);
+  return {
+    source,
+    version: redactText(payload?.version ?? fallbackAuthContract.version),
+    activeRole: roles.some((role) => role.id === activeRole) ? activeRole : "viewer",
+    mutationRoutesEnabled: payload?.mutation_routes_enabled === true || payload?.mutationRoutesEnabled === true,
+    roles,
+    routeGuards,
+    policies: {
+      viewerRedaction: redactText(payload?.policies?.viewer_redaction ?? "enabled"),
+      operatorDispatch: redactText(payload?.policies?.operator_dispatch ?? "local-intent-only"),
+      adminConfig: redactText(payload?.policies?.admin_config ?? "disabled"),
+    },
+  };
+}
+
+async function fetchJson(path) {
+  const response = await fetch(path, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`${path} unavailable`);
+  }
+  return response.json();
+}
+
 async function hydrateBridgeState() {
   try {
-    const [statusResponse, remotesResponse, preflightResponse] = await Promise.all([
-      fetch("/api/status", { cache: "no-store" }),
-      fetch("/api/remotes", { cache: "no-store" }),
-      fetch("/api/preflight", { cache: "no-store" }),
-    ]);
-
-    if (!statusResponse.ok || !remotesResponse.ok || !preflightResponse.ok) {
-      throw new Error("bridge endpoints unavailable");
-    }
-
-    const [statusPayload, remotesPayload, preflightPayload] = await Promise.all([
-      statusResponse.json(),
-      remotesResponse.json(),
-      preflightResponse.json(),
+    const statusPayload = await fetchJson("/api/status");
+    const [remotesPayload, preflightPayload] = await Promise.allSettled([
+      fetchJson("/api/remotes"),
+      fetchJson("/api/preflight"),
     ]);
 
     bridgeState.connected = true;
     bridgeState.mode = statusPayload.mode ?? "read-only";
     bridgeState.status = statusPayload;
-    remotes = Array.isArray(remotesPayload.remotes) && remotesPayload.remotes.length
-      ? remotesPayload.remotes.map(safeRemote)
+    bridgeState.authSource = statusPayload.auth ? "bridge" : "fallback";
+    authContract = normalizeAuthContract(statusPayload.auth, bridgeState.authSource);
+    remotes = remotesPayload.status === "fulfilled" && Array.isArray(remotesPayload.value.remotes) && remotesPayload.value.remotes.length
+      ? remotesPayload.value.remotes.map(safeRemote)
       : remotes;
-    preflight = Array.isArray(preflightPayload.preflight) && preflightPayload.preflight.length
-      ? preflightPayload.preflight
+    preflight = preflightPayload.status === "fulfilled" && Array.isArray(preflightPayload.value.preflight) && preflightPayload.value.preflight.length
+      ? preflightPayload.value.preflight
       : preflight;
 
     setBridgeLabels();
@@ -411,6 +511,7 @@ async function hydrateBridgeState() {
     renderPreflight();
     renderOperationalSummary();
     renderRunLedger();
+    renderAuthCapabilityModel();
     await hydrateSuperruntimeState();
     selectRemote(activeRemote.id);
 
@@ -422,7 +523,10 @@ async function hydrateBridgeState() {
   } catch {
     bridgeState.connected = false;
     bridgeState.status = null;
+    bridgeState.authSource = "fallback";
+    authContract = normalizeAuthContract(fallbackAuthContract, "fallback");
     setBridgeLabels();
+    renderAuthCapabilityModel();
     addMessage("system", "Bridge API unavailable; static fallback remains active. Start the local read-only bridge for live state.");
   }
 }
@@ -545,6 +649,107 @@ function renderSuperruntimeStatus() {
     row.append(term, data);
     superruntimeStatusEl.appendChild(row);
   });
+}
+
+function makeCapabilityChip(text, tone = "") {
+  const chip = document.createElement("span");
+  chip.className = `capability-chip ${tone}`.trim();
+  chip.textContent = redactText(text);
+  return chip;
+}
+
+function renderAuthCapabilityModel() {
+  if (!authCapabilityModel) return;
+  if (authContractBadge) {
+    authContractBadge.textContent = authContract.source === "bridge" ? "from /api/status" : "fallback";
+  }
+
+  authCapabilityModel.innerHTML = "";
+
+  const roleGrid = document.createElement("div");
+  roleGrid.className = "auth-role-grid";
+  authContract.roles.forEach((role) => {
+    const card = document.createElement("article");
+    card.className = `auth-role-card ${role.id === authContract.activeRole ? "active" : ""}`;
+
+    const heading = document.createElement("div");
+    heading.className = "auth-role-heading";
+    const label = document.createElement("strong");
+    label.textContent = role.label;
+    const badge = document.createElement("span");
+    badge.className = "mini-badge";
+    badge.textContent = role.id === authContract.activeRole ? "active" : role.id;
+    heading.append(label, badge);
+
+    const purpose = document.createElement("p");
+    purpose.textContent = role.purpose;
+
+    const grants = document.createElement("div");
+    grants.className = "capability-row";
+    role.grants.forEach((grant) => grants.appendChild(makeCapabilityChip(grant)));
+
+    card.append(heading, purpose, grants);
+    roleGrid.appendChild(card);
+  });
+
+  const policyGrid = document.createElement("div");
+  policyGrid.className = "auth-policy-grid";
+  [
+    ["viewer", authContract.policies.viewerRedaction],
+    ["operator", authContract.policies.operatorDispatch],
+    ["admin", authContract.policies.adminConfig],
+    ["mutation routes", authContract.mutationRoutesEnabled ? "enabled" : "disabled"],
+  ].forEach(([label, value]) => {
+    const row = document.createElement("div");
+    const term = document.createElement("span");
+    const data = document.createElement("strong");
+    term.textContent = label;
+    data.textContent = value;
+    row.append(term, data);
+    policyGrid.appendChild(row);
+  });
+
+  const guardList = document.createElement("ul");
+  guardList.className = "auth-route-guards";
+  authContract.routeGuards.forEach((guard) => {
+    const item = document.createElement("li");
+    const name = document.createElement("strong");
+    name.textContent = `${guard.match} ${guard.methods.join("/") || "GET"}`;
+    const state = document.createElement("span");
+    state.className = guard.enabled ? "status-pass" : "status-flag";
+    state.textContent = guard.enabled ? `${guard.minRole} enabled` : `${guard.minRole} disabled`;
+    item.append(name, state);
+    guardList.appendChild(item);
+  });
+
+  const staged = document.createElement("div");
+  staged.className = "staged-intents";
+  const stagedTitle = document.createElement("div");
+  stagedTitle.className = "auth-role-heading";
+  const stagedLabel = document.createElement("strong");
+  stagedLabel.textContent = "Local staged intents";
+  const stagedBadge = document.createElement("span");
+  stagedBadge.className = "mini-badge";
+  stagedBadge.textContent = String(stagedTaskIntents.length);
+  stagedTitle.append(stagedLabel, stagedBadge);
+  staged.appendChild(stagedTitle);
+
+  const stagedList = document.createElement("ol");
+  const recentIntents = stagedTaskIntents.slice(-3);
+  if (recentIntents.length === 0) {
+    const empty = document.createElement("li");
+    empty.textContent = "none; operator staging is local-only";
+    stagedList.appendChild(empty);
+  } else {
+    recentIntents.forEach((intent) => {
+      const item = document.createElement("li");
+      item.textContent = `${intent.createdAt} ${intent.routeId}: ${intent.summary}`;
+      stagedList.appendChild(item);
+    });
+  }
+  staged.appendChild(stagedList);
+
+  authCapabilityModel.append(roleGrid, policyGrid, guardList, staged);
 }
 
 function renderRoutes() {
@@ -938,6 +1143,20 @@ function renderFacts() {
   });
 }
 
+function stageTaskIntent(text) {
+  const summary = redactText(text.replace(/^\/stage\s+task\s*/i, "").trim() || `${activeRemote.name} operator intent`)
+    .replace(/\s+/g, " ")
+    .slice(0, 120);
+  const intent = {
+    createdAt: new Date().toISOString(),
+    routeId: redactText(activeRemote.id),
+    summary,
+  };
+  stagedTaskIntents.push(intent);
+  renderAuthCapabilityModel();
+  return intent;
+}
+
 function runCommand(command) {
   input.value = command;
   resizeInput();
@@ -982,7 +1201,14 @@ async function dispatch(raw) {
       `processes=${superruntimeStatus.codexTuiProcesses}`,
       `surface=${superruntimeStatus.codexTuiSurface}`,
     ].join(" ");
-    addMessage("remote", [bridgeLine, yoloLine, codexLine, ...lines].join("\n"));
+    const authLine = [
+      `AUTH ${authContract.activeRole}`,
+      `source=${authContract.source}`,
+      `mutation_routes=${String(authContract.mutationRoutesEnabled)}`,
+      "operator_stage=local-only",
+      "admin_config=disabled",
+    ].join(" ");
+    addMessage("remote", [bridgeLine, authLine, yoloLine, codexLine, ...lines].join("\n"));
     return;
   }
 
@@ -993,6 +1219,15 @@ async function dispatch(raw) {
 
   if (text.startsWith("/broadcast")) {
     addMessage("remote", "Broadcast plan staged for all routes. Current MVP records intent only; mutation bridge remains disabled.");
+    return;
+  }
+
+  if (text.startsWith("/stage task")) {
+    const intent = stageTaskIntent(text);
+    addMessage(
+      "remote",
+      `Operator intent staged locally for ${intent.routeId}: ${intent.summary}\nNo webhook, task queue, or remote mutation was called.`,
+    );
     return;
   }
 
