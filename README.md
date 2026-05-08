@@ -104,7 +104,8 @@ just xai-setup-smoke
   slots, spool status JSON, and compact redacted summaries.
 - `scripts/xai-setup-agent.sh` - local xAI setup lane smoke gate using
   operator-owned credentials with redacted evidence.
-- `docs/ops/` - local reliability guards such as Multica Codex cache pruning.
+- `docs/ops/` - local reliability guards and public repo hardening specs such
+  as Multica Codex cache pruning and GitHub rulesets.
 
 ## Current Boundary
 
