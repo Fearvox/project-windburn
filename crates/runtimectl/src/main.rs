@@ -24,20 +24,20 @@ enum Commands {
     Doctor {
         #[arg(long, default_value = ".")]
         target: PathBuf,
-        #[arg(long, default_value = "docs/remote-workhorse/phase1/evidence/current")]
-        evidence_dir: PathBuf,
+        /// Evidence output directory. Defaults to a temp directory so routine checks do not churn tracked evidence.
+        #[arg(long)]
+        evidence_dir: Option<PathBuf>,
     },
     /// Run the Phase 1 read-only repo/review health canary.
     Canary {
         #[arg(long, default_value = ".")]
         target: PathBuf,
-        #[arg(long, default_value = "docs/remote-workhorse/phase1/evidence/current")]
-        evidence_dir: PathBuf,
-        #[arg(
-            long,
-            default_value = "docs/remote-workhorse/phase1/CANARY-read-only-repo-review-health.md"
-        )]
-        report: PathBuf,
+        /// Evidence output directory. Defaults to a temp directory so routine checks do not churn tracked evidence.
+        #[arg(long)]
+        evidence_dir: Option<PathBuf>,
+        /// Markdown report path. Defaults to a temp file so routine checks do not churn the tracked canary report.
+        #[arg(long)]
+        report: Option<PathBuf>,
     },
     /// Run local gates required before touching a remote NixOS workhorse.
     Preflight {
@@ -213,6 +213,7 @@ fn main() -> Result<()> {
             target,
             evidence_dir,
         } => {
+            let evidence_dir = evidence_dir.unwrap_or_else(default_phase1_evidence_dir);
             let evidence = run_doctor(&target, &evidence_dir)?;
             print_verdict("doctor", &evidence.verdict);
         }
@@ -221,6 +222,8 @@ fn main() -> Result<()> {
             evidence_dir,
             report,
         } => {
+            let evidence_dir = evidence_dir.unwrap_or_else(default_phase1_evidence_dir);
+            let report = report.unwrap_or_else(default_phase1_canary_report);
             let verdict = run_canary(&target, &evidence_dir, &report)?;
             print_verdict("canary", &verdict);
         }
@@ -265,6 +268,18 @@ fn print_verdict(label: &str, verdict: &Verdict) {
     for reason in &verdict.reasons {
         println!("- {reason}");
     }
+}
+
+fn default_phase1_evidence_dir() -> PathBuf {
+    temp_output_path("phase1-evidence")
+}
+
+fn default_phase1_canary_report() -> PathBuf {
+    temp_output_path("CANARY-read-only-repo-review-health.md")
+}
+
+fn temp_output_path(name: &str) -> PathBuf {
+    std::env::temp_dir().join(format!("windburn-runtimectl-{}-{name}", std::process::id()))
 }
 
 fn run_doctor(target_arg: &Path, evidence_dir_arg: &Path) -> Result<DoctorEvidence> {
