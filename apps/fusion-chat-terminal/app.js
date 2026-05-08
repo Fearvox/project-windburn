@@ -1157,6 +1157,10 @@ function stageTaskIntent(text) {
   return intent;
 }
 
+function canStageTaskIntent() {
+  return authContract.activeRole === "operator" || authContract.activeRole === "admin";
+}
+
 function runCommand(command) {
   input.value = command;
   resizeInput();
@@ -1205,7 +1209,7 @@ async function dispatch(raw) {
       `AUTH ${authContract.activeRole}`,
       `source=${authContract.source}`,
       `mutation_routes=${String(authContract.mutationRoutesEnabled)}`,
-      "operator_stage=local-only",
+      `operator_stage=${canStageTaskIntent() ? "local-only" : "locked"}`,
       "admin_config=disabled",
     ].join(" ");
     addMessage("remote", [bridgeLine, authLine, yoloLine, codexLine, ...lines].join("\n"));
@@ -1223,6 +1227,13 @@ async function dispatch(raw) {
   }
 
   if (text.startsWith("/stage task")) {
+    if (!canStageTaskIntent()) {
+      addMessage(
+        "alert",
+        "Viewer mode cannot stage operator intent. Authenticate operator/admin first; no local intent was recorded.",
+      );
+      return;
+    }
     const intent = stageTaskIntent(text);
     addMessage(
       "remote",
