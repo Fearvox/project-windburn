@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "card_id": "rrc_recursivemas_static_smoke_v0",
+  "source": "windburn-research-appliance",
+  "research_program": "agent-memory-causality",
+  "research_question": "Can RecursiveMAS-style latent handoff be framed as a decision-impact canary without staging remote execution?",
+  "repo": "Fearvox/project-windburn",
+  "rv_target": "research-programs/agent-memory-causality/evidence/recursivemas-static-smoke/",
+  "requested_action": "verify-card",
+  "allowed_actions": [
+    "verify-card",
+    "stage-run",
+    "status"
+  ],
+  "runner_mode": "dry-run",
+  "task_family": "public-surface-safety",
+  "memory_condition": "M0",
+  "pressure_condition": "P0",
+  "counterfactual_pair": "T0M1L1-static-intake",
+  "prompt_ref": "rv:research-programs/agent-memory-causality/templates/RUN-CARD.md",
+  "memory_state_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "evidence_requirements": [
+    "run_card",
+    "memory_state_hash",
+    "prompt_text",
+    "decision_output",
+    "verification_result",
+    "causal_trace_notes",
+    "counterfactual_pair_pointer"
+  ],
+  "safety": {
+    "remote_mutation": false,
+    "secret_access": false,
+    "provider_writeback": false,
+    "network": "none",
+    "stream_policy": "redacted",
+    "public_safe": true
+  },
+  "huggingface": {
+    "publish_dataset": false,
+    "dataset_repo": null,
+    "export_formats": [
+      "jsonl",
+      "markdown"
+    ],
+    "gated_until_review": true
+  },
+  "expected_output": "PASS/FLAG/BLOCK static-smoke verdict with no checkpoint download, remote mutation, provider writeback, or raw private surface."
+}

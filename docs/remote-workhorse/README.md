@@ -39,6 +39,7 @@ Read order for a new agent:
 34. `preflight/XAI_SETUP_AGENT_SMOKE.md`
 35. `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md`
 36. `RESEARCH_APPLIANCE_V0.md`
+37. `research/RECURSIVEMAS_LATENT_STATE_CAUSALITY_INTAKE.md`
 
 Read `SUPERRUNTIME_ORCHESTRATOR_SPEC.md` and
 `MULTICA_SSH_RUNTIME_INGRESS.md` together for the current v1 bootstrap queue
@@ -99,3 +100,5 @@ contract are specified in `preflight/STREAM_SAFETY_PREFLIGHT_SPEC.md`.
 The small remote research workhorse appliance, including the Agent Memory
 Causality run-card contract and gated Hugging Face export lane, is specified in
 `RESEARCH_APPLIANCE_V0.md`.
+The RecursiveMAS latent-state causality intake and first canary design are
+recorded in `research/RECURSIVEMAS_LATENT_STATE_CAUSALITY_INTAKE.md`.
