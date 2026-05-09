@@ -69,7 +69,80 @@ extract_session_id() {
   awk -F': *' 'tolower($1) == "mcp-session-id" { gsub(/\r/, "", $2); print $2; exit }' "$header_file"
 }
 
+endpoint_ref_for_url() {
+  local url="$1"
+  local host_port
+  local port
+
+  host_port="${url#http://}"
+  host_port="${host_port#https://}"
+  host_port="${host_port%%/*}"
+
+  case "$host_port" in
+    localhost|localhost:8787|127.0.0.1|127.0.0.1:8787)
+      printf '%s\n' "localhost-default"
+      ;;
+    localhost:*)
+      port="${host_port##*:}"
+      printf 'localhost-alt-%s\n' "$port"
+      ;;
+    127.0.0.1:*)
+      port="${host_port##*:}"
+      printf 'localhost-alt-%s\n' "$port"
+      ;;
+    *)
+      printf '%s\n' "nonlocal-redacted"
+      ;;
+  esac
+}
+
+health_url_for_mcp_url() {
+  local url="$1"
+  case "$url" in
+    */mcp)
+      printf '%s/health\n' "${url%/mcp}"
+      ;;
+    *)
+      printf '%s\n' ""
+      ;;
+  esac
+}
+
+fetch_health_summary() {
+  local health_url="$1"
+  local raw_file="$tmp_dir/health.raw"
+  local json_file="$tmp_dir/health.json"
+
+  if [ -z "$health_url" ]; then
+    jq -n '{available: false, profile: "unknown"}' > "$json_file"
+    printf '%s\n' "$json_file"
+    return 0
+  fi
+
+  if ! curl -fsS "$health_url" > "$raw_file" 2>/dev/null; then
+    jq -n '{available: false, profile: "unknown"}' > "$json_file"
+    printf '%s\n' "$json_file"
+    return 0
+  fi
+
+  jq '{
+    available: true,
+    status: (.status // null),
+    profile: (.profile // .active_profile // .runtime_profile // "unknown"),
+    public_safe_default: (.public_safe_default // null),
+    visible_tools: (.visible_tools // null),
+    tools: (.tools // null),
+    vault_tools: (.vault_tools // null),
+    amplify_tools: (.amplify_tools // null),
+    streamable_sessions: (.streamable_sessions // null)
+  }' "$raw_file" > "$json_file"
+  printf '%s\n' "$json_file"
+}
+
 mkdir -p "$(dirname "$OUT")"
+MCP_ENDPOINT_REF="$(endpoint_ref_for_url "$MCP_URL")"
+MCP_HEALTH_URL="$(health_url_for_mcp_url "$MCP_URL")"
+health_json="$(fetch_health_summary "$MCP_HEALTH_URL")"
 
 initialize_body="$(jq -n --arg id "windburn-rv-init" '{
   jsonrpc: "2.0",
@@ -135,21 +208,44 @@ blocked_json="$(mcp_post "$blocked_body" blocked_mutation)"
 
 jq -n \
   --arg as_of "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg endpoint_ref "$MCP_ENDPOINT_REF" \
   --slurpfile initialize "$initialize_json" \
+  --slurpfile health "$health_json" \
   --slurpfile tools "$tools_json" \
   --slurpfile search "$search_json" \
   --slurpfile blocked "$blocked_json" '
   def tool_names:
     ($tools[0].result.tools // []) | map(.name);
-  def blocked_is_error:
-    (($blocked[0].result.isError // false) == true) or ($blocked[0].error != null);
+  def parse_json_text:
+    try fromjson catch null;
+  def blocked_result_is_error:
+    ($blocked[0].result != null) and (($blocked[0].result.isError // false) == true);
+  def blocked_guidance:
+    ($blocked[0].result.content // [])
+    | map(select(.type == "text") | .text | parse_json_text | select(type == "object"))
+    | map(.agent_guidance // empty)
+    | .[0] // null;
+  def blocked_guidance_is_block:
+    (blocked_guidance != null) and ((blocked_guidance.verdict // "") == "BLOCK");
+  def blocked_status:
+    if ($blocked[0].error != null) then "jsonrpc_error"
+    elif blocked_result_is_error and blocked_guidance_is_block then "blocked_with_guidance"
+    elif blocked_result_is_error then "blocked_without_parseable_block_guidance"
+    else "not_blocked"
+    end;
+  def runtime_profile:
+    ($health[0].profile // "unknown");
 
   {
     as_of: $as_of,
+    mcp_endpoint_ref: $endpoint_ref,
+    runtime_profile: runtime_profile,
+    health: $health[0],
     verdict: (
       if ((tool_names | index("vault_delete") | not)
         and (tool_names | index("vault_search") != null)
-        and blocked_is_error)
+        and blocked_result_is_error
+        and blocked_guidance_is_block)
       then "PASS"
       else "FLAG"
       end
@@ -166,7 +262,9 @@ jq -n \
     blocked_mutation: {
       attempted_tool: "vault_delete",
       harmless_id: "windburn-dogfood-harmless-nonexistent-id",
-      isError: blocked_is_error,
+      isError: blocked_result_is_error,
+      status: blocked_status,
+      agent_guidance: blocked_guidance,
       response: $blocked[0]
     },
     protocol: {
