@@ -41,6 +41,16 @@ json_from_stream() {
 mcp_post() {
   local body="$1"
   local name="$2"
+  local session_id="${MCP_SESSION_ID:-}"
+
+  mcp_post_url "$MCP_URL" "$body" "$name" "$session_id"
+}
+
+mcp_post_url() {
+  local url="$1"
+  local body="$2"
+  local name="$3"
+  local session_id="${4:-}"
   local header_file="$tmp_dir/$name.headers"
   local body_file="$tmp_dir/$name.body"
   local json_file="$tmp_dir/$name.json"
@@ -54,11 +64,11 @@ mcp_post() {
     -H "accept: application/json, text/event-stream"
   )
 
-  if [ -n "${MCP_SESSION_ID:-}" ]; then
-    curl_args+=(-H "mcp-session-id: $MCP_SESSION_ID")
+  if [ -n "$session_id" ]; then
+    curl_args+=(-H "mcp-session-id: $session_id")
   fi
 
-  curl_args+=(--data "$body" "$MCP_URL")
+  curl_args+=(--data "$body" "$url")
   curl "${curl_args[@]}"
   json_from_stream "$body_file" "$json_file"
   printf '%s\n' "$json_file"
@@ -110,8 +120,9 @@ health_url_for_mcp_url() {
 
 fetch_health_summary() {
   local health_url="$1"
-  local raw_file="$tmp_dir/health.raw"
-  local json_file="$tmp_dir/health.json"
+  local label="${2:-health}"
+  local raw_file="$tmp_dir/$label.raw"
+  local json_file="$tmp_dir/$label.json"
 
   if [ -z "$health_url" ]; then
     jq -n '{available: false, profile: "unknown"}' > "$json_file"
@@ -139,10 +150,147 @@ fetch_health_summary() {
   printf '%s\n' "$json_file"
 }
 
+ambient_default_probe() {
+  local selected_ref="$1"
+  local default_url="http://localhost:8787/mcp"
+  local default_ref="localhost-default"
+  local output_file="$tmp_dir/ambient_default.json"
+  local default_health_json
+  local init_body
+  local init_json
+  local session_id
+  local initialized_body
+  local tools_body
+  local tools_json
+
+  if [ "$selected_ref" = "$default_ref" ]; then
+    jq -n --arg endpoint_ref "$default_ref" '{
+      endpoint_ref: $endpoint_ref,
+      checked: false,
+      reason: "selected_endpoint_is_default"
+    }' > "$output_file"
+    printf '%s\n' "$output_file"
+    return 0
+  fi
+
+  default_health_json="$(fetch_health_summary "$(health_url_for_mcp_url "$default_url")" ambient_default_health)"
+  init_body="$(jq -n --arg id "windburn-rv-ambient-default-init" '{
+    jsonrpc: "2.0",
+    id: $id,
+    method: "initialize",
+    params: {
+      protocolVersion: "2025-03-26",
+      capabilities: {},
+      clientInfo: {
+        name: "windburn-research-vault-mcp-dogfood-ambient-default-probe",
+        version: "1.0.0"
+      }
+    }
+  }')"
+
+  if ! init_json="$(mcp_post_url "$default_url" "$init_body" ambient_default_initialize "")"; then
+    jq -n \
+      --arg endpoint_ref "$default_ref" \
+      --slurpfile health "$default_health_json" '{
+        endpoint_ref: $endpoint_ref,
+        checked: true,
+        reachable: false,
+        runtime_profile: ($health[0].profile // "unknown"),
+        health: $health[0],
+        tools: {
+          count: 0,
+          names: []
+        },
+        mutators_visible: false,
+        visible_mutators: [],
+        verdict: "PASS",
+        reason: "ambient_default_not_reachable"
+      }' > "$output_file"
+    printf '%s\n' "$output_file"
+    return 0
+  fi
+
+  session_id="$(extract_session_id "$tmp_dir/ambient_default_initialize.headers")"
+  if [ -n "$session_id" ]; then
+    initialized_body="$(jq -n '{
+      jsonrpc: "2.0",
+      method: "notifications/initialized",
+      params: {}
+    }')"
+    mcp_post_url "$default_url" "$initialized_body" ambient_default_initialized "$session_id" >/dev/null || true
+  fi
+
+  tools_body="$(jq -n --arg id "windburn-rv-ambient-default-tools" '{
+    jsonrpc: "2.0",
+    id: $id,
+    method: "tools/list",
+    params: {}
+  }')"
+
+  if ! tools_json="$(mcp_post_url "$default_url" "$tools_body" ambient_default_tools "$session_id")"; then
+    jq -n \
+      --arg endpoint_ref "$default_ref" \
+      --slurpfile health "$default_health_json" '{
+        endpoint_ref: $endpoint_ref,
+        checked: true,
+        reachable: true,
+        runtime_profile: ($health[0].profile // "unknown"),
+        health: $health[0],
+        tools: {
+          count: null,
+          names: []
+        },
+        mutators_visible: null,
+        visible_mutators: [],
+        verdict: "FLAG",
+        reason: "ambient_default_tools_list_unavailable"
+      }' > "$output_file"
+    printf '%s\n' "$output_file"
+    return 0
+  fi
+
+  jq -n \
+    --arg endpoint_ref "$default_ref" \
+    --slurpfile health "$default_health_json" \
+    --slurpfile tools "$tools_json" '
+    def tool_names:
+      ($tools[0].result.tools // []) | map(.name);
+    def visible_mutators:
+      tool_names
+      | map(select(
+          . == "vault_delete"
+          or . == "vault_raw_ingest"
+          or . == "vault_note_save"
+          or contains("_delete")
+          or contains("_admin")
+          or startswith("admin_")
+        ));
+    def mutators_visible:
+      (visible_mutators | length) > 0;
+    {
+      endpoint_ref: $endpoint_ref,
+      checked: true,
+      reachable: true,
+      runtime_profile: ($health[0].profile // "unknown"),
+      health: $health[0],
+      tools: {
+        count: (tool_names | length),
+        names: tool_names
+      },
+      mutators_visible: mutators_visible,
+      visible_mutators: visible_mutators,
+      verdict: (if mutators_visible then "FLAG" else "PASS" end),
+      reason: (if mutators_visible then "ambient_default_mutators_visible" else "ambient_default_readonly_safe" end)
+    }
+  ' > "$output_file"
+  printf '%s\n' "$output_file"
+}
+
 mkdir -p "$(dirname "$OUT")"
 MCP_ENDPOINT_REF="$(endpoint_ref_for_url "$MCP_URL")"
 MCP_HEALTH_URL="$(health_url_for_mcp_url "$MCP_URL")"
-health_json="$(fetch_health_summary "$MCP_HEALTH_URL")"
+health_json="$(fetch_health_summary "$MCP_HEALTH_URL" selected_health)"
+ambient_default_json="$(ambient_default_probe "$MCP_ENDPOINT_REF")"
 
 initialize_body="$(jq -n --arg id "windburn-rv-init" '{
   jsonrpc: "2.0",
@@ -211,6 +359,7 @@ jq -n \
   --arg endpoint_ref "$MCP_ENDPOINT_REF" \
   --slurpfile initialize "$initialize_json" \
   --slurpfile health "$health_json" \
+  --slurpfile ambient_default "$ambient_default_json" \
   --slurpfile tools "$tools_json" \
   --slurpfile search "$search_json" \
   --slurpfile blocked "$blocked_json" '
@@ -241,6 +390,7 @@ jq -n \
     mcp_endpoint_ref: $endpoint_ref,
     runtime_profile: runtime_profile,
     health: $health[0],
+    ambient_default_endpoint: $ambient_default[0],
     verdict: (
       if ((tool_names | index("vault_delete") | not)
         and (tool_names | index("vault_search") != null)

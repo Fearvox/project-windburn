@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-05-09T21:23:50Z",
+  "as_of": "2026-05-09T21:27:22Z",
   "mcp_endpoint_ref": "localhost-alt-8788",
   "runtime_profile": "readonly",
   "health": {
@@ -17,7 +17,50 @@
     "tools": 5,
     "vault_tools": 5,
     "amplify_tools": 5,
-    "streamable_sessions": 0
+    "streamable_sessions": 1
+  },
+  "ambient_default_endpoint": {
+    "endpoint_ref": "localhost-default",
+    "checked": true,
+    "reachable": true,
+    "runtime_profile": "unknown",
+    "health": {
+      "available": true,
+      "status": "ok",
+      "profile": "unknown",
+      "public_safe_default": null,
+      "visible_tools": null,
+      "tools": 13,
+      "vault_tools": 4,
+      "amplify_tools": 5,
+      "streamable_sessions": 681
+    },
+    "tools": {
+      "count": 13,
+      "names": [
+        "vault_search",
+        "vault_status",
+        "vault_batch_analyze",
+        "vault_taxonomy",
+        "vault_raw_ingest",
+        "vault_note_save",
+        "vault_get",
+        "vault_delete",
+        "amplify_list_models",
+        "amplify_chat",
+        "amplify_files_query",
+        "amplify_files_list",
+        "amplify_assistants_list"
+      ]
+    },
+    "mutators_visible": true,
+    "visible_mutators": [
+      "vault_raw_ingest",
+      "vault_note_save",
+      "vault_delete"
+    ],
+    "verdict": "FLAG",
+    "reason": "ambient_default_mutators_visible"
   },
   "verdict": "PASS",
   "tools": {
@@ -121,7 +164,7 @@
         "content": [
           {
             "type": "text",
-            "text": "{\n  \"ok\": true,\n  \"data\": {\n    \"query\": \"Windburn Research Vault evidence\",\n    \"results\": [\n      {\n        \"id\": \"08256-hypermem\",\n        \"title\": \"HyperMem: Hypergraph Memory for Long-Term Conversations\",\n        \"category\": \"ai-agents/memory-systems\",\n        \"score\": null,\n        \"summaryLevel\": null,\n        \"nextReview\": null,\n        \"accessCount\": 0,\n        \"modified\": \"2026-04-11T04:54:29.307Z\",\n        \"matched_fields\": [\n          \"content\"\n        ],\n        \"why_matched\": \"Matched query \\\"Windburn Research Vault evidence\\\" in note content.\",\n        \"snippet\": \"...) 增加至少一个额外 benchmark，(2) 补充人类评估或传统 IR 指标，(3) 增加 hyperedge vs normal edge 的对照消融，(4) 报告完整的计算成本分析。代码声称即将公开但尚未发布，可复现性暂时无法验证。 ## Connections - **Vault 内关联**: - -> `llm-architecture/attention/20260411--1706-03762-attention-is-all-you-need`: HyperMem 的语义编码（Qwen3-Embedding）和 rerank...\",\n        \"source_ref\": \"vault://knowledge/ai-agents/memory-systems/08256-hypermem\",\n        \"last_analyzed_at\": null,\n        \"source_mtime\": \"2026-04-11T04:54:29.307Z\",\n        \"freshness_verdict\": \"FLAG\",\n        \"freshness_reason\": \"No analysis timestamp was provided.\"\n      },\n      {\n        \"id\": \"20260503-das-395-runtime-hygiene-sweep-evidence-and-rv-pressure-alignment\",\n        \"title\": \"DAS-395 Runtime Hygiene Sweep Evidence and RV Pressure Alignment\",\n        \"category\": \"ai-agents/memory-systems\",\n        \"score\": 1,\n        \"summaryLevel\": \"deep\",\n        \"nextReview\": \"2026-05-24T14:54:08.355Z\",\n        \"accessCount\": 2,\n        \"modified\": \"2026-05-03T13:53:59.049Z\",\n        \"matched_fields\": [\n          \"title\",\n          \"content\",\n          \"id\"\n        ],\n        \"why_matched\": \"Matched query \\\"Windburn Research Vault evidence\\\" in title, note content, id.\",\n        \"snippet\": \"# DAS-395 Runtime Hygiene Sweep Evidence and RV Pressure Alignment ## Summary DAS-395 (`Runtime Hygiene Sweep: A-tier cleanup and stale session closeout`) produced durable operational evidence for agent-runtime hygiene after disk/swap pressure. The evidence qualifies for Resea...\",\n        \"source_ref\": \"vault://knowledge/ai-agents/memory-systems/20260503-das-395-runtime-hygiene-sweep-evidence-and-rv-pressure-alignment\",\n        \"last_analyzed_at\": null,\n        \"source_mtime\": \"2026-05-03T13:53:59.049Z\",\n        \"freshness_verdict\": \"FLAG\",\n        \"freshness_reason\": \"No analysis timestamp was provided.\"\n      },\n      {\n        \"id\": \"MemOS--Memory-Operating-System-f\",\n        \"title\": \"MemOS: Memory Operating System for LLMs (MemTensor/Shanghai)\",\n        \"category\": \"ai-agents/memory-systems\",\n        \"score\": null,\n        \"summaryLevel\": null,\n        \"nextReview\": null,\n        \"accessCount\": 0,\n        \"modified\": \"2026-04-30T02:20:54.582Z\",\n        \"matched_fields\": [\n          \"content\"\n        ],\n        \"why_matched\": \"Matched query \\\"Windburn Research Vault evidence\\\" in note content.\",\n        \"snippet\": \"...ystem for Memory-Augmented Generation **Authors**: MemTensor (Shanghai) + Shanghai Jiao Tong University + Renmin University + China Telecom Research **Date**: 2025.05.27 (short version) ## Core Thesis Memory as first-class operational resource for LLMs. Unified framework fo...\",\n        \"source_ref\": \"vault://knowledge/ai-agents/memory-systems/MemOS--Memory-Operating-System-f\",\n        \"last_analyzed_at\": null,\n        \"source_mtime\": \"2026-04-30T02:20:54.582Z\",\n        \"freshness_verdict\": \"FLAG\",\n        \"freshness_reason\": \"No analysis timestamp was provided.\"\n      }\n    ],\n    \"total\": 3\n  },\n  \"agent_guidance\": {\n    \"verdict\": \"FLAG\",\n    \"reason\": \"Search completed, but one or more results lack fresh analysis metadata.\",\n    \"next_step\": \"Use source_ref for readonly follow-up and refresh analysis metadata in the operator lane if needed.\",\n    \"recommended_tool\": \"vault_get\",\n    \"retryable\": true\n  },\n  \"evidence\": {\n    \"freshness\": \"Some search results are missing or stale analysis timestamps.\",\n    \"provenance\": \"vault_search result source_ref values are vault:// references without local paths.\",\n    \"as_of\": \"2026-05-09T21:23:50.875Z\",\n    \"profile\": \"readonly\",\n    \"public_safe\": true\n  }\n}"
+            "text": "{\n  \"ok\": true,\n  \"data\": {\n    \"query\": \"Windburn Research Vault evidence\",\n    \"results\": [\n      {\n        \"id\": \"08256-hypermem\",\n        \"title\": \"HyperMem: Hypergraph Memory for Long-Term Conversations\",\n        \"category\": \"ai-agents/memory-systems\",\n        \"score\": null,\n        \"summaryLevel\": null,\n        \"nextReview\": null,\n        \"accessCount\": 0,\n        \"modified\": \"2026-04-11T04:54:29.307Z\",\n        \"matched_fields\": [\n          \"content\"\n        ],\n        \"why_matched\": \"Matched query \\\"Windburn Research Vault evidence\\\" in note content.\",\n        \"snippet\": \"...) 增加至少一个额外 benchmark，(2) 补充人类评估或传统 IR 指标，(3) 增加 hyperedge vs normal edge 的对照消融，(4) 报告完整的计算成本分析。代码声称即将公开但尚未发布，可复现性暂时无法验证。 ## Connections - **Vault 内关联**: - -> `llm-architecture/attention/20260411--1706-03762-attention-is-all-you-need`: HyperMem 的语义编码（Qwen3-Embedding）和 rerank...\",\n        \"source_ref\": \"vault://knowledge/ai-agents/memory-systems/08256-hypermem\",\n        \"last_analyzed_at\": null,\n        \"source_mtime\": \"2026-04-11T04:54:29.307Z\",\n        \"freshness_verdict\": \"FLAG\",\n        \"freshness_reason\": \"No analysis timestamp was provided.\"\n      },\n      {\n        \"id\": \"20260503-das-395-runtime-hygiene-sweep-evidence-and-rv-pressure-alignment\",\n        \"title\": \"DAS-395 Runtime Hygiene Sweep Evidence and RV Pressure Alignment\",\n        \"category\": \"ai-agents/memory-systems\",\n        \"score\": 1,\n        \"summaryLevel\": \"deep\",\n        \"nextReview\": \"2026-05-24T14:54:08.355Z\",\n        \"accessCount\": 2,\n        \"modified\": \"2026-05-03T13:53:59.049Z\",\n        \"matched_fields\": [\n          \"title\",\n          \"content\",\n          \"id\"\n        ],\n        \"why_matched\": \"Matched query \\\"Windburn Research Vault evidence\\\" in title, note content, id.\",\n        \"snippet\": \"# DAS-395 Runtime Hygiene Sweep Evidence and RV Pressure Alignment ## Summary DAS-395 (`Runtime Hygiene Sweep: A-tier cleanup and stale session closeout`) produced durable operational evidence for agent-runtime hygiene after disk/swap pressure. The evidence qualifies for Resea...\",\n        \"source_ref\": \"vault://knowledge/ai-agents/memory-systems/20260503-das-395-runtime-hygiene-sweep-evidence-and-rv-pressure-alignment\",\n        \"last_analyzed_at\": null,\n        \"source_mtime\": \"2026-05-03T13:53:59.049Z\",\n        \"freshness_verdict\": \"FLAG\",\n        \"freshness_reason\": \"No analysis timestamp was provided.\"\n      },\n      {\n        \"id\": \"MemOS--Memory-Operating-System-f\",\n        \"title\": \"MemOS: Memory Operating System for LLMs (MemTensor/Shanghai)\",\n        \"category\": \"ai-agents/memory-systems\",\n        \"score\": null,\n        \"summaryLevel\": null,\n        \"nextReview\": null,\n        \"accessCount\": 0,\n        \"modified\": \"2026-04-30T02:20:54.582Z\",\n        \"matched_fields\": [\n          \"content\"\n        ],\n        \"why_matched\": \"Matched query \\\"Windburn Research Vault evidence\\\" in note content.\",\n        \"snippet\": \"...ystem for Memory-Augmented Generation **Authors**: MemTensor (Shanghai) + Shanghai Jiao Tong University + Renmin University + China Telecom Research **Date**: 2025.05.27 (short version) ## Core Thesis Memory as first-class operational resource for LLMs. Unified framework fo...\",\n        \"source_ref\": \"vault://knowledge/ai-agents/memory-systems/MemOS--Memory-Operating-System-f\",\n        \"last_analyzed_at\": null,\n        \"source_mtime\": \"2026-04-30T02:20:54.582Z\",\n        \"freshness_verdict\": \"FLAG\",\n        \"freshness_reason\": \"No analysis timestamp was provided.\"\n      }\n    ],\n    \"total\": 3\n  },\n  \"agent_guidance\": {\n    \"verdict\": \"FLAG\",\n    \"reason\": \"Search completed, but one or more results lack fresh analysis metadata.\",\n    \"next_step\": \"Use source_ref for readonly follow-up and refresh analysis metadata in the operator lane if needed.\",\n    \"recommended_tool\": \"vault_get\",\n    \"retryable\": true\n  },\n  \"evidence\": {\n    \"freshness\": \"Some search results are missing or stale analysis timestamps.\",\n    \"provenance\": \"vault_search result source_ref values are vault:// references without local paths.\",\n    \"as_of\": \"2026-05-09T21:27:22.572Z\",\n    \"profile\": \"readonly\",\n    \"public_safe\": true\n  }\n}"
           }
         ]
       }
@@ -146,7 +189,7 @@
         "content": [
           {
             "type": "text",
-            "text": "{\"ok\":false,\"data\":null,\"agent_guidance\":{\"verdict\":\"BLOCK\",\"reason\":\"vault_delete is unavailable while Research Vault MCP is running in readonly profile.\",\"next_step\":\"Use vault_search for readonly evidence, or switch to a mutation-capable profile in a private operator session.\",\"recommended_tool\":\"vault_search\",\"retryable\":false},\"evidence\":{\"profile\":\"readonly\",\"as_of\":\"2026-05-09T21:23:50.889Z\",\"public_safe\":true}}"
+            "text": "{\"ok\":false,\"data\":null,\"agent_guidance\":{\"verdict\":\"BLOCK\",\"reason\":\"vault_delete is unavailable while Research Vault MCP is running in readonly profile.\",\"next_step\":\"Use vault_search for readonly evidence, or switch to a mutation-capable profile in a private operator session.\",\"recommended_tool\":\"vault_search\",\"retryable\":false},\"evidence\":{\"profile\":\"readonly\",\"as_of\":\"2026-05-09T21:27:22.587Z\",\"public_safe\":true}}"
           }
         ],
         "isError": true
