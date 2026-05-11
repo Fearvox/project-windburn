@@ -1,0 +1,1312 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HTML as Agent Memory Anchor</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23f7f4ef'/%3E%3Cpath d='M4 26 26 4h2v24H4z' fill='%23147d64'/%3E%3Cpath d='M4 28 28 4v24z' fill='%23d84c3a' opacity='.9'/%3E%3Cpath d='M4 4h24v24H4z' fill='none' stroke='%2325211c' stroke-width='3'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --paper: #f7f4ef;
+      --ink: #171717;
+      --muted: #68635b;
+      --line: #d9d0c2;
+      --panel: #fffdf9;
+      --rail: #25211c;
+      --jade: #147d64;
+      --coral: #d84c3a;
+      --amber: #d19a20;
+      --blue: #275d8f;
+      --violet: #6d4cb1;
+      --shadow: 0 16px 48px rgba(31, 25, 17, 0.11);
+      --mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", Menlo, monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --serif: Charter, "Iowan Old Style", Georgia, serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(20, 125, 100, 0.08) 0 1px, transparent 1px 100%),
+        linear-gradient(180deg, rgba(216, 76, 58, 0.06) 0 1px, transparent 1px 100%),
+        var(--paper);
+      background-size: 48px 48px;
+      font-family: var(--sans);
+      letter-spacing: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration-color: rgba(23, 23, 23, 0.32);
+      text-underline-offset: 4px;
+    }
+
+    .shell {
+      width: min(1160px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0 26px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--mono);
+      color: var(--ink);
+    }
+
+    .mark {
+      width: 26px;
+      height: 26px;
+      border: 2px solid var(--rail);
+      background:
+        linear-gradient(135deg, var(--jade) 0 44%, transparent 44% 100%),
+        linear-gradient(315deg, var(--coral) 0 42%, transparent 42% 100%),
+        var(--panel);
+      box-shadow: 4px 4px 0 var(--rail);
+    }
+
+    .source {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.06fr) minmax(320px, 0.94fr);
+      gap: 28px;
+      align-items: stretch;
+      padding: 34px 0 24px;
+      border-top: 2px solid var(--rail);
+      border-bottom: 2px solid var(--rail);
+    }
+
+    main,
+    section,
+    .hero,
+    .hero-copy,
+    .hero-visual,
+    .panel,
+    .builder,
+    .matrix,
+    .flow {
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 820px;
+      font-family: var(--serif);
+      font-size: clamp(44px, 7vw, 88px);
+      line-height: 0.92;
+      font-weight: 740;
+      letter-spacing: 0;
+    }
+
+    .hero-copy {
+      display: grid;
+      gap: 22px;
+      align-content: space-between;
+    }
+
+    .thesis {
+      max-width: 720px;
+      color: #3f3b35;
+      font-size: clamp(18px, 2.2vw, 25px);
+      line-height: 1.45;
+    }
+
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .fact {
+      min-height: 94px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 249, 0.72);
+    }
+
+    .fact strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+      color: var(--rail);
+    }
+
+    .fact span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 420px;
+      overflow: hidden;
+      border: 2px solid var(--rail);
+      background:
+        radial-gradient(circle at 26% 26%, rgba(209, 154, 32, 0.16), transparent 28%),
+        linear-gradient(135deg, #fffdf9 0%, #ece5da 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .axis {
+      position: absolute;
+      inset: 28px;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 20px;
+    }
+
+    .axis svg {
+      width: 100%;
+      height: 100%;
+      min-height: 280px;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      display: inline-block;
+      border-radius: 50%;
+    }
+
+    .main {
+      display: grid;
+      gap: 24px;
+      padding-top: 26px;
+    }
+
+    section {
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .flow-node {
+      min-height: 126px;
+      padding: 16px;
+      border: 1px solid var(--rail);
+      background: var(--panel);
+      position: relative;
+    }
+
+    .flow-node::after {
+      content: "";
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      width: 18px;
+      height: 2px;
+      background: var(--rail);
+      transform: translateY(-50%);
+      z-index: 2;
+    }
+
+    .flow-node:last-child::after {
+      display: none;
+    }
+
+    .flow-node b {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    .flow-node small {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .tab,
+    .copy,
+    .export-button {
+      min-height: 38px;
+      border: 1px solid var(--rail);
+      background: var(--panel);
+      color: var(--rail);
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .tab:hover,
+    .copy:hover,
+    .export-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 3px 3px 0 var(--rail);
+    }
+
+    .tab[aria-selected="true"] {
+      background: var(--rail);
+      color: var(--paper);
+    }
+
+    .panel {
+      display: none;
+      grid-template-columns: 0.96fr 1.04fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .panel.active {
+      display: grid;
+    }
+
+    .panel-copy {
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    .panel-copy h3 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .panel-copy p,
+    .panel-copy li {
+      color: var(--muted);
+      line-height: 1.58;
+    }
+
+    .panel-copy ul {
+      margin: 12px 0 0;
+      padding-left: 18px;
+    }
+
+    .diagram {
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 249, 0.72);
+    }
+
+    .diagram svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .matrix article {
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .matrix h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .matrix p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.52;
+    }
+
+    .stack {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--rail);
+      overflow: hidden;
+    }
+
+    .stack th,
+    .stack td {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.48;
+    }
+
+    .stack th {
+      background: var(--rail);
+      color: var(--paper);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .stack td {
+      color: var(--muted);
+    }
+
+    .stack td:first-child {
+      color: var(--ink);
+      font-weight: 720;
+      white-space: nowrap;
+    }
+
+    .builder {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .controls,
+    .prompt-box {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    label,
+    .field-label {
+      color: var(--rail);
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    .choice-pool {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .choice-option {
+      display: grid;
+      gap: 5px;
+      min-height: 66px;
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 249, 0.76);
+      border-radius: 6px;
+      padding: 11px 12px;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .choice-option strong {
+      font-size: 14px;
+      line-height: 1.15;
+    }
+
+    .choice-option span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .choice-option:hover {
+      border-color: rgba(37, 33, 28, 0.65);
+      transform: translateY(-1px);
+      box-shadow: 3px 3px 0 rgba(37, 33, 28, 0.15);
+    }
+
+    .choice-option[aria-checked="true"] {
+      border-color: var(--rail);
+      background:
+        linear-gradient(90deg, rgba(20, 125, 100, 0.12), transparent 42%),
+        var(--panel);
+      box-shadow: inset 4px 0 0 var(--jade), 3px 3px 0 var(--rail);
+    }
+
+    .choice-option[aria-checked="true"] span {
+      color: #3d6c5d;
+    }
+
+    .density-control {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 253, 249, 0.76);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 26px;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--jade), var(--amber), var(--coral));
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      width: 22px;
+      height: 22px;
+      margin-top: -8px;
+      appearance: none;
+      border: 2px solid var(--rail);
+      border-radius: 50%;
+      background: var(--panel);
+      box-shadow: 2px 2px 0 var(--rail);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--jade), var(--amber), var(--coral));
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--rail);
+      border-radius: 50%;
+      background: var(--panel);
+      box-shadow: 2px 2px 0 var(--rail);
+    }
+
+    .density-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .density-value {
+      color: var(--rail);
+      font-family: var(--mono);
+    }
+
+    .checks {
+      display: grid;
+      gap: 8px;
+      margin: 12px 0 0;
+    }
+
+    .check {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 14px;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 253, 249, 0.76);
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .check input {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      margin: 0;
+      appearance: none;
+      border: 2px solid var(--line);
+      border-radius: 4px;
+      background: var(--panel);
+      display: grid;
+      place-items: center;
+    }
+
+    .check input::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      transform: scale(0);
+      background: var(--jade);
+      transition: transform 140ms ease;
+    }
+
+    .check input:checked {
+      border-color: var(--rail);
+      box-shadow: 2px 2px 0 var(--rail);
+    }
+
+    .check input:checked::before {
+      transform: scale(1);
+    }
+
+    .check:has(input:checked) {
+      border-color: rgba(37, 33, 28, 0.72);
+      background: linear-gradient(90deg, rgba(20, 125, 100, 0.09), transparent 62%), var(--panel);
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      color: #29231c;
+    }
+
+    .prompt-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .callout {
+      border-left: 6px solid var(--coral);
+      background: #fff4ed;
+      padding: 16px 18px;
+      color: #5a3329;
+      line-height: 1.55;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: 140px minmax(0, 1fr);
+      gap: 14px 18px;
+      align-items: start;
+    }
+
+    .time {
+      font-family: var(--mono);
+      color: var(--muted);
+      font-size: 12px;
+      padding-top: 4px;
+    }
+
+    .event {
+      padding: 0 0 16px 18px;
+      border-left: 2px solid var(--line);
+    }
+
+    .event b {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .event span {
+      color: var(--muted);
+      line-height: 1.52;
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      justify-content: space-between;
+      padding-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .section-head,
+      .panel,
+      .builder {
+        grid-template-columns: 1fr;
+      }
+
+      .facts,
+      .flow,
+      .matrix {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-node::after {
+        right: auto;
+        left: 24px;
+        top: auto;
+        bottom: -12px;
+        width: 2px;
+        height: 18px;
+      }
+
+      .hero-visual {
+        min-height: 330px;
+      }
+
+      .axis {
+        inset: 18px;
+      }
+
+      .axis svg {
+        min-height: 226px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .shell {
+        width: min(100vw - 22px, 1160px);
+        padding-top: 18px;
+      }
+
+      .topbar,
+      .footer {
+        display: grid;
+        justify-content: stretch;
+      }
+
+      .source {
+        justify-content: flex-start;
+      }
+
+      .legend {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline {
+        grid-template-columns: 1fr;
+      }
+
+      .event {
+        padding-left: 14px;
+      }
+
+      .stack {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
+        <span>Windburn / memory anchor report</span>
+      </div>
+      <div class="source">
+        <span>Source: Thariq, May 8 2026</span>
+        <a href="https://x.com/trq212/status/2052809885763747935?s=20">original X post</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="title">
+        <div class="hero-copy">
+          <div>
+            <h1 id="title">HTML as Agent Memory Anchor</h1>
+            <p class="thesis">
+              Markdown is good for agent scratchpads. HTML is better when the output
+              must become a durable object that a human can actually read, inspect,
+              interact with, and hand to a future agent.
+            </p>
+          </div>
+
+          <div class="facts">
+            <div class="fact">
+              <strong>Core move</strong>
+              <span>Turn long text into spatial cognition: diagrams, tabs, annotations, exports.</span>
+            </div>
+            <div class="fact">
+              <strong>Windburn angle</strong>
+              <span>A report is not just documentation; it can be an executable memory boundary.</span>
+            </div>
+            <div class="fact">
+              <strong>Stack call</strong>
+              <span>Single-file HTML first. Next/shadcn later when reports become a product.</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="hero-visual" aria-label="HTML memory anchor map">
+          <div class="axis">
+            <svg viewBox="0 0 600 390" role="img" aria-label="Markdown to HTML to memory anchor diagram">
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#25211c"></path>
+                </marker>
+              </defs>
+              <rect x="20" y="34" width="150" height="92" fill="#fffdf9" stroke="#25211c" stroke-width="2"></rect>
+              <text x="38" y="68" font-family="ui-sans-serif" font-size="17" font-weight="700">Markdown</text>
+              <text x="38" y="94" font-family="ui-sans-serif" font-size="13" fill="#68635b">linear notes</text>
+              <text x="38" y="114" font-family="ui-sans-serif" font-size="13" fill="#68635b">hard to scan</text>
+
+              <rect x="226" y="34" width="150" height="92" fill="#e9f4ef" stroke="#147d64" stroke-width="2"></rect>
+              <text x="244" y="68" font-family="ui-sans-serif" font-size="17" font-weight="700">HTML</text>
+              <text x="244" y="94" font-family="ui-sans-serif" font-size="13" fill="#3d6c5d">visual state</text>
+              <text x="244" y="114" font-family="ui-sans-serif" font-size="13" fill="#3d6c5d">human loop</text>
+
+              <rect x="432" y="34" width="150" height="92" fill="#fff2e9" stroke="#d84c3a" stroke-width="2"></rect>
+              <text x="450" y="68" font-family="ui-sans-serif" font-size="17" font-weight="700">Memory</text>
+              <text x="450" y="94" font-family="ui-sans-serif" font-size="13" fill="#8a4136">belief hooks</text>
+              <text x="450" y="114" font-family="ui-sans-serif" font-size="13" fill="#8a4136">future context</text>
+
+              <path d="M 172 80 H 216" stroke="#25211c" stroke-width="2" marker-end="url(#arrow)"></path>
+              <path d="M 378 80 H 422" stroke="#25211c" stroke-width="2" marker-end="url(#arrow)"></path>
+
+              <path d="M 96 156 C 96 250 246 308 300 308 C 354 308 504 250 504 156" fill="none" stroke="#d19a20" stroke-width="4"></path>
+              <circle cx="96" cy="156" r="10" fill="#d19a20"></circle>
+              <circle cx="300" cy="308" r="10" fill="#147d64"></circle>
+              <circle cx="504" cy="156" r="10" fill="#d84c3a"></circle>
+
+              <text x="64" y="194" font-family="ui-sans-serif" font-size="14" fill="#68635b">source</text>
+              <text x="258" y="346" font-family="ui-sans-serif" font-size="14" fill="#68635b">interaction</text>
+              <text x="468" y="194" font-family="ui-sans-serif" font-size="14" fill="#68635b">reuse</text>
+
+              <g transform="translate(120 206)">
+                <rect width="360" height="58" fill="#fffdf9" stroke="#d9d0c2"></rect>
+                <text x="18" y="25" font-family="ui-sans-serif" font-size="13" font-weight="700">Anchor contract</text>
+                <text x="18" y="44" font-family="ui-sans-serif" font-size="12" fill="#68635b">source card + inference labels + copyable next prompt</text>
+              </g>
+            </svg>
+            <div class="legend">
+              <span><i class="dot" style="background: var(--amber)"></i>source compression</span>
+              <span><i class="dot" style="background: var(--jade)"></i>interactive cognition</span>
+              <span><i class="dot" style="background: var(--coral)"></i>future reuse</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <div class="main">
+        <section aria-labelledby="why">
+          <div class="section-head">
+            <h2 id="why">我们该偷的不是 HTML</h2>
+            <p>
+              这篇帖子的真正信号不是“以后都输出网页”。更深一层是：agent 产物正在从
+              可编辑文本转向可阅读、可验证、可交互、可重新喂给未来 session 的认知界面。
+            </p>
+          </div>
+          <div class="flow">
+            <div class="flow-node">
+              <b>1. source</b>
+              <small>论文、X thread、repo diff、benchmark run、Research Vault note。</small>
+            </div>
+            <div class="flow-node">
+              <b>2. distill</b>
+              <small>提炼 thesis、claims、evidence、counter-questions、open loops。</small>
+            </div>
+            <div class="flow-node">
+              <b>3. visualize</b>
+              <small>用空间、颜色、流程、对照表降低人类阅读成本。</small>
+            </div>
+            <div class="flow-node">
+              <b>4. anchor</b>
+              <small>把最重要的判断变成下次能重新调用的 durable object。</small>
+            </div>
+            <div class="flow-node">
+              <b>5. boot</b>
+              <small>未来 agent 读取 HTML，继承边界、判断和下一步。</small>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="modes">
+          <div class="section-head">
+            <h2 id="modes">四种输出模式</h2>
+            <p>
+              同样是 HTML，但不同任务应该长得不一样。下面这个分类可以直接变成
+              Windburn 的 report generator 模板。
+            </p>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="report modes">
+            <button class="tab" role="tab" aria-selected="true" data-tab="read">Read</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="review">Review</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="operate">Operate</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="remember">Remember</button>
+          </div>
+
+          <div class="panel active" data-panel="read">
+            <div class="panel-copy">
+              <h3>Read: paper / thread explainer</h3>
+              <p>目标是让你一次读懂。适合论文、长帖、技术概念、incident postmortem。</p>
+              <ul>
+                <li>一屏 thesis + 三个关键判断。</li>
+                <li>流程图解释机制，不堆段落。</li>
+                <li>明确 source fact 和 Codex inference 的边界。</li>
+              </ul>
+            </div>
+            <div class="diagram">
+              <svg viewBox="0 0 640 260" aria-label="read mode layout">
+                <rect x="20" y="28" width="600" height="204" fill="#fffdf9" stroke="#d9d0c2"></rect>
+                <rect x="44" y="52" width="226" height="50" fill="#25211c"></rect>
+                <rect x="44" y="116" width="226" height="90" fill="#e9f4ef" stroke="#147d64"></rect>
+                <rect x="298" y="52" width="130" height="154" fill="#fff2e9" stroke="#d84c3a"></rect>
+                <rect x="454" y="52" width="130" height="154" fill="#f8edcf" stroke="#d19a20"></rect>
+                <text x="62" y="83" font-size="16" fill="#f7f4ef" font-family="ui-sans-serif">thesis</text>
+                <text x="62" y="150" font-size="15" fill="#147d64" font-family="ui-sans-serif">mechanism</text>
+                <text x="316" y="86" font-size="15" fill="#d84c3a" font-family="ui-sans-serif">claims</text>
+                <text x="472" y="86" font-size="15" fill="#8b6615" font-family="ui-sans-serif">questions</text>
+              </svg>
+            </div>
+          </div>
+
+          <div class="panel" data-panel="review">
+            <div class="panel-copy">
+              <h3>Review: PR / benchmark explainer</h3>
+              <p>目标是让 reviewer 更快发现风险。适合代码改动、agent run、benchmark report。</p>
+              <ul>
+                <li>diff annotations、severity colors、blast radius map。</li>
+                <li>把 PASS/FLAG/BLOCK 和证据路径摆在同一屏。</li>
+                <li>适合我们反 LGTM 的 workflow。</li>
+              </ul>
+            </div>
+            <div class="diagram">
+              <svg viewBox="0 0 640 260" aria-label="review mode layout">
+                <rect x="28" y="34" width="584" height="192" fill="#fffdf9" stroke="#d9d0c2"></rect>
+                <rect x="52" y="60" width="300" height="138" fill="#f4f1ea" stroke="#25211c"></rect>
+                <line x1="74" y1="90" x2="316" y2="90" stroke="#147d64" stroke-width="6"></line>
+                <line x1="74" y1="125" x2="316" y2="125" stroke="#d19a20" stroke-width="6"></line>
+                <line x1="74" y1="160" x2="316" y2="160" stroke="#d84c3a" stroke-width="6"></line>
+                <rect x="382" y="60" width="180" height="42" fill="#e9f4ef" stroke="#147d64"></rect>
+                <rect x="382" y="114" width="180" height="42" fill="#f8edcf" stroke="#d19a20"></rect>
+                <rect x="382" y="168" width="180" height="42" fill="#fff2e9" stroke="#d84c3a"></rect>
+                <text x="404" y="87" font-size="14" font-family="ui-sans-serif">PASS evidence</text>
+                <text x="404" y="141" font-size="14" font-family="ui-sans-serif">FLAG risk</text>
+                <text x="404" y="195" font-size="14" font-family="ui-sans-serif">BLOCK gate</text>
+              </svg>
+            </div>
+          </div>
+
+          <div class="panel" data-panel="operate">
+            <div class="panel-copy">
+              <h3>Operate: throwaway editor</h3>
+              <p>目标是让你用手调一个复杂对象，然后导出给 agent。适合 ticket 排序、prompt tuning、config review。</p>
+              <ul>
+                <li>不是 SaaS，不追求复用。</li>
+                <li>关键是末尾必须能 export JSON / prompt / diff。</li>
+                <li>人类操作成为下一轮 agent input。</li>
+              </ul>
+            </div>
+            <div class="diagram">
+              <svg viewBox="0 0 640 260" aria-label="operate mode layout">
+                <rect x="34" y="28" width="572" height="204" fill="#fffdf9" stroke="#d9d0c2"></rect>
+                <rect x="58" y="54" width="150" height="150" fill="#e9f4ef" stroke="#147d64"></rect>
+                <rect x="244" y="54" width="150" height="150" fill="#f8edcf" stroke="#d19a20"></rect>
+                <rect x="430" y="54" width="150" height="150" fill="#fff2e9" stroke="#d84c3a"></rect>
+                <circle cx="126" cy="126" r="32" fill="none" stroke="#147d64" stroke-width="9"></circle>
+                <path d="M 292 154 L 334 92 L 360 154 Z" fill="none" stroke="#d19a20" stroke-width="9"></path>
+                <path d="M 462 94 H 548 M 462 128 H 526 M 462 162 H 548" stroke="#d84c3a" stroke-width="9"></path>
+                <text x="74" y="224" font-size="13" fill="#68635b" font-family="ui-sans-serif">choose</text>
+                <text x="270" y="224" font-size="13" fill="#68635b" font-family="ui-sans-serif">tune</text>
+                <text x="456" y="224" font-size="13" fill="#68635b" font-family="ui-sans-serif">export</text>
+              </svg>
+            </div>
+          </div>
+
+          <div class="panel" data-panel="remember">
+            <div class="panel-copy">
+              <h3>Remember: memory anchor</h3>
+              <p>目标是让未来的你和未来的 agent 快速恢复判断。适合 Windburn / RV / paper reading / architecture decisions。</p>
+              <ul>
+                <li>必须有 source card、claim map、open loops、next prompt。</li>
+                <li>把“我为什么信这个”与“我还不确定什么”分开。</li>
+                <li>HTML 是人读的锚；`.learning` 或 RV 是 agent 读的底座。</li>
+              </ul>
+            </div>
+            <div class="diagram">
+              <svg viewBox="0 0 640 260" aria-label="remember mode layout">
+                <rect x="34" y="30" width="572" height="200" fill="#fffdf9" stroke="#d9d0c2"></rect>
+                <path d="M 86 84 H 554" stroke="#25211c" stroke-width="2"></path>
+                <path d="M 86 130 H 554" stroke="#25211c" stroke-width="2"></path>
+                <path d="M 86 176 H 554" stroke="#25211c" stroke-width="2"></path>
+                <circle cx="132" cy="84" r="16" fill="#147d64"></circle>
+                <circle cx="320" cy="130" r="16" fill="#d19a20"></circle>
+                <circle cx="508" cy="176" r="16" fill="#d84c3a"></circle>
+                <text x="160" y="90" font-size="14" font-family="ui-sans-serif">what we learned</text>
+                <text x="348" y="136" font-size="14" font-family="ui-sans-serif">what remains fuzzy</text>
+                <text x="350" y="182" font-size="14" font-family="ui-sans-serif">what future session should do</text>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="stack">
+          <div class="section-head">
+            <h2 id="stack">Stack 选择</h2>
+            <p>
+              现在别上重框架。先让 report format 长出审美和结构，再把可复用的部分产品化。
+            </p>
+          </div>
+
+          <table class="stack">
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>Best use</th>
+                <th>Why / boundary</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Single-file HTML</td>
+                <td>论文锚点、PR explainer、benchmark digest、个人阅读报告。</td>
+                <td>最快、最便携、可直接进 repo 和浏览器；缺点是 diff noisy，不适合作为长期 app code。</td>
+              </tr>
+              <tr>
+                <td>Next + shadcn</td>
+                <td>当我们要做 report gallery、search、multi-user sharing、RV backed generator。</td>
+                <td>组件化和主题很好，但会把“读一篇”变成“维护一个产品”。第二阶段再上。</td>
+              </tr>
+              <tr>
+                <td>Rust / Zig</td>
+                <td>本地索引器、HTML compiler、artifact packer、privacy scan、static export pipeline。</td>
+                <td>很适合做 durable toolchain；不适合作为第一版阅读界面本身。</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section aria-labelledby="generator">
+          <div class="section-head">
+            <h2 id="generator">Anchor prompt generator</h2>
+            <p>
+              这里开始把报告变成双向工具：你选择源、目标和风险级别，它产出下一次可直接丢给 agent 的提示词。
+            </p>
+          </div>
+
+          <div class="builder">
+            <div class="controls">
+              <div class="field">
+                <span class="field-label">Source type</span>
+                <div class="choice-pool" role="radiogroup" aria-label="Source type" data-choice-group="sourceType">
+                  <button class="choice-option" type="button" role="radio" aria-checked="false" data-value="paper">
+                    <strong>frontier paper</strong>
+                    <span>dense research object</span>
+                  </button>
+                  <button class="choice-option" type="button" role="radio" aria-checked="true" data-value="thread">
+                    <strong>X / long thread</strong>
+                    <span>social-native idea packet</span>
+                  </button>
+                  <button class="choice-option" type="button" role="radio" aria-checked="false" data-value="diff">
+                    <strong>repo diff / PR</strong>
+                    <span>code change with risk</span>
+                  </button>
+                  <button class="choice-option" type="button" role="radio" aria-checked="false" data-value="benchmark">
+                    <strong>benchmark run</strong>
+                    <span>behavior plus evidence</span>
+                  </button>
+                  <button class="choice-option" type="button" role="radio" aria-checked="false" data-value="rv">
+                    <strong>Research Vault</strong>
+                    <span>note cluster to compress</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="field">
+                <span class="field-label">Report goal</span>
+                <div class="choice-pool" role="radiogroup" aria-label="Report goal" data-choice-group="reportGoal">
+                  <button class="choice-option" type="button" role="radio" aria-checked="true" data-value="learn">
+                    <strong>learn</strong>
+                    <span>read once, remember later</span>
+                  </button>
+                  <button class="choice-option" type="button" role="radio" aria-checked="false" data-value="decide">
+                    <strong>decide</strong>
+                    <span>choose architecture path</span>
+                  </button>
+                  <button class="choice-option" type="button" role="radio" aria-checked="false" data-value="review">
+                    <strong>review</strong>
+                    <span>risk and proof gates</span>
+                  </button>
+                  <button class="choice-option" type="button" role="radio" aria-checked="false" data-value="teach">
+                    <strong>teach</strong>
+                    <span>bootstrap future session</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="density">Visual density</label>
+                <div class="density-control">
+                  <input id="density" type="range" min="1" max="5" value="3" />
+                  <div class="density-meta">
+                    <span>airy</span>
+                    <span class="density-value"><span id="densityValue">3</span>/5</span>
+                    <span>dense</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="checks">
+                <label class="check">
+                  <input type="checkbox" id="includeExport" checked />
+                  include copyable next-session prompt
+                </label>
+                <label class="check">
+                  <input type="checkbox" id="includeBoundaries" checked />
+                  separate source facts from Codex inference
+                </label>
+                <label class="check">
+                  <input type="checkbox" id="includeOpenLoops" checked />
+                  show fuzzies and parking lot
+                </label>
+              </div>
+            </div>
+
+            <div class="prompt-box">
+              <pre id="promptOutput"></pre>
+              <div class="prompt-actions">
+                <span id="status">ready</span>
+                <button class="copy" id="copyPrompt">Copy prompt</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="windburn">
+          <div class="section-head">
+            <h2 id="windburn">Windburn 接法</h2>
+            <p>
+              这条线可以自然并入 `.learning`，但 HTML 本身不要直接当 source truth。
+              它是人类可读锚点；可信状态仍然要走 evidence / approval / source-truth 边界。
+            </p>
+          </div>
+
+          <div class="timeline">
+            <div class="time">capture</div>
+            <div class="event">
+              <b>Source card</b>
+              <span>记录 URL、作者、日期、抓取方式、是否登录态、是否有截断。</span>
+            </div>
+
+            <div class="time">distill</div>
+            <div class="event">
+              <b>Claim map</b>
+              <span>把原文观点、我们的推断、反例、open question 拆开，不混成一团。</span>
+            </div>
+
+            <div class="time">visualize</div>
+            <div class="event">
+              <b>Human-readable anchor</b>
+              <span>生成 HTML，用 tabs、图、矩阵、timeline 把人类重新拉回 loop。</span>
+            </div>
+
+            <div class="time">persist</div>
+            <div class="event">
+              <b>Agent-readable companion</b>
+              <span>另存 `.learning/parking` 或 RV note：只放摘要、边界、下一步，不塞整页 HTML。</span>
+            </div>
+
+            <div class="time">reuse</div>
+            <div class="event">
+              <b>Next-session bootstrap</b>
+              <span>未来 session 先读锚点报告，再决定是否检索 RV、跑验证、写 proposal。</span>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="guardrails">
+          <div class="section-head">
+            <h2 id="guardrails">Guardrails</h2>
+            <p>
+              HTML 会让 agent 输出更有说服力，所以更要保留信任边界。漂亮不是证据，交互也不是验证。
+            </p>
+          </div>
+          <div class="callout">
+            Rule: a memory-anchor HTML may propose beliefs, explain evidence, and generate prompts.
+            It must not auto-promote claims into source-truth, reset staleness, or hide missing verification behind visual polish.
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>Generated for 0xVox / Windburn</span>
+      <span>Format: standalone HTML, no external runtime dependency</span>
+    </footer>
+  </div>
+
+  <script>
+    const tabs = Array.from(document.querySelectorAll(".tab"));
+    const panels = Array.from(document.querySelectorAll("[data-panel]"));
+    const promptOutput = document.getElementById("promptOutput");
+    const status = document.getElementById("status");
+    const densityValue = document.getElementById("densityValue");
+    const choiceGroups = Array.from(document.querySelectorAll("[data-choice-group]"));
+    const controls = ["density", "includeExport", "includeBoundaries", "includeOpenLoops"]
+      .map((id) => document.getElementById(id));
+
+    const sourceCopy = {
+      paper: "a frontier research paper",
+      thread: "an X / long-form thread",
+      diff: "a repo diff or PR",
+      benchmark: "a benchmark run and its evidence",
+      rv: "a Research Vault note cluster"
+    };
+
+    const goalCopy = {
+      learn: "learn it once and preserve a memory anchor",
+      decide: "make an architecture decision with evidence boundaries",
+      review: "review risk, proof, and missing gates",
+      teach: "teach a future session the core model quickly"
+    };
+
+    function updateTabs(next) {
+      tabs.forEach((tab) => {
+        const selected = tab.dataset.tab === next;
+        tab.setAttribute("aria-selected", String(selected));
+      });
+      panels.forEach((panel) => {
+        panel.classList.toggle("active", panel.dataset.panel === next);
+      });
+    }
+
+    function buildPrompt() {
+      const sourceType = getChoiceValue("sourceType");
+      const reportGoal = getChoiceValue("reportGoal");
+      const density = document.getElementById("density").value;
+      const includeExport = document.getElementById("includeExport").checked;
+      const includeBoundaries = document.getElementById("includeBoundaries").checked;
+      const includeOpenLoops = document.getElementById("includeOpenLoops").checked;
+
+      densityValue.textContent = density;
+
+      const requirements = [
+        "Create a standalone, polished HTML memory-anchor report.",
+        `Source: ${sourceCopy[sourceType]}.`,
+        `Goal: ${goalCopy[reportGoal]}.`,
+        `Visual density: ${density}/5.`,
+        "Use code-native diagrams, matrices, timelines, and concise source cards.",
+        "Optimize for one serious read and future-session reuse."
+      ];
+
+      if (includeBoundaries) {
+        requirements.push("Clearly separate source facts, model inference, speculation, and required verification.");
+      }
+      if (includeOpenLoops) {
+        requirements.push("Include fuzzies, open loops, parking-lot questions, and next verification gates.");
+      }
+      if (includeExport) {
+        requirements.push("End with a copyable next-session bootstrap prompt.");
+      }
+
+      promptOutput.textContent = requirements.join("\n");
+    }
+
+    function getChoiceValue(groupName) {
+      const group = document.querySelector(`[data-choice-group="${groupName}"]`);
+      const selected = group.querySelector('[aria-checked="true"]');
+      return selected.dataset.value;
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => updateTabs(tab.dataset.tab));
+    });
+
+    choiceGroups.forEach((group) => {
+      group.addEventListener("click", (event) => {
+        const option = event.target.closest(".choice-option");
+        if (!option) return;
+        group.querySelectorAll(".choice-option").forEach((item) => {
+          item.setAttribute("aria-checked", String(item === option));
+        });
+        buildPrompt();
+      });
+    });
+
+    controls.forEach((control) => {
+      control.addEventListener("input", buildPrompt);
+      control.addEventListener("change", buildPrompt);
+    });
+
+    document.getElementById("copyPrompt").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(promptOutput.textContent);
+        status.textContent = "copied";
+        setTimeout(() => {
+          status.textContent = "ready";
+        }, 1400);
+      } catch (error) {
+        status.textContent = "copy unavailable";
+      }
+    });
+
+    buildPrompt();
+  </script>
+</body>
+</html>
