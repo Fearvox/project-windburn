@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "record_kind": "report_pack_summary",
+  "fixture": "harmless",
+  "report_pack_id": "abrp_fixture_001",
+  "created_day_utc": "2026-05-08",
+  "source_run_set": "private:fixture_runset_001",
+  "authorization_evidence": {
+    "hackerone_program_acceptance": "private_ref_required",
+    "nda_acceptance": "private_ref_required",
+    "authorized_model_surface": "private_ref_required",
+    "private_storage_outside_repo": "required",
+    "operator_approval": "required"
+  },
+  "candidate_summaries": [
+    {
+      "candidate_id": "cand_fixture_boundary",
+      "candidate_family": "harmless-boundary-fixture",
+      "bucket_id": "day:2026-05-08|candidate:cand_fixture_boundary",
+      "bucket_count": 7,
+      "bucket_eligible": true,
+      "verdict": "PASS",
+      "repo_safe": true
+    }
+  ],
+  "public_safe_flags": {
+    "contains_raw_candidate": false,
+    "contains_harmful_question": false,
+    "contains_completion_text": false,
+    "contains_secret_value": false,
+    "contains_private_path": false,
+    "contains_per_attempt_hash": false
+  }
+}

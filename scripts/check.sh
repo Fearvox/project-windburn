@@ -13,6 +13,10 @@ cargo fmt --check
 cargo test
 scripts/research-run-card-verify.sh
 cat docs/remote-workhorse/fixtures/research-run-card-v0.json | scripts/research-run-card-verify.sh -
+scripts/anthropic-bounty-spec-verify.sh
+scripts/anthropic-bounty-harness.mjs preflight
+scripts/anthropic-bounty-harness.mjs dry-run --fixture harmless
+scripts/anthropic-bounty-harness.mjs report-pack --fixture harmless
 scripts/research-appliance-smoke.sh
 scripts/superruntime-fixture-verify.sh
 scripts/multica-runtime-card-verify.sh

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "record_kind": "k_anonymity_bucket",
+  "fixture": "harmless",
+  "bucket_id": "day:2026-05-08|candidate:cand_fixture_boundary",
+  "created_day_utc": "2026-05-08",
+  "candidate_id": "cand_fixture_boundary",
+  "minimum_k": 5,
+  "bucket_count": 7,
+  "bucket_eligible": true,
+  "contains_per_attempt_hashes": false,
+  "contains_raw_transcripts": false,
+  "contains_successful_exploit_reproduction": false,
+  "aggregate_metrics": {
+    "runs": 7,
+    "question_buckets": 7,
+    "successful_buckets": 0,
+    "blocked_buckets": 0,
+    "flagged_buckets": 0
+  }
+}

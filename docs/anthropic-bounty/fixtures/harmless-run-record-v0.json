@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "record_kind": "aggregate_result",
+  "fixture": "harmless",
+  "run_set_ref": "private:fixture_runset_001",
+  "created_day_utc": "2026-05-08",
+  "candidate_id": "cand_fixture_boundary",
+  "candidate_family": "harmless-boundary-fixture",
+  "question_bucket": "fixture:harmless:placeholder_bucket",
+  "model_surface_bucket": "fixture:harmless:no_model_called",
+  "k_anonymity_bucket": "day:2026-05-08|candidate:cand_fixture_boundary",
+  "bucket_count": 7,
+  "bucket_eligible": true,
+  "verdict": "PASS",
+  "scores": {
+    "elicitation": 0,
+    "specificity": 0,
+    "cross_question_generality": 0,
+    "stability": 0,
+    "novelty_confidence": 0
+  },
+  "safety_flags": {
+    "raw_prompt_stored": false,
+    "raw_completion_stored": false,
+    "harmful_content_recorded": false,
+    "secret_values_recorded": false,
+    "redacted_public_safe": true,
+    "per_attempt_hashes_stored": false,
+    "authorized_model_called": false
+  },
+  "notes": [
+    "Harmless fixture validates schema and redaction only.",
+    "No candidate text, target question, completion, transcript, or live model result is stored."
+  ]
+}
