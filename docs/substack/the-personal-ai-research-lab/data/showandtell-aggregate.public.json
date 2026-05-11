@@ -1,0 +1,223 @@
+{
+  "generated_for_date": "2026-05-09",
+  "source_export_max_date": "2026-05-09",
+  "privacy": {
+    "public_safe": true,
+    "raw_rows_included": false,
+    "people_rankings_included": false,
+    "policy": "Aggregate days and workflows only. No private identifiers, local machine locations, hosts, or auth material."
+  },
+  "date_range": {
+    "usage_min": "2026-04-10",
+    "usage_max": "2026-05-09",
+    "review_min": "2026-04-10",
+    "review_max": "2026-05-06"
+  },
+  "totals": {
+    "active_users": 313,
+    "sessions": 22242,
+    "user_messages": 91883,
+    "web_code_reviews": 74,
+    "show_and_tell_reviews": 74,
+    "show_and_tell_comments": 52
+  },
+  "unverified_operator_reported_metrics": {
+    "threads": 9465,
+    "turns": 19956,
+    "provenance": "operator_provided_during_planning",
+    "verification_status": "not found in local exports / requires source artifact before public claim",
+    "public_claim_allowed": false
+  },
+  "derived_local_export_sums": {
+    "day_export_threads_field": 22242,
+    "day_export_turns_field": 91883
+  },
+  "caveats": [
+    "Local day-export totals.threads and totals.turns currently sum to the same values as derived sessions and user_messages; do not use them as separate verified article thread or turn claims without source clarification."
+  ],
+  "rankings": {
+    "top_usage_days_by_threads": [
+      {
+        "date": "2026-05-06",
+        "value": 3196
+      },
+      {
+        "date": "2026-05-01",
+        "value": 2092
+      },
+      {
+        "date": "2026-05-05",
+        "value": 1667
+      },
+      {
+        "date": "2026-05-03",
+        "value": 1586
+      },
+      {
+        "date": "2026-04-30",
+        "value": 1517
+      }
+    ],
+    "top_usage_days_by_turns": [
+      {
+        "date": "2026-05-06",
+        "value": 6546
+      },
+      {
+        "date": "2026-05-01",
+        "value": 5805
+      },
+      {
+        "date": "2026-05-08",
+        "value": 5248
+      },
+      {
+        "date": "2026-05-03",
+        "value": 5176
+      },
+      {
+        "date": "2026-05-04",
+        "value": 5002
+      }
+    ],
+    "top_days_by_new_sessions": [
+      {
+        "date": "2026-05-06",
+        "value": 3196
+      },
+      {
+        "date": "2026-05-01",
+        "value": 2092
+      },
+      {
+        "date": "2026-05-05",
+        "value": 1667
+      },
+      {
+        "date": "2026-05-03",
+        "value": 1586
+      },
+      {
+        "date": "2026-04-30",
+        "value": 1517
+      }
+    ],
+    "top_days_by_user_messages": [
+      {
+        "date": "2026-05-06",
+        "value": 6546
+      },
+      {
+        "date": "2026-05-01",
+        "value": 5805
+      },
+      {
+        "date": "2026-05-08",
+        "value": 5248
+      },
+      {
+        "date": "2026-05-03",
+        "value": 5176
+      },
+      {
+        "date": "2026-05-04",
+        "value": 5002
+      }
+    ],
+    "top_review_days": [
+      {
+        "date": "2026-04-24",
+        "value": 17
+      },
+      {
+        "date": "2026-04-23",
+        "value": 9
+      },
+      {
+        "date": "2026-04-20",
+        "value": 8
+      },
+      {
+        "date": "2026-04-26",
+        "value": 7
+      },
+      {
+        "date": "2026-04-27",
+        "value": 7
+      }
+    ],
+    "top_comment_days": [
+      {
+        "date": "2026-04-26",
+        "value": 11
+      },
+      {
+        "date": "2026-04-24",
+        "value": 7
+      },
+      {
+        "date": "2026-04-20",
+        "value": 4
+      },
+      {
+        "date": "2026-04-25",
+        "value": 4
+      },
+      {
+        "date": "2026-05-04",
+        "value": 4
+      }
+    ],
+    "workflow_mix_by_turns": [
+      {
+        "workflow": "CODEX_DESKTOP_APP",
+        "threads": 5680,
+        "turns": 32214,
+        "credits": 648495.6423125,
+        "users": 1067
+      },
+      {
+        "workflow": "CODEX_IDE_VSCODE",
+        "threads": 3465,
+        "turns": 19163,
+        "credits": 675049.9682625001,
+        "users": 810
+      },
+      {
+        "workflow": "CODEX_UNKNOWN_DEFAULT",
+        "threads": 3283,
+        "turns": 17761,
+        "credits": 0,
+        "users": 225
+      },
+      {
+        "workflow": "CODEX_CLI",
+        "threads": 2163,
+        "turns": 14613,
+        "credits": 380535.29526625,
+        "users": 444
+      },
+      {
+        "workflow": "CODEX_SERVICE_EXEC",
+        "threads": 7369,
+        "turns": 7850,
+        "credits": 98272.4454125,
+        "users": 38
+      },
+      {
+        "workflow": "CODEX_WEB",
+        "threads": 208,
+        "turns": 208,
+        "credits": 3668.4360125000003,
+        "users": 31
+      },
+      {
+        "workflow": "CODEX_GITHUB",
+        "threads": 74,
+        "turns": 74,
+        "credits": 490.56853500000005,
+        "users": 25
+      }
+    ]
+  }
+}

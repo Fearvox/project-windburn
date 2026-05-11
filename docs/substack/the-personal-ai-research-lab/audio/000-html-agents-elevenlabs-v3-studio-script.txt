@@ -1,0 +1,165 @@
+[measured, thoughtful] Field Note zero: HTML That Agents Can Remember.
+
+[short pause]
+
+The working claim is simple.
+
+Research Vault, to HTML, to browser, to receipt.
+
+[lower, precise] That chain is the strongest portable primitive I have found for evidence-aware agent work.
+
+Not just Markdown. Not just a dashboard. Not just a knowledge-base connector.
+
+A chain.
+
+[short pause]
+
+Research Vault gives the agent a memory surface with health, taxonomy, search, full notes, and queue state.
+
+HTML turns the conclusion into something a human can inspect.
+
+The browser turns that artifact into a runtime. It can hold screenshots, diagrams, source cards, open loops, and a next-session prompt in the same object.
+
+And the receipt is what lets the next person, or the next agent, ask the only question that really matters:
+
+Where did this claim come from?
+
+How fresh is it?
+
+What still needs verification?
+
+[firm] That is the point. The goal is not prettier AI output. The goal is output that is harder to fake.
+
+[short pause]
+
+Markdown is still good. I love Markdown for scratchpads, checklists, diffs, and notes that need to stay compact.
+
+But once the work needs review, reopening, browser inspection, and durable memory, Markdown starts flattening too much context into a long scroll.
+
+[thoughtful] HTML changes the shape of the memory.
+
+A browser page can hold a claim map. It can show source cards. It can label fact, inference, speculation, and what still needs verification.
+
+It can include screenshots and diagrams.
+
+It can expose a prompt companion, so the next agent knows not only what to do, but why the previous path worked.
+
+[short pause]
+
+This is where Research Vault matters.
+
+For agent work, memory cannot just be vibes.
+
+It has to tell the agent whether the corpus is alive, whether analysis is stale, what taxonomy exists, and whether claims trace back to durable notes.
+
+A useful memory layer answers the first agent question in under a minute:
+
+[curious] Am I looking at evidence, or am I about to hallucinate from stale confidence?
+
+[short pause]
+
+That is why the basic Research Vault flow is so valuable.
+
+Status tells the agent whether the vault is alive.
+
+Taxonomy tells the agent where to look.
+
+Search gives compact result rows.
+
+Get gives the full note.
+
+Queue state tells the agent whether missing knowledge is absent, or merely unanalyzed.
+
+Now add HTML.
+
+[gentle emphasis] The agent can turn the evidence loop into a browser-readable object. A human can scan it. Another agent can reopen it. Browser automation can verify that it renders, links work, screenshots match claims, and the artifact does not leak private surface.
+
+[short pause]
+
+That last part matters a lot.
+
+Beautiful AI output without provenance is just polish without proof.
+
+It can look finished while hiding uncertainty.
+
+The better artifact is not the smoothest one. The better artifact is the one that shows its work, shows its freshness, and makes the next verification step obvious.
+
+[firm] Anti-LGTM is not just a review rule. It is a product affordance.
+
+The object should make lazy agreement harder.
+
+[short pause]
+
+So the recipe is:
+
+First, collect the source: a repo diff, a paper, a thread, a benchmark run, or a Research Vault cluster.
+
+Second, distill the claims. Separate what the source says from what we infer.
+
+Third, visualize the structure: timelines, matrices, cards, receipts.
+
+Fourth, anchor the memory. Ship a single-file HTML object when portability matters.
+
+Fifth, boot the next session. Include the prompt companion, the open loops, and the evidence boundaries.
+
+[short pause]
+
+This is not a replacement for source truth.
+
+The HTML is not the truth.
+
+It is the memory anchor.
+
+The source remains the repo, the vault, the paper, the run, the public page.
+
+The HTML is the interface that helps humans and agents keep the source relationship visible.
+
+[lower, precise] That is the distinction I care about:
+
+Do not trust the page because it is polished.
+
+Trust the page only when it preserves provenance, freshness, replayability, and unresolved uncertainty.
+
+[short pause]
+
+In practice, this is already changing how I want agents to work.
+
+I want less "looks good to me."
+
+I want more:
+
+Here is the claim.
+
+Here is the evidence.
+
+Here is the stale edge.
+
+Here is the next check.
+
+Here is the receipt.
+
+[quietly amused] It sounds almost too simple, which is usually where the useful things hide.
+
+[short pause]
+
+That is why the live artifact matters.
+
+It is not just a webpage.
+
+It is a small piece of agent-native infrastructure.
+
+Research Vault for evidence.
+
+HTML for durable cognition.
+
+Browser for inspection and automation.
+
+Receipt for accountability.
+
+[firm, calm] That is the frame.
+
+Research Vault, to HTML, to browser, to receipt.
+
+[short pause]
+
+More objects that future agents can actually inherit.
