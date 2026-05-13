@@ -40,3 +40,6 @@ cargo run -p runtimectl -- doctor --target . --evidence-dir "$PHASE1_CHECK_EVIDE
 cargo run -p runtimectl -- canary --target . --evidence-dir "$PHASE1_CHECK_EVIDENCE_DIR" --report "$PHASE1_CHECK_CANARY_REPORT"
 cargo run -p runtimectl -- workhorse-status --target . --output "$TMP_SPOOL_DIR/workhorse-status.json" --report "$TMP_SPOOL_DIR/WORKHORSE_RUNTIME_STATUS.md"
 git diff --check
+# Side-lane relay checks (Node.js, no live model auth required)
+node scripts/windburn-side-lane-boundary-smoke.mjs
+node scripts/windburn-side-lane-goal-score.mjs --fixture smoke

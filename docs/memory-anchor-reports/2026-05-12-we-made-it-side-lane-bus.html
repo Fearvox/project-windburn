@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>We Made It — Side-Lane Bus · Windburn · 2026-05-12</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --text: #c4c4d4;
+    --dim: #5a5a70;
+    --accent: #7eb8da;
+    --pass: #6b9e7a;
+    --flag: #c9a85e;
+    --block: #b85a5a;
+    --glow: rgba(126,184,218,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Mono', 'Fira Code', 'Menlo', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+  h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 32px 0 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+  }
+  h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 20px 0 6px;
+  }
+  .subtitle {
+    color: var(--dim);
+    font-size: 12px;
+    margin-bottom: 24px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+  .badge-pass { background: rgba(107,158,122,0.18); color: var(--pass); }
+  .badge-flag { background: rgba(201,168,94,0.18); color: var(--flag); }
+  .badge-block { background: rgba(184,90,90,0.18); color: var(--block); }
+  .badge-meta { background: rgba(126,184,218,0.10); color: var(--dim); }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+    font-size: 11px;
+  }
+  .flow-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 90px;
+  }
+  .flow-node strong { display: block; color: var(--accent); font-size: 12px; }
+  .flow-node span { color: var(--dim); font-size: 10px; }
+  .flow-arrow { color: var(--dim); font-size: 16px; }
+  .flow-gate {
+    border: 2px solid var(--flag);
+    box-shadow: 0 0 12px var(--glow);
+  }
+  .flow-gate strong { color: var(--flag); }
+
+  /* Code blocks */
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  code {
+    font-family: inherit;
+    color: var(--accent);
+  }
+  pre code { color: var(--text); }
+
+  /* Detail sections */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .detail-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+  }
+  .detail-card h4 {
+    font-size: 11px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .detail-card .val { font-size: 14px; color: var(--text); font-weight: 600; }
+
+  /* Flag block */
+  .flag-note {
+    background: rgba(201,168,94,0.08);
+    border-left: 3px solid var(--flag);
+    padding: 10px 14px;
+    margin: 16px 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+  }
+
+  /* Copy box */
+  .copy-box {
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 24px 0;
+    position: relative;
+  }
+  .copy-box::before {
+    content: "COPY ME — NEXT SESSION BOOTSTRAP";
+    position: absolute;
+    top: -10px;
+    left: 16px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 12px;
+  }
+  th {
+    text-align: left;
+    color: var(--dim);
+    font-weight: 600;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 6px 10px;
+    border-bottom: 1px solid rgba(30,30,46,0.5);
+  }
+  tr:last-child td { border: none; }
+
+  /* Footer */
+  .footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    color: var(--dim);
+    font-size: 11px;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    body { padding: 20px; font-size: 12px; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .flow { flex-direction: column; align-items: stretch; }
+    .flow-arrow { text-align: center; transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<h1>We Made It — Side-Lane Bus</h1>
+<div class="subtitle">
+  Windburn milestone · 2026-05-12 · memory anchor report · no network dependency
+</div>
+
+<div style="margin-bottom:20px">
+  <span class="badge badge-pass">PASS — BUS</span>
+  <span class="badge badge-flag">FLAG — GOAL SCOPE</span>
+  <span class="badge badge-meta">v0.1.0</span>
+</div>
+
+<h2>What Happened Today</h2>
+
+<p>
+Today we proved the Windburn side-lane perception bus end-to-end.
+Hermes — running as an adjacent agent — produced a bounded relay artifact
+that passed through the bus, landed model-visible in a Codex thread, and was
+verified. No full transcript leaked. No source-truth was written. The relay
+was confirmed with a deterministic id.
+</p>
+
+<div class="flag-note">
+  <strong>Scope flag:</strong> Hermes <code>/goal</code> continued executing after
+  emitting the valid artifact because its judge returned non-JSON and the loop
+  failed open. The bus path is solid. Goal scope ownership is not yet hardened.
+</div>
+
+<h2>Architecture You Can Teach a Model in 30 Seconds</h2>
+
+<div class="flow">
+  <div class="flow-node">
+    <strong>localterm</strong>
+    <span>operator types</span>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node">
+    <strong>Hermes side lane</strong>
+    <span>/goal + bounded prompt</span>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node flow-gate">
+    <strong>MARKER GATE</strong>
+    <span>DISTILL_TO_PARENT:</span>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node">
+    <strong>relay hook</strong>
+    <span>extracts artifact</span>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node">
+    <strong>local relay queue</strong>
+    <span>gitignored operator state</span>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node">
+    <strong>perception bus</strong>
+    <span>validate + inject</span>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node">
+    <strong>Codex thread</strong>
+    <span>thread/inject_items</span>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node">
+    <strong>model-visible receipt</strong>
+    <span>relay_id confirmed</span>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node flow-gate">
+    <strong>HUMAN GATE</strong>
+    <span>source-truth?</span>
+  </div>
+</div>
+
+<h2>Key Files</h2>
+
+<table>
+<tr><th>File</th><th>Role</th></tr>
+<tr><td><code>scripts/windburn-side-lane-perception-bus.mjs</code></td><td>Reads inbox, validates, injects into Codex thread</td></tr>
+<tr><td><code>operator relay hook</code></td><td>Private local hook path omitted — extracts explicit markers into inbox</td></tr>
+<tr><td><code>gitignored relay inbox</code></td><td>Pending relay records, local-only</td></tr>
+<tr><td><code>gitignored receipt ledger</code></td><td>Injection receipt ledger, local-only</td></tr>
+<tr><td><code>scripts/windburn-side-lane-boundary-smoke.mjs</code></td><td>Reproducible boundary smoke — no model auth needed</td></tr>
+<tr><td><code>docs/protocols/2026-05-12-hermes-windburn-dogfood-v0.md</code></td><td>Dogfood contract — how Hermes acts as side-lane collaborator</td></tr>
+<tr><td><code>docs/protocols/2026-05-12-codex-side-lane-perception-bus-v0.md</code></td><td>Perception bus protocol — markers, validation, safety</td></tr>
+<tr><td><code>docs/goals/2026-05-12-hermes-windburn-dogfood-goal.md</code></td><td>Hermes /goal prompt for dogfood runs</td></tr>
+<tr><td><code>docs/pressure-tests/2026-05-12-hermes-dogfood-boundary-smoke.md</code></td><td>First boundary smoke results + contract updates</td></tr>
+</table>
+
+<h2>Three Markers, Three Purposes</h2>
+
+<table>
+<tr><th>Marker</th><th>Artifact Type</th><th>When to Use</th></tr>
+<tr><td><code>PARK_TO_PARENT:</code></td><td>PARKING_NOTE</td><td>Fuzzy idea, observation, or half-formed thought — park for later review</td></tr>
+<tr><td><code>DISTILL_TO_PARENT:</code></td><td>DISTILL</td><td>Structured analysis, recommendation, or evidence bundle — ready for perception</td></tr>
+<tr><td><code>RETURN_TO_PARENT:</code></td><td>RETURN</td><td>Completed task result — the artifact IS the deliverable</td></tr>
+</table>
+
+<h2>Safety Rules (Non-Negotiable)</h2>
+
+<ul style="margin:12px 0 12px 20px; line-height:2">
+  <li>No full side-chat transcripts are read, stored, or forwarded</li>
+  <li>No automatic source-truth promotion — human gate always required</li>
+  <li>Hook is path-scoped to the Windburn repo</li>
+  <li>Hook is no-op without an explicit relay marker</li>
+  <li>cwd scope check rejects non-Windburn sessions</li>
+  <li>Boundary note is always prepended to injected content</li>
+  <li>Hooks are observers only — idempotent, unordered</li>
+</ul>
+
+<h2>Boundary Hardening (Added Today)</h2>
+
+<p>
+The perception bus now detects and flags (but does not block) these
+boundary violations:
+</p>
+
+<table>
+<tr><th>Flag</th><th>Pattern</th></tr>
+<tr><td><code>source_truth_claim</code></td><td>Payload claims source-truth or canonical status</td></tr>
+<tr><td><code>pre_marker_chatter</code></td><td>Payload opens with prose/narrative, not structured fields</td></tr>
+<tr><td><code>post_artifact_chatter</code></td><td>Structured artifact followed by additional prose</td></tr>
+<tr><td><code>multiple_relay_markers</code></td><td>Payload contains more than one marker string</td></tr>
+</table>
+
+<p>
+Hard errors (BLOCK) remain: empty payload, invalid marker, cwd out of scope.
+Boundary flags are warnings — the artifact still injects but the receipt
+records the flag for human review.
+</p>
+
+<h2>Operator Verification Handles</h2>
+
+<h3>Dry-run (safe, no model)</h3>
+<p>Validate relay records and preview the exact model-visible injection item.</p>
+
+<h3>Live injection</h3>
+<p>Inject valid bounded artifacts into a fresh Codex thread through App Server.</p>
+
+<h3>Live + model-visible verification</h3>
+<p>Require the model to return deterministic relay ids from injected context.</p>
+
+<h3>Boundary smoke (no model auth needed)</h3>
+<p>Run isolated fixtures against the bus without touching the real relay ledger.</p>
+
+<h2>Verification Gates</h2>
+
+<ul style="margin:12px 0 12px 20px; line-height:2">
+  <li>Whitespace diff check passes</li>
+  <li>Both relay scripts parse under Node</li>
+  <li>Dry-run produces bounded injection items</li>
+  <li>Boundary smoke passes in an isolated temp relay dir</li>
+</ul>
+
+<h2>Proven Results</h2>
+
+<div class="detail-grid">
+  <div class="detail-card">
+    <h4>Confirmed Relay ID</h4>
+    <div class="val"><code>windburn-relay-1-bb066121563d</code></div>
+  </div>
+  <div class="detail-card">
+    <h4>Model Visibility</h4>
+    <div class="val"><span class="badge badge-pass">PASS</span> model_visible=true</div>
+  </div>
+  <div class="detail-card">
+    <h4>Dry-Run Count</h4>
+    <div class="val">2 valid / 0 flagged</div>
+  </div>
+  <div class="detail-card">
+    <h4>Source-Truth Written</h4>
+    <div class="val"><span class="badge badge-block">NEVER</span></div>
+  </div>
+  <div class="detail-card">
+    <h4>Inbox Restored</h4>
+    <div class="val">true — original record preserved</div>
+  </div>
+  <div class="detail-card">
+    <h4>Goal Scope</h4>
+    <div class="val"><span class="badge badge-flag">FLAG</span> /goal fail-open</div>
+  </div>
+</div>
+
+<h2>The Loop We Proved</h2>
+
+<ol style="margin:12px 0 12px 20px; line-height:2.2">
+  <li>Operator triggers a bounded Hermes side-lane run (CLI or /goal)</li>
+  <li>Hermes reads protocol docs, produces <code>DISTILL_TO_PARENT:</code> artifact</li>
+  <li>Output arrives at parent (pasted or hook-captured)</li>
+  <li>Hook extracts only the marker+payload into a local-only relay queue</li>
+  <li>Perception bus validates, detects boundary violations</li>
+  <li>Valid artifacts are injected into a Codex thread via <code>thread/inject_items</code></li>
+  <li>Model can see the artifact with relay_id, metadata, and boundary note</li>
+  <li>Model classifies: parking / perception candidate / belief candidate</li>
+  <li>Source-truth promotion <strong>always</strong> requires human approval</li>
+</ol>
+
+<h2>What This Unlocks</h2>
+
+<p>
+A perception bus means Windburn can have multiple side-lane collaborators
+(Hermes, Codex, Claude Code, custom agents) feeding bounded, inspectable
+artifacts into a single parent thread without transcript leaks, credential
+exposure, or silent source-truth contamination.
+</p>
+
+<p>
+The architecture is intentionally <strong>porous inbound, tight outbound</strong>:
+many agents can speak into the bus, but only explicit markers enter, and only
+the human can promote to truth.
+</p>
+
+<div class="copy-box">
+<pre><code># Windburn Side-Lane Bootstrap — Next Session
+# Paste this into a fresh side lane (Hermes, Codex, or parent thread):
+
+Read these two files first:
+  docs/protocols/2026-05-12-hermes-windburn-dogfood-v0.md
+  docs/protocols/2026-05-12-codex-side-lane-perception-bus-v0.md
+
+Then read the memory anchor to understand today's milestone:
+  docs/memory-anchor-reports/2026-05-12-we-made-it-side-lane-bus.html
+
+Current state as of 2026-05-12:
+  - Side-lane perception bus: PASS (end-to-end verified)
+  - /goal scope boundary: FLAG (fail-open, needs prompt hardening)
+  - Boundary hardening: implemented (source-truth, pre/post chatter, multi-marker detection)
+  - Relay ledger: local-only; do not expose hook paths, queue filenames, or raw ledger state
+
+The relay_id windburn-relay-1-bb066121563d was model-visible confirmed.
+No source-truth was written. Inbox integrity was preserved.</code></pre>
+</div>
+
+<h2>Remaining Risks</h2>
+
+<table>
+<tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+<tr>
+  <td>/goal loop fail-open after artifact emission</td>
+  <td><span class="badge badge-flag">MEDIUM</span></td>
+  <td>Goal prompt now includes strict stop contract; parent validates separately</td>
+</tr>
+<tr>
+  <td>Hook regex matches last marker — could miss dual-marker attacks</td>
+  <td><span class="badge badge-flag">LOW</span></td>
+  <td>Bus detects multiple markers in payload and flags</td>
+</tr>
+<tr>
+  <td>Bus verification requires live Codex app-server</td>
+  <td><span class="badge badge-meta">ACCEPTED</span></td>
+  <td>Dry-run always works without model; boundary smoke is fully offline</td>
+</tr>
+<tr>
+  <td>No MCP-bus bridge yet — artifacts are CLI-only</td>
+  <td><span class="badge badge-meta">FUTURE</span></td>
+  <td>Codex App Server provides local injection; future MCP bridge is on roadmap</td>
+</tr>
+</table>
+
+<h2>Next Concrete Actions</h2>
+
+<ol style="margin:12px 0 12px 20px; line-height:2.2">
+  <li>Harden /goal stop contract: "After emitting artifact, reply only GOAL_COMPLETE"</li>
+  <li>Red-team: try to sneak source-truth claims past the boundary detectors</li>
+  <li>Add fuzzy parking: <code>PARK_TO_PARENT:</code> with low-confidence / incomplete artifacts</li>
+  <li>Build the MCP-bus bridge for non-CLI side lanes</li>
+  <li>Write the Windburn cognitive ledger spec (parking → perception → belief → source-truth)</li>
+</ol>
+
+<div class="footer">
+  Windburn memory anchor · 2026-05-12 · generated by Hermes side lane · no network deps · public-safe · <code>docs/memory-anchor-reports/2026-05-12-we-made-it-side-lane-bus.html</code>
+</div>
+
+</body>
+</html>
