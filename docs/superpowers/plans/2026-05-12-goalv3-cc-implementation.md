@@ -20,6 +20,39 @@
 
 ---
 
+## Build divergence (intentional, V3-aligned)
+
+**Status: CLOSED — Phase 1 shipped at commit `4d326ea` with intentional plan-vs-build divergences. This plan stays as a design record, not an implementation contract.**
+
+### Three divergences from plan as written
+
+**1. Tasks 2-6 (script interfaces): positional, not flag-based — INTENTIONAL.**
+
+Plan said flag-based (`--state <f> --dedupe-key <k> --max-active <n>`). Build shipped positional (`<goal_id> <key> <tier> <max> <cool>`) with jq-friendly pipe-separated output (`VERDICT|source-N|note`).
+
+- Reason: operator made the call during build — positional args are more idiomatic for shell scripts and require less argparse boilerplate.
+- Plan stays as design record of the V2/CC fusion intent; built scripts are the operator's preferred implementation contract.
+
+**2. Tasks 2 (test helper lib) + 17-21 (dogfood procedures): SUPERSEDED by Phase 1 dogfood.**
+
+Plan said: build `tests/lib/assert.sh` + `tests/run-all.sh` (Task 2) plus 7 dogfood procedure markdown files (Tasks 17-21).
+
+- Status: SUPERSEDED by commit `4d326ea` (Phase 1 dogfood closeout — 7/7 PASS, V3 invariant verified including anti-LGTM forced verdict override, subagent recovery, operator-needed routing).
+- V3 codified pattern: **real-work-is-the-test** beats synthetic unit tests. Dogfooding the skill on actual goals (`absorb-codex-into-cc`, the bootstrap recursive use case) provides stronger validation than mocked assertions. Per the codex GPT-5.5 emergent finding, anti-LGTM verdict override is observable from running on real work, not from unit tests.
+- Not debt — dead branch. Do not backfill.
+
+**3. Task 22 (README.md): stub built pointing to SKILL.md.**
+
+Plan said: README.md with test runner + Phase 1 acceptance + Phase 2 trigger documentation.
+
+- Status: built as minimal stub pointing to SKILL.md (the living contract) + design artifacts. Operator + future agents read SKILL.md, not README. Anything beyond the stub is deferred indefinitely.
+
+### Companion document
+
+See `docs/superpowers/plans/2026-05-12-goalv3-cc-PLAN-CLOSEOUT.md` for the formal closeout (plan-said vs shipped table, why divergence, validation evidence, lessons captured).
+
+---
+
 ## Pre-flight assumptions to verify (boot dossier "don't trust" list)
 
 Run these **once** before Task 1 — they're not per-task gates, but if any fails, stop and tell operator:
