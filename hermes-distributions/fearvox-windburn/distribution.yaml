@@ -1,0 +1,15 @@
+name: fearvox-windburn
+version: 0.1.0
+description: "Windburn/MUW cognitive-cache steward for Hermes-style routing"
+author: Fearvox
+license: MIT
+hermes_requires: ">=0.12.0"
+env_requires: []
+distribution_owned:
+  - SOUL.md
+  - config.yaml
+  - skills
+notes:
+  source_truth_policy: "proposal-only; explicit human approval required"
+  public_surface_policy: "redacted by default"
+  remote_runtime_policy: "bounded lease, evidence ref, teardown policy required"

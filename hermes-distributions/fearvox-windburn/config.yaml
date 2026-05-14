@@ -1,0 +1,51 @@
+model:
+  provider: openai
+  default: gpt-5.5
+  base_url: ""
+providers: {}
+fallback_providers: []
+toolsets:
+  - hermes-cli
+agent:
+  max_turns: 90
+  gateway_timeout: 1800
+  api_max_retries: 3
+  tool_use_enforcement: auto
+terminal:
+  backend: local
+  cwd: .
+  timeout: 180
+  persistent_shell: true
+  env_passthrough: []
+browser:
+  allow_private_urls: false
+  auto_local_for_private_urls: true
+tool_loop_guardrails:
+  warnings_enabled: true
+  hard_stop_enabled: false
+  warn_after:
+    exact_failure: 2
+    same_tool_failure: 3
+    idempotent_no_progress: 2
+compression:
+  enabled: true
+  threshold: 0.95
+  target_ratio: 0.2
+context:
+  engine: compressor
+display:
+  compact: true
+  personality: direct
+  language: zh
+  show_reasoning: false
+  final_response_markdown: strip
+skills:
+  external_dirs: []
+  template_vars: true
+  inline_shell: false
+hooks_auto_accept: false
+policy:
+  source_truth_requires_human: true
+  repeat_failure_requires_retry_condition: true
+  public_surfaces_redacted: true
+  broad_autopilot_default: false
