@@ -39,6 +39,12 @@ nixos-rebuild-test:
 nixos-rebuild-switch:
     scripts/nixos-remote-rebuild.sh --apply --confirm-remote-nixos-rebuild --mode switch
 
+evercore-stage-dry-run:
+    scripts/evercore-remote-stage.sh
+
+evercore-stage-apply:
+    scripts/evercore-remote-stage.sh --apply --confirm-evercore-stage
+
 remote-secret-dry-run:
     scripts/remote-secret-sync.sh
 

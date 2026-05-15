@@ -7,6 +7,7 @@ in
   imports = [
     ./modules/remote-workhorse-foundation.nix
     ./modules/remote-workhorse-codex.nix
+    ./modules/remote-workhorse-evercore.nix
     ./modules/remote-workhorse-herdr.nix
     ./modules/remote-workhorse-hermes.nix
     ./modules/remote-workhorse-research.nix
@@ -65,6 +66,19 @@ in
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [ 22 ];
+  };
+
+  services.evercoreRemote = {
+    enable = true;
+    baseDir = "/srv/evercore";
+    repoDir = "/srv/evercore/repo";
+    envFile = "/srv/evercore/evercore.env";
+    composeFile = "/srv/evercore/docker-compose.remote.yaml";
+    evidenceDir = "/srv/evercore/evidence";
+    bindHost = "127.0.0.1";
+    bindPort = 1995;
+    openFirewall = false;
+    allowPublicBind = false;
   };
 
   environment.systemPackages = with pkgs; [
