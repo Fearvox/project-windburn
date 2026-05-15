@@ -1,25 +1,64 @@
+# Fearvox Windburn — Hermes runtime config
+#
+# Values reflect operator-tested defaults. Each section below explains what the
+# field controls; do not silently widen a default without operator review.
+
+# Model backbone — pinned to a known-good provider/default
+# - provider: openai-compatible API surface; the actual model is named in `default`
+# - base_url: empty means use provider's default endpoint (overridable per env if needed)
 model:
   provider: openai
   default: gpt-5.5
   base_url: ""
+
+# Providers + fallback chain — empty means rely on the single default model
+# Add entries only when a fallback has been smoke-tested against this distribution.
 providers: {}
 fallback_providers: []
+
+# Toolsets — which CLI toolboxes the agent is allowed to invoke
+# `hermes-cli` is the bounded surface; additional toolsets require explicit add.
 toolsets:
   - hermes-cli
+
+# Agent loop control — bound runtime cost and infinite-loop risk
+# - max_turns: hard cap on conversational turns per goal
+# - gateway_timeout: seconds before the API gateway gives up on a single call
+# - api_max_retries: how many transport-level retries before failing the turn
+# - tool_use_enforcement: `auto` lets the model decide when to invoke tools (vs `force`/`none`)
 agent:
   max_turns: 90
   gateway_timeout: 1800
   api_max_retries: 3
   tool_use_enforcement: auto
+
+# Terminal access — local shell surface for the agent
+# - backend: `local` means current host's shell; remote backends not configured here
+# - cwd: working directory at session start; `.` = wherever the runtime is launched
+# - timeout: seconds before a single shell command is killed
+# - persistent_shell: true keeps env vars across commands within a session
+# - env_passthrough: empty means no host env vars are leaked into the agent's shell
 terminal:
   backend: local
   cwd: .
   timeout: 180
   persistent_shell: true
   env_passthrough: []
+
+# Browser surface — guarded against accidental private-URL fetches
+# - allow_private_urls: false blocks rfc1918, localhost, .local, etc. by default
+# - auto_local_for_private_urls: true means private URLs fall back to local-only mode
 browser:
   allow_private_urls: false
   auto_local_for_private_urls: true
+
+# Tool loop guardrails — protect against repeat-failure death-spirals
+# - warnings_enabled: surfaces a warning to the agent on each guardrail hit
+# - hard_stop_enabled: false means warnings only (operator must intervene)
+# - warn_after:
+#     exact_failure: N identical failures triggers warning
+#     same_tool_failure: N failures of same tool (any error) triggers warning
+#     idempotent_no_progress: N idempotent calls with no state change triggers warning
 tool_loop_guardrails:
   warnings_enabled: true
   hard_stop_enabled: false
@@ -27,23 +66,49 @@ tool_loop_guardrails:
     exact_failure: 2
     same_tool_failure: 3
     idempotent_no_progress: 2
+
+# Context compression — auto-summarize when context approaches limit
+# - threshold: fraction of model context window before compression kicks in
+# - target_ratio: post-compression size as fraction of pre-compression
 compression:
   enabled: true
   threshold: 0.95
   target_ratio: 0.2
+
+# Context engine — `compressor` is the standard Hermes context manager
 context:
   engine: compressor
+
+# Display preferences — output formatting and verbosity
+# - compact: trim trailing whitespace and over-long lines
+# - personality: `direct` = no service-bot filler, factual tone
+# - language: default response language (zh = Chinese; agent may switch per content)
+# - show_reasoning: false hides chain-of-thought from operator display
+# - final_response_markdown: `strip` removes markdown formatting in final output
 display:
   compact: true
   personality: direct
   language: zh
   show_reasoning: false
   final_response_markdown: strip
+
+# Skill loader — which skill dirs to scan beyond this distribution's `skills/`
+# - external_dirs: empty means only this distribution's skills are loaded
+# - template_vars: true allows ${VAR} substitution in skill frontmatter
+# - inline_shell: false disallows `$(...)` execution inside skill bodies (security)
 skills:
   external_dirs: []
   template_vars: true
   inline_shell: false
+
+# Hooks — never auto-accept, operator must explicitly approve any hook fire
 hooks_auto_accept: false
+
+# Policy enforcement — these mirror SOUL.md hard boundaries; do not weaken
+# - source_truth_requires_human: source-truth promotion needs explicit operator yes
+# - repeat_failure_requires_retry_condition: re-running a failed action needs satisfied retry condition
+# - public_surfaces_redacted: docs/HTML get redaction; only scripts/ may carry local paths
+# - broad_autopilot_default: false means default scope is bounded; widen explicitly per goal
 policy:
   source_truth_requires_human: true
   repeat_failure_requires_retry_condition: true

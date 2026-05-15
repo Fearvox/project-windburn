@@ -1,15 +1,55 @@
 name: fearvox-windburn
-version: 0.1.0
-description: "Windburn/MUW cognitive-cache steward for Hermes-style routing"
+version: 0.2.0
+description: "Windburn/MUW cognitive-cache steward for Hermes-style routing. Router + memory discipline, not source-truth approver."
 author: Fearvox
 license: MIT
+
+# Hermes runtime contract
 hermes_requires: ">=0.12.0"
 env_requires: []
+
+# Files owned by this distribution (anything the host runtime must keep distinct from user-local overrides)
 distribution_owned:
   - SOUL.md
   - config.yaml
   - skills
+
+# Cognitive cache slots this distribution serves
+# (See Windburn 7-cache architecture in the parent repo's CLAUDE.md.)
+cognitive_cache_slots_served:
+  - source        # via windburn-cognitive-cache
+  - episodic      # via windburn-cognitive-cache + windburn-crabbox-failure-hook (indirect)
+  - parking       # via windburn-cognitive-cache
+  - belief        # via windburn-source-truth-review (gate only, never auto-promote)
+  - failure       # via windburn-crabbox-failure-hook
+
+# Skills shipped in this distribution (load order is dependency-driven, not alphabetical)
+skills:
+  - name: windburn-cognitive-cache
+    role: classify-and-route
+    entry_point: true
+  - name: windburn-source-truth-review
+    role: review-gate
+    consumes_from: windburn-cognitive-cache
+  - name: windburn-crabbox-failure-hook
+    role: remote-run-wrapper
+    feeds_into: windburn-cognitive-cache
+
+# Policy declarations (enforced by skills + by host runtime config.yaml)
 notes:
-  source_truth_policy: "proposal-only; explicit human approval required"
-  public_surface_policy: "redacted by default"
-  remote_runtime_policy: "bounded lease, evidence ref, teardown policy required"
+  source_truth_policy: "proposal-only; explicit human approval required; no skill in this distribution returns 'approved' as terminal state"
+  public_surface_policy: "redacted by default; absolute home paths, credentials, host/port pairs, queue filenames are BLOCK or FLAG per parent repo docs/goals/2026-05-12-side-lane-goal-metrics-v0.md"
+  remote_runtime_policy: "bounded lease; evidence ref; teardown policy required; windburn-crabbox-failure-hook must wrap before/after"
+  lgtm_policy: "asymmetric anti-LGTM (V3 invariant): conductor may override PASS→FLAG, never FLAG→PASS"
+  retry_policy: "if a matching failure memory exists, action must change OR retry_condition must be explicitly satisfied OR operator must be asked"
+
+# Provenance — where this distribution comes from and the design it implements
+provenance:
+  origin_repo: project-windburn
+  direction_doc: "multica-ultimate-workbench docs/windburn-cognitive-cache-direction.md (2026-05-03)"
+  cache_substrate_design: "7-cache architecture (working / episodic / perception / belief / failure / procedural / source)"
+  born_as_scaffold_at: 2026-05-11
+  polished_to_v0.2_at: 2026-05-15
+
+# Status (scaffold → growing toward production)
+status: "v0.2 — three skills production-shaped; install path operator-driven; live wiring deferred until source-truth gates verified in a sandbox profile"
