@@ -32,19 +32,19 @@ not broad autopilot
 
 ## Cognitive cache slots served
 
-This distribution operates on five of the seven Windburn cache slots:
+This distribution directly serves four canonical Windburn cache slots and one non-cache holding lane:
 
-| Slot | Skill | Status |
-|------|-------|--------|
-| **source** | `windburn-cognitive-cache` (routing only) | proposal-layer |
-| **episodic** | `windburn-cognitive-cache` + `windburn-crabbox-failure-hook` | shipped |
-| **parking** | `windburn-cognitive-cache` | shipped |
-| **belief** | `windburn-source-truth-review` (gate only, no auto-promote) | shipped |
-| **failure** | `windburn-crabbox-failure-hook` | shipped |
+| Slot / lane | Type | Skill | Status |
+|-------------|------|-------|--------|
+| **source** | canonical cache slot | `windburn-cognitive-cache` (routing only) | proposal-layer |
+| **episodic** | canonical cache slot | `windburn-cognitive-cache` + `windburn-crabbox-failure-hook` | shipped |
+| **belief** | canonical cache slot | `windburn-source-truth-review` (gate only, no auto-promote) | shipped |
+| **failure** | canonical cache slot | `windburn-crabbox-failure-hook` | shipped |
+| **parking** | holding lane, not one of the seven cache slots | `windburn-cognitive-cache` | shipped |
 
-The two slots NOT served here:
+The three canonical cache slots NOT served here:
 - `perception` — handled at the parent repo level (`scripts/windburn-side-lane-perception-bus.mjs`)
-- `procedural` — handled at the parent repo level (`goalv3-cc` skill at `~/.claude/skills/goalv3-cc/`)
+- `procedural` — handled at the parent repo level (`goalv3-cc` operator skill install)
 - `working` — not yet implemented (substrate gap)
 
 ## The three skills (dependency-ordered)

@@ -19,9 +19,12 @@ distribution_owned:
 cognitive_cache_slots_served:
   - source        # via windburn-cognitive-cache
   - episodic      # via windburn-cognitive-cache + windburn-crabbox-failure-hook (indirect)
-  - parking       # via windburn-cognitive-cache
   - belief        # via windburn-source-truth-review (gate only, never auto-promote)
   - failure       # via windburn-crabbox-failure-hook
+
+# Non-cache holding lanes / routes this distribution supports.
+holding_lanes_supported:
+  - parking       # via windburn-cognitive-cache
 
 # Skills shipped in this distribution (load order is dependency-driven, not alphabetical)
 skills:

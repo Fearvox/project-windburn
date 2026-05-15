@@ -63,7 +63,7 @@ This is system-level, not optional.
 
 Operator-triggered revisions with verification evidence may transition `FLAG → PASS`, but they must be logged as `verdict_source: operator-resolved`, never as `conductor-override`. Audit trails preserve the original `FLAG` record append-only.
 
-The procedural cache that embodies this rule is the `goalv3-cc` skill (filesystem-only at `~/.claude/skills/goalv3-cc/`). See `references/codex-emergent-pattern.md` in that skill for the V3 finding origin.
+The procedural cache that embodies this rule is the operator-owned `goalv3-cc` skill install. See the documented Phase 1 closeout for the V3 finding origin.
 
 ## Eight captured lessons (load-bearing — read before non-trivial work)
 
@@ -89,9 +89,9 @@ These came out of the goalv3-cc rollout and its own delivery PR pipeline. Each i
 
 Even if a goal or task description routes near these paths, refuse the route and emit `OPERATOR_NEEDED` with the reason.
 
-- `~/.codex/` — operator's separate Codex runtime tree, frozen by operator directive
-- `~/multica-ultimate-workbench/autopilots/` — MUW autopilots, separate lifecycle
-- `~/dash-verse/`, `~/.dashpersona/`, `~/workspace/dash-shatter-vault/` — separate projects per operator directive
+- Operator's separate Codex runtime tree, frozen by operator directive.
+- MUW autopilots, which have a separate lifecycle from this repo.
+- Adjacent DASH projects such as Dash Persona, Dash Verse, and Dash Shatter, unless the operator explicitly routes cross-repo work.
 
 When in doubt: the only paths an agent should freely write inside this session are inside the current repo's checkout (or a worktree of it under `.claude/worktrees/`), plus the per-goal state at `.goal/<goal-id>/` (gitignored).
 
@@ -171,7 +171,7 @@ State files (`state.json`, `dispatch-log.jsonl`) are append-only. History fields
 
 ## Relationship to MUW
 
-- **MUW** (`~/superconductor/projects/multica-ultimate-workbench-main`) is the orchestration / agent runtime layer. Coordinates Codex / Claude Code / Hermes agents. Holds the canonical design direction for this repo.
+- **MUW** is the orchestration / agent runtime layer. Coordinates Codex / Claude Code / Hermes agents. Holds the canonical design direction for this repo.
 - **Windburn** (this repo) is the cognitive cache substrate MUW envisions. Build-state lives here.
 - **One-sided edits across projects.** Do not edit MUW from inside a Windburn session, and vice versa. Cross-link through committed docs instead. If a build-time discovery contradicts MUW direction, write a closeout entry under `docs/research/` and cross-link it from MUW separately.
 

@@ -17,10 +17,10 @@ The transformer KV cache answers *"what tokens have I already attended to?"*. Th
 | Slot | Role | Status | Where it lives |
 |------|------|--------|----------------|
 | **source** | Research Vault, repo docs, source-of-truth files | ✅ shipped (proposal layer) | OpenChronicle install proposal + RV MCP read-only contract |
-| **episodic** | What happened, in order | ✅ shipped (proposal layer) | OpenChronicle ingest plan for `~/.claude/learnings/` + read-only mirror of upstream agent memory |
+| **episodic** | What happened, in order | ✅ shipped (proposal layer) | OpenChronicle ingest plan for the operator-owned Claude learning store + read-only mirror of upstream agent memory |
 | **perception** | Grounded observations from tools and humans | ✅ shipped | `scripts/windburn-side-lane-perception-bus.mjs` + bounded boundary smoke |
 | **failure** | Actions attempted, observed deltas, avoid/retry rules | ✅ shipped | `docs/remote-workhorse/WINDBURN_CRABBOX_FAILURE_HOOK.md` + `hermes-distributions/fearvox-windburn/skills/windburn-crabbox-failure-hook/` |
-| **procedural** | Reusable skills, repo routes, tool patterns | ✅ shipped | `goalv3-cc` skill (filesystem-only at `~/.claude/skills/goalv3-cc/`) + captured lessons in `docs/superpowers/plans/2026-05-12-goalv3-cc-PLAN-CLOSEOUT.md` |
+| **procedural** | Reusable skills, repo routes, tool patterns | ✅ shipped | `goalv3-cc` operator skill install + captured lessons in `docs/superpowers/plans/2026-05-12-goalv3-cc-PLAN-CLOSEOUT.md` |
 | **belief** | Hypotheses with evidence and confidence | ⚠️ skeleton | `hermes-distributions/fearvox-windburn/skills/windburn-source-truth-review/` (scaffold only) |
 | **working** | Current session focus + task stack | ❌ gap | per-session auto-memory partial proxy; no formal substrate yet |
 

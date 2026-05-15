@@ -5,7 +5,8 @@ version: 0.2.0
 platforms: [linux, macos, windows]
 metadata:
   tags: [windburn, memory, belief, perception, failure, source-truth]
-  cache_slots: [source, episodic, parking]
+  cache_slots: [source, episodic]
+  holding_lanes: [parking]
   invariant: source-truth requires human approval
 ---
 
@@ -17,13 +18,13 @@ Classify and route incoming memory objects into the Windburn 7-cache substrate. 
 
 Take an unclassified memory candidate (a perception, a belief, a fact, a guess, a partial conclusion) and emit a routing decision that preserves the source-vs-inference boundary.
 
-## Cache slots this skill serves
+## Cache slots and holding lanes this skill routes
 
 - **source** — when the candidate is a verified fact from a trusted origin (Research Vault, repo doc, source-truth file)
 - **episodic** — when the candidate is "what happened, in order" with timestamp + actor
-- **parking** — when the candidate is plausible but not yet ground-truth-eligible
+- **parking** — a holding lane, not one of the seven canonical cache slots, for candidates that are plausible but not yet ground-truth-eligible
 
-This skill does NOT directly populate `belief`, `failure`, or `procedural` caches; those have dedicated skills ([[windburn-source-truth-review]] for belief promotion, [[windburn-crabbox-failure-hook]] for failure capture). It routes candidates TO those skills.
+This skill does NOT directly populate `belief`, `failure`, `procedural`, or `perception` caches; those live in dedicated skills or parent-repo substrates ([[windburn-source-truth-review]] for belief promotion, [[windburn-crabbox-failure-hook]] for failure capture, and the parent perception bus for perception events). It routes candidates TO those surfaces.
 
 ## When to use
 
