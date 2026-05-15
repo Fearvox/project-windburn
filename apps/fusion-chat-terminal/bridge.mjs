@@ -11,6 +11,11 @@ import {
   buildSuperruntimePayload,
   inspectRunnerEvidenceSafety,
 } from "../../packages/fusion-bridge-api/src/superruntime.mjs";
+import {
+  authContractSummary,
+  guardRoute,
+  publicAuthContext,
+} from "../../packages/fusion-bridge-api/src/auth-contract.mjs";
 
 const appDir = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(appDir, "../..");
@@ -43,7 +48,7 @@ const routeBlueprints = [
     name: "Hermes Yolo",
     host: "public host hidden",
     kind: "tmux",
-    transport: "tmux attach target hidden",
+    transport: "session attach target hidden",
     command: "operator command hidden",
     taste: "primary high-context chat lane",
     proof: "docs/remote-workhorse/preflight/WORKHORSE_HERMES_YOLO_LANE_PROOF.md",
@@ -126,7 +131,7 @@ function streamSafeRoute(route) {
           : "public host hidden";
   const transportLabel =
     route.kind === "tmux"
-      ? "tmux attach target hidden"
+      ? "session attach target hidden"
       : route.kind === "nixos"
         ? "NixOS rebuild target hidden"
         : route.kind === "internal"
@@ -473,6 +478,17 @@ function sendJson(response, statusCode, payload) {
   response.end(JSON.stringify(payload, null, 2));
 }
 
+function sendGuardFailure(response, guard) {
+  sendJson(response, guard.status ?? 403, {
+    error: guard.reason,
+    route_id: guard.route?.id ?? null,
+    required_role: guard.route?.minRole ?? "viewer",
+    allowed_methods: guard.route?.methods ? [...guard.route.methods] : [],
+    mutation_bridge_enabled: false,
+    secret_values_recorded: false,
+  });
+}
+
 async function sendStatic(requestUrl, response) {
   const rawPath = requestUrl.pathname === "/" ? "/index.html" : requestUrl.pathname;
   const decodedPath = decodeURIComponent(rawPath);
@@ -501,7 +517,18 @@ const server = createServer(async (request, response) => {
   const requestUrl = new URL(request.url ?? "/", `http://${host}:${port}`);
 
   try {
-    if (requestUrl.pathname === "/api/status" && request.method === "GET") {
+    const authContext = publicAuthContext();
+    const guard = guardRoute({
+      pathname: requestUrl.pathname,
+      method: request.method ?? "GET",
+      role: authContext.role,
+    });
+    if (!guard.allowed) {
+      sendGuardFailure(response, guard);
+      return;
+    }
+
+    if (requestUrl.pathname === "/api/status" && (request.method === "GET" || request.method === "HEAD")) {
       const repo = await repoStatus();
       sendJson(response, 200, {
         schema_version: 1,
@@ -519,6 +546,10 @@ const server = createServer(async (request, response) => {
           superconductor_cli: "pending",
           note: "When Superconductor CLI pipeline mode lands, this bridge should consume it as another read-only intake source first.",
         },
+        auth: authContractSummary(authContext.role),
+        mutation_bridge_enabled: false,
+        provider_webhooks_enabled: false,
+        runtime_channel_enabled: false,
         secret_values_recorded: false,
       });
       return;

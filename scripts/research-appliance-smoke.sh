@@ -6,6 +6,13 @@ CARD_PATH="${1:-"$ROOT_DIR/docs/remote-workhorse/fixtures/research-run-card-v0.j
 
 "$ROOT_DIR/scripts/research-run-card-verify.sh" "$CARD_PATH"
 
+if [ "$#" -eq 0 ]; then
+  for fixture in "$ROOT_DIR"/docs/remote-workhorse/fixtures/research-run-card-m*-p1-public-surface-safety-v0.json; do
+    [ -f "$fixture" ] || continue
+    "$ROOT_DIR/scripts/research-run-card-verify.sh" "$fixture"
+  done
+fi
+
 echo "PASS research_appliance_smoke"
 echo "card=$CARD_PATH"
 echo "remote_mutation=false"

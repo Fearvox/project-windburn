@@ -110,12 +110,14 @@ let
       research_status=UNKNOWN
       research_reason=missing_research_appliance_evidence
       research_staged_run_count=0
+      research_executed_run_count=0
       research_public_safe=false
       research_hf_export_gated=false
       if [ "$research_present" = true ]; then
         research_status="$(jq -r '.status // "UNKNOWN"' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' UNKNOWN)"
         research_reason="$(jq -r '.reason // "unknown"' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' unknown)"
         research_staged_run_count="$(jq -r '(.staged_run_count // 0) | tostring' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' 0)"
+        research_executed_run_count="$(jq -r '(.executed_run_count // 0) | tostring' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' 0)"
         research_public_safe="$(jq -r '(.redacted_public_safe // false) | tostring' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' false)"
         research_hf_export_gated="$(jq -r '(.capabilities // [] | index("huggingface-export-gated") != null) | tostring' /srv/windburn/evidence/research-appliance/current.json 2>/dev/null || printf '%s' false)"
       fi
@@ -230,6 +232,7 @@ let
         --arg research_status "$research_status" \
         --arg research_reason "$research_reason" \
         --argjson research_staged_run_count "$research_staged_run_count" \
+        --argjson research_executed_run_count "$research_executed_run_count" \
         --arg research_public_safe "$research_public_safe" \
         --arg research_hf_export_gated "$research_hf_export_gated" \
         --arg tmux_session_present "$tmux_session_present" \
@@ -310,6 +313,7 @@ let
             status: $research_status,
             reason: $research_reason,
             staged_run_count: $research_staged_run_count,
+            executed_run_count: $research_executed_run_count,
             public_safe_evidence: ($research_public_safe == "true"),
             huggingface_export_gated: ($research_hf_export_gated == "true")
           },
@@ -334,6 +338,7 @@ let
             "hermes-yolo-tmux-lane",
             "herdr-cockpit-socket-api",
             "research-run-card-validation",
+            "dry-run-decision-impact-traces",
             "agent-memory-causality",
             "huggingface-export-gated"
           ],

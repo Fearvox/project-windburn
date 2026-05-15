@@ -31,7 +31,7 @@ const fs = require("fs");
 
 const cardPath = process.argv[2];
 const failures = [];
-const ALLOWED_ACTIONS = new Set(["verify-card", "stage-run", "status"]);
+const ALLOWED_ACTIONS = new Set(["verify-card", "stage-run", "execute-dry-run", "status"]);
 const ALLOWED_MEMORY = new Set(["M0", "M1", "M2", "M3"]);
 const ALLOWED_PRESSURE = new Set(["P0", "P1", "P2"]);
 const ALLOWED_TASKS = new Set([
@@ -159,7 +159,7 @@ if (requireObject(card, "card")) {
     maxLength: 160,
   });
   if (!ALLOWED_ACTIONS.has(card.requested_action)) {
-    fail("card.requested_action must be verify-card, stage-run, or status");
+    fail("card.requested_action must be verify-card, stage-run, execute-dry-run, or status");
   }
   if (requireArray(card.allowed_actions, "card.allowed_actions")) {
     for (const [index, action] of card.allowed_actions.entries()) {

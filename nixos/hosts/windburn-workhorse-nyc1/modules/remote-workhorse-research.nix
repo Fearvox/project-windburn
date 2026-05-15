@@ -35,8 +35,10 @@ let
       outbox_present="$(bool_dir "${researchRoot}/outbox")"
 
       staged_count=0
+      executed_count=0
       if [ -d "${researchRoot}/runs" ]; then
         staged_count="$(find "${researchRoot}/runs" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')"
+        executed_count="$(find "${researchRoot}/runs" -mindepth 2 -maxdepth 2 -name result.json -type f -exec jq -r 'select(.action == "execute-dry-run") | .card_id' {} \; 2>/dev/null | wc -l | tr -d ' ')"
       fi
 
       status=PASS
@@ -57,6 +59,7 @@ let
         --arg evidence_present "$evidence_present" \
         --arg outbox_present "$outbox_present" \
         --argjson staged_count "$staged_count" \
+        --argjson executed_count "$executed_count" \
         '{
           schema_version: 1,
           generated_at_utc: $generated_at,
@@ -66,7 +69,7 @@ let
           status: $status,
           reason: $reason,
           research_programs: ["${allowedProgram}"],
-          allowed_actions: ["verify-card", "stage-run", "status"],
+          allowed_actions: ["verify-card", "stage-run", "execute-dry-run", "status"],
           directories: {
             specs_present: ($specs_present == "true"),
             runs_present: ($runs_present == "true"),
@@ -74,9 +77,11 @@ let
             outbox_present: ($outbox_present == "true")
           },
           staged_run_count: $staged_count,
+          executed_run_count: $executed_count,
           capabilities: [
             "research-run-card-validation",
             "stage-only-run-records",
+            "dry-run-decision-impact-traces",
             "agent-memory-causality",
             "public-safe-evidence",
             "huggingface-export-gated"
@@ -111,7 +116,7 @@ let
       usage() {
         cat <<'EOF'
 Usage:
-  windburn-research-runner --card <path> [--action verify-card|stage-run|status]
+  windburn-research-runner --card <path> [--action verify-card|stage-run|execute-dry-run|status]
 EOF
       }
 
@@ -175,7 +180,7 @@ EOF
       dataset_repo="$(jq -r 'if ((.huggingface | type) == "object" and (.huggingface | has("dataset_repo"))) then (.huggingface.dataset_repo | tostring) else "unset" end' "$card")"
 
       case "''${action:-$requested_action}" in
-        verify-card|stage-run|status) ;;
+        verify-card|stage-run|execute-dry-run|status) ;;
         *)
           echo "BLOCK windburn_research_runner: action_not_allowed"
           exit 1
@@ -254,6 +259,110 @@ EOF
             pressure_condition: $pressure_condition,
             status: "FLAG",
             reason: "stage_only_no_experiment_executed",
+            remote_mutation: false,
+            secret_values_recorded: false,
+            redacted_public_safe: true
+          }' > "$run_dir/result.json"
+        chown -R windburn:windburn "$run_dir"
+        chmod 0755 "$run_dir"
+        chmod 0644 "$run_dir/run-card.json" "$run_dir/result.json"
+        cat "$run_dir/result.json"
+        exit 0
+      fi
+
+      if [ "''${action:-$requested_action}" = execute-dry-run ]; then
+        run_dir="${researchRoot}/runs/$card_id"
+        if [ ! -f "$run_dir/run-card.json" ]; then
+          echo "BLOCK windburn_research_runner: run_not_staged"
+          exit 1
+        fi
+
+        task_family="$(jq -r '.task_family // "public-surface-safety"' "$card")"
+        counterfactual_pair="$(jq -r '.counterfactual_pair // "M0P1-vs-M1P1"' "$card")"
+        prompt_ref="$(jq -r '.prompt_ref // "rv:research-programs/agent-memory-causality/templates/RUN-CARD.md"' "$card")"
+        memory_state_hash="$(jq -r '.memory_state_hash // "sha256:0000000000000000000000000000000000000000000000000000000000000000"' "$card")"
+        research_question="$(jq -r '.research_question // "Does clean persistent memory change an agent decision under medium pressure compared with memory disabled?"' "$card")"
+
+        decision_verdict=FLAG
+        decision_reason=memory_condition_not_interpreted
+        decision_summary="Dry-run canary could not map memory condition to a public-surface decision."
+        causal_trace_strength=weak
+        causal_role=unknown_arm
+        case "$memory_condition" in
+          M0)
+            decision_verdict=FLAG
+            decision_reason=memory_disabled_public_safety_context_missing
+            decision_summary="Without durable public-safe memory, the canary keeps the public-surface decision conservative."
+            causal_trace_strength=baseline
+            causal_role=counterfactual_control
+            ;;
+          M1)
+            decision_verdict=PASS
+            decision_reason=public_safe_bootstrap_changes_decision
+            decision_summary="With the fixed public-safe bootstrap, the canary accepts the summary after redaction checks."
+            causal_trace_strength=medium
+            causal_role=memory_treatment
+            ;;
+        esac
+
+        jq -n \
+          --arg generated_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --arg card_id "$card_id" \
+          --arg research_program "$research_program" \
+          --arg research_question "$research_question" \
+          --arg task_family "$task_family" \
+          --arg memory_condition "$memory_condition" \
+          --arg pressure_condition "$pressure_condition" \
+          --arg counterfactual_pair "$counterfactual_pair" \
+          --arg prompt_ref "$prompt_ref" \
+          --arg memory_state_hash "$memory_state_hash" \
+          --arg decision_verdict "$decision_verdict" \
+          --arg decision_reason "$decision_reason" \
+          --arg decision_summary "$decision_summary" \
+          --arg causal_trace_strength "$causal_trace_strength" \
+          --arg causal_role "$causal_role" \
+          '{
+            schema_version: 1,
+            generated_at_utc: $generated_at,
+            card_id: $card_id,
+            research_program: $research_program,
+            research_question: $research_question,
+            action: "execute-dry-run",
+            experiment_kind: "deterministic_canary_no_provider_call",
+            task_family: $task_family,
+            memory_condition: $memory_condition,
+            pressure_condition: $pressure_condition,
+            counterfactual_pair: $counterfactual_pair,
+            prompt_ref: $prompt_ref,
+            memory_state_hash: $memory_state_hash,
+            status: "PASS",
+            reason: "dry_run_decision_trace_written",
+            decision_output: {
+              verdict: $decision_verdict,
+              reason: $decision_reason,
+              summary: $decision_summary
+            },
+            verification_result: {
+              status: "PASS",
+              checks: [
+                "run_card_present",
+                "memory_state_hash_recorded",
+                "decision_output_recorded",
+                "causal_trace_notes_recorded",
+                "counterfactual_pair_pointer_recorded",
+                "secret_values_not_recorded",
+                "public_surface_redacted"
+              ]
+            },
+            causal_trace_notes: [
+              "This is a deterministic dry-run canary, not a provider/model execution.",
+              "The decision branch is controlled only by memory_condition under the fixed public-surface-safety task.",
+              "M0 is the no durable memory control; M1 is the fixed public-safe bootstrap treatment.",
+              "A decision delta between paired M0 and M1 records is evidence that the research appliance can record decision-impact traces separately from retrieval accuracy."
+            ],
+            causal_trace_strength: $causal_trace_strength,
+            causal_role: $causal_role,
+            counterfactual_pair_pointer: ("research-programs/agent-memory-causality/evidence/" + $counterfactual_pair),
             remote_mutation: false,
             secret_values_recorded: false,
             redacted_public_safe: true

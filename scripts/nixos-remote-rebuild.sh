@@ -208,7 +208,7 @@ ssh_base \
 	   test -x /run/current-system/sw/bin/windburn-research-runner
 	   /run/current-system/sw/bin/windburn-research-appliance-status >/tmp/windburn-research-appliance-status-smoke.json
 	   cat /tmp/windburn-research-appliance-status-smoke.json
-	   jq -e ".schema_version == 1 and .status == \"PASS\" and .secret_values_recorded == false and .redacted_public_safe == true and (.capabilities | index(\"research-run-card-validation\") != null) and (.capabilities | index(\"agent-memory-causality\") != null) and (.capabilities | index(\"huggingface-export-gated\") != null)" /tmp/windburn-research-appliance-status-smoke.json >/dev/null
+	   jq -e ".schema_version == 1 and .status == \"PASS\" and .secret_values_recorded == false and .redacted_public_safe == true and (.capabilities | index(\"research-run-card-validation\") != null) and (.capabilities | index(\"dry-run-decision-impact-traces\") != null) and (.capabilities | index(\"agent-memory-causality\") != null) and (.capabilities | index(\"huggingface-export-gated\") != null)" /tmp/windburn-research-appliance-status-smoke.json >/dev/null
 	   test -x /run/current-system/sw/bin/windburn-runner-status
 	   /run/current-system/sw/bin/windburn-runner-status >/tmp/windburn-runner-status-smoke.json
 	   cat /tmp/windburn-runner-status-smoke.json

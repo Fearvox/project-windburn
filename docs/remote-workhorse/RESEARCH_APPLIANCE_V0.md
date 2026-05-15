@@ -49,6 +49,8 @@ Research run cards may request:
 
 - `verify-card`: validate schema and public-surface safety.
 - `stage-run`: create a dry-run/staged evidence record.
+- `execute-dry-run`: consume a staged card and write a deterministic
+  decision-impact trace without making provider calls.
 - `status`: report appliance readiness.
 
 All v0 actions are non-mutating outside `/srv/windburn/research` and
@@ -134,7 +136,9 @@ Installed commands:
 - `windburn-research-appliance-status`
 - `windburn-research-runner`
 
-The status command is safe to stream. The runner is v0 stage-only.
+The status command is safe to stream. The runner is v0 bounded: it can validate
+cards, stage run records, and execute a deterministic dry-run canary. It still
+must not call providers or claim model-level causality.
 
 ## First Useful Experiment
 
@@ -152,3 +156,27 @@ First canary:
 
 The first win is not a perfect benchmark. It is a clean example where retrieval
 availability and decision impact diverge.
+
+## Dry-Run Execution Lane
+
+`execute-dry-run` is the first execution lane. It is intentionally small:
+
+- it requires the run to have been staged first;
+- it overwrites only that run's `result.json`;
+- it records `decision_output`, `verification_result`, `causal_trace_notes`,
+  `causal_trace_strength`, and a counterfactual pair pointer;
+- it sets `experiment_kind=deterministic_canary_no_provider_call`;
+- it preserves:
+  - `remote_mutation=false`
+  - `secret_values_recorded=false`
+  - `redacted_public_safe=true`
+
+For the first M0/P1 vs M1/P1 canary, the decision branch is deterministic:
+
+- `M0`: conservative `FLAG`, because no durable public-safe memory is available.
+- `M1`: `PASS`, because the fixed public-safe bootstrap changes the decision
+  after redaction checks.
+
+This proves the appliance can record a decision-impact trace. It does not yet
+prove a frontier model changed its behavior; that needs a later provider-backed,
+review-gated lane.
