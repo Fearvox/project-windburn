@@ -49,7 +49,7 @@
           </div>
           <div>
             <span class="label">Auth</span>
-            <strong>no secrets</strong>
+            <strong id="authRoleLabel">viewer / no secrets</strong>
           </div>
           <div>
             <span class="label">Privacy</span>
@@ -113,6 +113,14 @@
             <span id="superruntimeBadge" class="mini-badge">fallback</span>
           </div>
           <div id="superruntimeStatus" class="superruntime-status"></div>
+        </section>
+
+        <section class="pane auth-pane" aria-label="Account capability model">
+          <div class="pane-title">
+            <span>Account Gate</span>
+            <span id="authContractBadge" class="mini-badge">fallback</span>
+          </div>
+          <div id="authCapabilityModel" class="auth-capability-model"></div>
         </section>
 
         <section class="pane">

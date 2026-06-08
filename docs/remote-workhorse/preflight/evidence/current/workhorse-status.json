@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-05-07T06:53:33.11778Z",
+  "generated_at_utc": "2026-05-08T10:02:05.37288Z",
   "target": ".",
   "remote_evidence_dir": "docs/remote-workhorse/preflight/evidence/current/remote",
   "checks": [

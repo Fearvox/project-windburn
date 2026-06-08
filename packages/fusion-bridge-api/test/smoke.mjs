@@ -124,6 +124,16 @@ assert(health.body.mutation_bridge_enabled === false, "healthz must be read-only
 assert(health.body.auth.active_role === "viewer", "public health must be viewer scoped");
 assert(health.body.auth.mutation_routes_enabled === false, "auth contract must keep mutation routes disabled");
 
+const status = await get("/api/status");
+assert(status.response.status === 200, "status must return 200");
+assert(status.body.mode === "read-only", "status mode must stay read-only");
+assert(status.body.auth.active_role === "viewer", "public status must be viewer scoped");
+assert(status.body.auth.mutation_routes_enabled === false, "status auth must keep mutation routes disabled");
+assert(status.body.mutation_bridge_enabled === false, "status must not expose a mutation bridge");
+assert(status.body.provider_webhooks_enabled === false, "provider webhooks must stay disabled");
+assert(status.body.runtime_channel_enabled === false, "runtime channel must stay disabled");
+assert(status.body.secret_values_recorded === false, "status must not record secrets");
+
 const superruntime = await get("/api/superruntime");
 assert(superruntime.response.status === 200, "superruntime must return 200");
 assert(superruntime.body.registered_runtime_count === 1, "expected one registered runtime");
@@ -334,6 +344,10 @@ assert(openapi.body.paths["/api/superruntime"], "openapi must include superrunti
 
 const mutation = await get("/api/superruntime", "POST");
 assert(mutation.response.status === 405, "mutating requests must be rejected");
+
+const statusMutation = await get("/api/status", "POST");
+assert(statusMutation.response.status === 405, "status mutating requests must be rejected");
+assert(statusMutation.body.mutation_bridge_enabled === false, "status mutation rejection must stay read-only");
 
 const admin = await get("/api/admin/provider-config");
 assert(admin.response.status === 404, "admin routes must stay disabled before auth wiring");

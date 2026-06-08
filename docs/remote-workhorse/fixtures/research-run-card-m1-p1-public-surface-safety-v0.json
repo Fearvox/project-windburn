@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "card_id": "rrc_agent_memory_causality_canary_v0",
+  "card_id": "rrc_agent_memory_causality_m1_p1_public_surface_safety_v0",
   "source": "windburn-research-appliance",
   "research_program": "agent-memory-causality",
   "research_question": "Does clean persistent memory change an agent decision under medium pressure compared with memory disabled?",
   "repo": "Fearvox/project-windburn",
-  "rv_target": "research-programs/agent-memory-causality/evidence/",
-  "requested_action": "verify-card",
+  "rv_target": "research-programs/agent-memory-causality/evidence/m1-p1-public-surface-safety-v0",
+  "requested_action": "execute-dry-run",
   "allowed_actions": [
     "verify-card",
     "stage-run",
@@ -17,9 +17,9 @@
   "task_family": "public-surface-safety",
   "memory_condition": "M1",
   "pressure_condition": "P1",
-  "counterfactual_pair": "M0P1-vs-M1P1",
-  "prompt_ref": "rv:research-programs/agent-memory-causality/templates/RUN-CARD.md",
-  "memory_state_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "counterfactual_pair": "M0P1-vs-M1P1-public-surface-safety",
+  "prompt_ref": "rv:research-programs/agent-memory-causality/templates/public-surface-safety-canary.md",
+  "memory_state_hash": "sha256:60c22f332026ef7ee1adf519150489139577226790bafc28e03d117fd872871c",
   "evidence_requirements": [
     "run_card",
     "memory_state_hash",

@@ -848,6 +848,98 @@ textarea::placeholder {
   font-variation-settings: "wght" 620;
 }
 
+.auth-pane {
+  border-top-color: rgba(143, 240, 164, 0.38);
+}
+
+.auth-capability-model {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.auth-role-grid,
+.auth-policy-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.auth-role-card,
+.auth-policy-grid div,
+.staged-intents {
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(10, 13, 12, 0.72);
+}
+
+.auth-role-card.active {
+  border-color: rgba(143, 240, 164, 0.52);
+}
+
+.auth-role-heading,
+.auth-policy-grid div,
+.auth-route-guards li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.auth-role-card p {
+  margin: 7px 0;
+  color: var(--dim);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.capability-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.capability-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 3px 7px;
+  border: 1px solid rgba(137, 183, 255, 0.3);
+  border-radius: 999px;
+  color: var(--blue);
+  font-size: 10px;
+}
+
+.auth-policy-grid span,
+.auth-route-guards span,
+.staged-intents li {
+  color: var(--dim);
+  font-size: 10px;
+}
+
+.auth-policy-grid strong,
+.auth-route-guards strong {
+  color: var(--ink);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.auth-route-guards,
+.staged-intents ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-route-guards li,
+.staged-intents li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

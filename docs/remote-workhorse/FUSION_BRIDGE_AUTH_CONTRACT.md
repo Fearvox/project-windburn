@@ -35,6 +35,10 @@ It keeps the public edge API useful without widening write access.
 - The code skeleton lives in
   `packages/fusion-bridge-api/src/auth-contract.mjs` and is surfaced in
   `/api/status` as `auth`.
+- Fusion Chat consumes `/api/status.auth` to render the Account Gate. Viewer is
+  the default public role, `/stage task` is browser-local intent staging only,
+  and admin/provider config stays visible as a disabled placeholder until real
+  auth lands.
 
 ## Next Slice
 

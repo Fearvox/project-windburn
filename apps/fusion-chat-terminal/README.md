@@ -48,6 +48,9 @@ WINDBURN_FUSION_CHAT_PORT=5179 scripts/fusion-chat-bridge.sh
   proofs, runner-evidence-backed Superruntime state at `/api/superruntime`,
   and xAI setup inspect. The UI falls back to static stream-safe data when the
   bridge is not running.
+- Account Gate reads `/api/status.auth`, shows viewer/operator/admin
+  capabilities, records `/stage task` as browser-local operator intent only,
+  and keeps admin/provider config disabled until real auth exists.
 - Runner evidence intake prefers `WINDBURN_RUNNER_EVIDENCE_PATH`, then the
   default remote-workhorse evidence path. Browser responses summarize readiness,
   tmux presence, and credential presence as redacted booleans only.
