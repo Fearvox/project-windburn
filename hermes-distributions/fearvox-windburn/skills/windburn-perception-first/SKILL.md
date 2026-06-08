@@ -95,8 +95,13 @@ ready_to_reason: true | false               # false until anchor + (recall|windo
 ```text
 If has_temporal_reference is true and time_anchor.anchored_at is null,
 then time_anchor.degraded MUST be true and `note` MUST state the assumption.
-If has_ambiguous_recall_reference is true and window_carries_answer is false,
-then recall.searched MUST be true before ready_to_reason can be true.
+If has_ambiguous_recall_reference is true, window_carries_answer is false, and a
+recall tool is available, then recall.searched MUST be true before
+ready_to_reason can be true.
+If has_ambiguous_recall_reference is true, window_carries_answer is false, and no
+recall tool is available, then recall.searched MUST stay false, `note` MUST state
+recall is unavailable, ready_to_reason MUST stay false for completion claims, and
+the turn MUST return FLAG/BLOCK instead of guessing or fabricating recall.
 ```
 
 ## Anti-patterns (do NOT do)
