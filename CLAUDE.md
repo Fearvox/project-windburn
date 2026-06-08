@@ -18,15 +18,15 @@ If you find yourself optimizing for "task complete under reward proxy," you are 
 
 Seven cache slots. When you touch this repo, you are working at, near, or below one of them. Knowing which one orients design choices.
 
-| Slot | Role | Current status (2026-05-15) |
+| Slot | Role | Current status (2026-05-25) |
 |---|---|---|
 | **source** | Research Vault, repo docs, source-of-truth files | ✅ shipped (proposal layer) |
 | **episodic** | What happened, in order | ✅ shipped (proposal layer) |
-| **perception** | Grounded observations from tools and humans | ✅ shipped (`scripts/windburn-side-lane-perception-bus.mjs`) |
+| **perception** | Grounded observations from tools and humans | ✅ shipped (`scripts/windburn-side-lane-perception-bus.mjs`; perception-first discipline via `windburn-perception-first` skill) |
 | **failure** | Actions attempted, observed deltas, avoid/retry rules | ✅ shipped (failure hook doc + distribution skill) |
 | **procedural** | Reusable skills, repo routes, tool patterns | ✅ shipped (`goalv3-cc` skill production-ready) |
 | **belief** | Hypotheses with evidence and confidence | ⚠️ skeleton (`windburn-source-truth-review` skill scaffold) |
-| **working** | Current session focus + task stack | ❌ gap (no formal substrate yet) |
+| **working** | Current session focus + task stack | ⚠️ skeleton (time-anchor + recall session-start ritual via `windburn-perception-first` skill; task-stack substrate still absent) |
 
 Full cross-source sync record: [`docs/research/2026-05-14-muw-windburn-cognitive-cache-sync.md`](docs/research/2026-05-14-muw-windburn-cognitive-cache-sync.md). Update this table when status changes.
 
@@ -145,6 +145,15 @@ git diff origin/main..main | grep -c "/Users/"   # expect: 0
 
 ## Recommended workflow
 
+### Perception-first discipline (every substantive turn)
+
+Perceive reality before reasoning about it. Two steps, run together at session start and whenever a turn depends on *when* now is or *what already happened*:
+
+1. **Time Anchor First.** Before any substantive response — especially at session start, on ambiguous `today` / `yesterday` / `recent` references, or whenever recall is invoked — get a time receipt first. Without one, memory blurs and yesterday-vs-today collide. If no time tool is available, **degrade explicitly** and state the assumption — never fabricate a timestamp.
+2. **Virtual Memory Expansion.** Treat conversation history as paged virtual memory. When a past event is referenced ambiguously ("the thing we did", a bare possessive) and the live window does not carry the answer, **search before reasoning**. Recall is default lookup, not optional luxury.
+
+Both steps produce perception, not belief — they are reads, and promotion still routes through the gate skills. Full contract: [`docs/protocols/2026-05-25-windburn-perception-first-recall-protocol-v0.md`](docs/protocols/2026-05-25-windburn-perception-first-recall-protocol-v0.md); discipline skill: [`hermes-distributions/fearvox-windburn/skills/windburn-perception-first/SKILL.md`](hermes-distributions/fearvox-windburn/skills/windburn-perception-first/SKILL.md).
+
 ### Starting a Superconductor / fresh session
 
 ```sh
@@ -182,7 +191,8 @@ State files (`state.json`, `dispatch-log.jsonl`) are append-only. History fields
 - [`docs/superpowers/plans/2026-05-12-goalv3-cc-PLAN-CLOSEOUT.md`](docs/superpowers/plans/2026-05-12-goalv3-cc-PLAN-CLOSEOUT.md) — full text of the 8 lessons
 - [`docs/goals/2026-05-12-side-lane-goal-metrics-v0.md`](docs/goals/2026-05-12-side-lane-goal-metrics-v0.md) — public-surface safety scheme
 - [`docs/protocols/2026-05-12-codex-side-lane-perception-bus-v0.md`](docs/protocols/2026-05-12-codex-side-lane-perception-bus-v0.md) — perception bus protocol
-- [`hermes-distributions/fearvox-windburn/`](hermes-distributions/fearvox-windburn/) — distribution package (3 skills + manifests)
+- [`docs/protocols/2026-05-25-windburn-perception-first-recall-protocol-v0.md`](docs/protocols/2026-05-25-windburn-perception-first-recall-protocol-v0.md) — perception-first discipline (time anchor + recall)
+- [`hermes-distributions/fearvox-windburn/`](hermes-distributions/fearvox-windburn/) — distribution package (4 skills + manifests)
 - [`docs/remote-workhorse/`](docs/remote-workhorse/) — substrate / runtime layer evidence
 
 ## What to do when stuck

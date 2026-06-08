@@ -17,10 +17,12 @@ distribution_owned:
 # Cognitive cache slots this distribution serves
 # (See Windburn 7-cache architecture in the parent repo's CLAUDE.md.)
 cognitive_cache_slots_served:
-  - source        # via windburn-cognitive-cache
-  - episodic      # via windburn-cognitive-cache + windburn-crabbox-failure-hook (indirect)
+  - source        # via windburn-cognitive-cache + windburn-perception-first (read-only recall)
+  - episodic      # via windburn-cognitive-cache + windburn-crabbox-failure-hook (indirect) + windburn-perception-first (recall)
+  - perception    # via windburn-perception-first (time anchor + recall as grounded observation)
   - belief        # via windburn-source-truth-review (gate only, never auto-promote)
   - failure       # via windburn-crabbox-failure-hook
+  - working        # PARTIAL via windburn-perception-first (session-start ritual only; no task-stack substrate)
 
 # Non-cache holding lanes / routes this distribution supports.
 holding_lanes_supported:
@@ -36,6 +38,9 @@ skills:
     consumes_from: windburn-cognitive-cache
   - name: windburn-crabbox-failure-hook
     role: remote-run-wrapper
+    feeds_into: windburn-cognitive-cache
+  - name: windburn-perception-first
+    role: perceive-before-reasoning
     feeds_into: windburn-cognitive-cache
 
 # Policy declarations (enforced by skills + by host runtime config.yaml)
@@ -55,4 +60,4 @@ provenance:
   polished_to_v0.2_at: 2026-05-15
 
 # Status (scaffold → growing toward production)
-status: "v0.2 — three skills production-shaped; install path operator-driven; live wiring deferred until source-truth gates verified in a sandbox profile"
+status: "v0.2 — four skills production-shaped (added windburn-perception-first, discipline-only v0.1); install path operator-driven; live wiring deferred until source-truth gates verified in a sandbox profile"
